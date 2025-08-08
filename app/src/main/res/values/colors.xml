@@ -13,4 +13,9 @@
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
+    <!-- 其他颜色定义 -->
+    <color name="tradtional_chinese">#9D2932</color>
+    <color name="western_medicine">#1E88E5</color>
+<!--    <color name="gray">#666666</color>-->
+
 </resources>
