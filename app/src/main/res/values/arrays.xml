@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="departments">
+        <item>内科</item>
+        <item>外科</item>
+        <item>儿科</item>
+        <item>妇产科</item>
+        <item>眼科</item>
+        <item>口腔科</item>
+        <item>皮肤科</item>
+        <item>中医科</item>
+    </string-array>
+</resources>

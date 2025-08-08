@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Frontend-Android</string>
+    <string name="select_department_prompt">请选择科室</string>
+</resources>

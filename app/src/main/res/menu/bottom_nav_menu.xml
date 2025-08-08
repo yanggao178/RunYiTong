@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_product"
+        android:icon="@drawable/ic_product"
+        android:title="商品" />
+
+    <item
+        android:id="@+id/nav_registration"
+        android:icon="@drawable/ic_registration"
+        android:title="挂号" />
+
+    <item
+        android:id="@+id/nav_prescription"
+        android:icon="@drawable/ic_prescription"
+        android:title="开方" />
+
+    <item
+        android:id="@+id/nav_health"
+        android:icon="@drawable/ic_health"
+        android:title="养生" />
+
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_profile"
+        android:title="我的" />
+
+</menu>
