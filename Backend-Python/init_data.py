@@ -33,6 +33,7 @@ def init_database():
 def init_products(db: Session):
     """初始化商品数据"""
     products_data = [
+        # 保健品类
         {
             "name": "养生茶",
             "price": 98.0,
@@ -78,6 +79,52 @@ def init_products(db: Session):
             "purchase_count": 67
         },
         {
+            "name": "蜂胶胶囊",
+            "price": 158.0,
+            "description": "天然蜂胶提取，增强免疫力",
+            "image_url": "https://example.com/propolis.jpg",
+            "category": "保健品",
+            "stock": 120,
+            "specification": "60粒/瓶",
+            "manufacturer": "蜂之语",
+            "purchase_count": 203
+        },
+        {
+            "name": "维生素C片",
+            "price": 45.0,
+            "description": "补充维生素C，提高抵抗力",
+            "image_url": "https://example.com/vitamin_c.jpg",
+            "category": "保健品",
+            "stock": 300,
+            "specification": "100片/瓶",
+            "manufacturer": "汤臣倍健",
+            "purchase_count": 567
+        },
+        {
+            "name": "钙片",
+            "price": 78.0,
+            "description": "高钙配方，强健骨骼",
+            "image_url": "https://example.com/calcium.jpg",
+            "category": "保健品",
+            "stock": 180,
+            "specification": "120片/瓶",
+            "manufacturer": "钙尔奇",
+            "purchase_count": 345
+        },
+        {
+            "name": "鱼油软胶囊",
+            "price": 188.0,
+            "description": "深海鱼油，保护心血管健康",
+            "image_url": "https://example.com/fish_oil.jpg",
+            "category": "保健品",
+            "stock": 90,
+            "specification": "100粒/瓶",
+            "manufacturer": "挪威小鱼",
+            "purchase_count": 278
+        },
+        
+        # 医疗器械类
+        {
             "name": "血压计",
             "price": 299.0,
             "description": "家用智能血压监测仪",
@@ -87,6 +134,142 @@ def init_products(db: Session):
             "specification": "电子式",
             "manufacturer": "欧姆龙",
             "purchase_count": 145
+        },
+        {
+            "name": "血糖仪",
+            "price": 168.0,
+            "description": "便携式血糖检测仪，操作简单",
+            "image_url": "https://example.com/glucose_meter.jpg",
+            "category": "医疗器械",
+            "stock": 45,
+            "specification": "含试纸50片",
+            "manufacturer": "强生",
+            "purchase_count": 89
+        },
+        {
+            "name": "体温计",
+            "price": 58.0,
+            "description": "红外线额温枪，快速测温",
+            "image_url": "https://example.com/thermometer.jpg",
+            "category": "医疗器械",
+            "stock": 200,
+            "specification": "非接触式",
+            "manufacturer": "博朗",
+            "purchase_count": 456
+        },
+        {
+            "name": "制氧机",
+            "price": 1299.0,
+            "description": "家用制氧机，改善呼吸质量",
+            "image_url": "https://example.com/oxygen_concentrator.jpg",
+            "category": "医疗器械",
+            "stock": 15,
+            "specification": "3L/min",
+            "manufacturer": "鱼跃医疗",
+            "purchase_count": 67
+        },
+        {
+            "name": "雾化器",
+            "price": 189.0,
+            "description": "超声波雾化器，呼吸道护理",
+            "image_url": "https://example.com/nebulizer.jpg",
+            "category": "医疗器械",
+            "stock": 80,
+            "specification": "便携式",
+            "manufacturer": "欧姆龙",
+            "purchase_count": 123
+        },
+        
+        # 中药材类
+        {
+            "name": "人参片",
+            "price": 268.0,
+            "description": "长白山人参，大补元气",
+            "image_url": "https://example.com/ginseng.jpg",
+            "category": "中药材",
+            "stock": 60,
+            "specification": "100g/盒",
+            "manufacturer": "长白山参业",
+            "purchase_count": 134
+        },
+        {
+            "name": "枸杞子",
+            "price": 88.0,
+            "description": "宁夏枸杞，滋补肝肾",
+            "image_url": "https://example.com/goji.jpg",
+            "category": "中药材",
+            "stock": 150,
+            "specification": "500g/袋",
+            "manufacturer": "宁夏红",
+            "purchase_count": 289
+        },
+        {
+            "name": "当归片",
+            "price": 78.0,
+            "description": "甘肃当归，补血调经",
+            "image_url": "https://example.com/angelica.jpg",
+            "category": "中药材",
+            "stock": 90,
+            "specification": "200g/袋",
+            "manufacturer": "陇西药材",
+            "purchase_count": 156
+        },
+        {
+            "name": "黄芪片",
+            "price": 65.0,
+            "description": "内蒙古黄芪，补气固表",
+            "image_url": "https://example.com/astragalus.jpg",
+            "category": "中药材",
+            "stock": 110,
+            "specification": "300g/袋",
+            "manufacturer": "内蒙古药材",
+            "purchase_count": 198
+        },
+        
+        # 护理用品类
+        {
+            "name": "医用口罩",
+            "price": 25.0,
+            "description": "一次性医用外科口罩",
+            "image_url": "https://example.com/mask.jpg",
+            "category": "护理用品",
+            "stock": 500,
+            "specification": "50只/盒",
+            "manufacturer": "3M",
+            "purchase_count": 1234
+        },
+        {
+            "name": "酒精消毒液",
+            "price": 18.0,
+            "description": "75%医用酒精，杀菌消毒",
+            "image_url": "https://example.com/alcohol.jpg",
+            "category": "护理用品",
+            "stock": 300,
+            "specification": "500ml/瓶",
+            "manufacturer": "海氏海诺",
+            "purchase_count": 789
+        },
+        {
+            "name": "创可贴",
+            "price": 12.0,
+            "description": "防水透气创可贴",
+            "image_url": "https://example.com/bandaid.jpg",
+            "category": "护理用品",
+            "stock": 400,
+            "specification": "100片/盒",
+            "manufacturer": "邦迪",
+            "purchase_count": 567
+        },
+        {
+            "name": "医用纱布",
+            "price": 15.0,
+            "description": "无菌医用纱布块",
+            "image_url": "https://example.com/gauze.jpg",
+            "category": "护理用品",
+            "stock": 250,
+            "specification": "10片/包",
+            "manufacturer": "振德医疗",
+            "purchase_count": 345
         }
     ]
     
