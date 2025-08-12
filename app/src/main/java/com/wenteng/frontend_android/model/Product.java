@@ -1,18 +1,45 @@
 package com.wenteng.frontend_android.model;
 
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.Date;
 
 public class Product implements Serializable {
+    @SerializedName("id")
     private int id; // 商品ID
+    
+    @SerializedName("name")
     private String name; // 商品名称
+    
+    @SerializedName("price")
     private double price; // 商品价格
+    
+    @SerializedName("description")
     private String description; // 商品描述
+    
+    @SerializedName("image_url")
     private String imageUrl; // 商品图片URL
+    
+    @SerializedName("category")
     private String category; // 商品分类
+    
+    @SerializedName("stock")
     private int stock; // 库存数量
+    
+    @SerializedName("created_time")
     private Date createdTime; // 创建时间
+    
+    @SerializedName("updated_time")
     private Date updatedTime; // 更新时间
+    
+    @SerializedName("specification")
+    private String specification; // 规格
+    
+    @SerializedName("manufacturer")
+    private String manufacturer; // 厂商
+    
+    @SerializedName("purchase_count")
+    private int purchaseCount; // 购买人数
 
     // 无参构造函数
     public Product() {
@@ -103,6 +130,30 @@ public class Product implements Serializable {
 
     public void setUpdatedTime(Date updatedTime) {
         this.updatedTime = updatedTime;
+    }
+
+    public String getSpecification() {
+        return specification;
+    }
+
+    public void setSpecification(String specification) {
+        this.specification = specification;
+    }
+
+    public String getManufacturer() {
+        return manufacturer;
+    }
+
+    public void setManufacturer(String manufacturer) {
+        this.manufacturer = manufacturer;
+    }
+
+    public int getPurchaseCount() {
+        return purchaseCount;
+    }
+
+    public void setPurchaseCount(int purchaseCount) {
+        this.purchaseCount = purchaseCount;
     }
 
     @Override

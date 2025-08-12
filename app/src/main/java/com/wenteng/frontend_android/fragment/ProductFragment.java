@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Toast;
 // 需要添加的导入语句
 import android.content.Intent;
 import com.wenteng.frontend_android.ProductDetailActivity;
@@ -20,10 +21,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.adapter.ProductAdapter;
 import com.wenteng.frontend_android.model.Product;
+import com.wenteng.frontend_android.api.ApiClient;
+import com.wenteng.frontend_android.api.ApiResponse;
+import com.wenteng.frontend_android.api.ProductListResponse;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ProductFragment extends Fragment {
 
@@ -52,20 +58,52 @@ public class ProductFragment extends Fragment {
 
     private void initData() {
         productList = new ArrayList<>();
-        // 添加测试数据
-        productList.add(new Product(1, "养生茶", 98.0, "纯天然草本配方，滋阴补肾", "https://example.com/tea.jpg", "保健品", 100,
-                new Date(), new Date()));
-        productList.add(new Product(2, "艾灸贴", 68.0, "缓解疲劳，促进血液循环", "https://example.com/moxibustion.jpg", "保健品", 100,
-                new Date(), new Date()));
-        productList.add(new Product(3, "按摩仪", 199.0, "智能按摩，舒缓肌肉紧张", "https://example.com/massager.jpg", "保健品", 100,
-                new Date(), new Date()));
-        productList.add(new Product(4, "中药饮片", 128.0, "精选中药材，调理身体", "https://example.com/herb.jpg", "保健品", 100,
-                new Date(), new Date()));
-        productList.add(new Product(5, "血压计", 299.0, "家用智能血压监测仪", "https://example.com/blood_pressure.jpg", "保健品", 100,
-                new Date(), new Date()));
-
-        // 初始化过滤后的列表
-        filteredProductList = new ArrayList<>(productList);
+        filteredProductList = new ArrayList<>();
+        
+        // 从后端API获取商品数据
+        loadProductsFromApi();
+    }
+    
+    private void loadProductsFromApi() {
+        Call<ApiResponse<ProductListResponse>> call = ApiClient.getApiService().getProducts(0, 50, null, null);
+        
+        call.enqueue(new Callback<ApiResponse<ProductListResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<ProductListResponse>> call, Response<ApiResponse<ProductListResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<ProductListResponse> apiResponse = response.body();
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        List<Product> products = apiResponse.getData().getItems();
+                        if (products != null) {
+                            productList.clear();
+                            productList.addAll(products);
+                            filteredProductList.clear();
+                            filteredProductList.addAll(products);
+                            
+                            // 更新UI
+                            if (productAdapter != null) {
+                                productAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    } else {
+                        showError("获取商品数据失败: " + apiResponse.getMessage());
+                    }
+                } else {
+                    showError("网络请求失败，请检查网络连接");
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<ProductListResponse>> call, Throwable t) {
+                showError("网络连接失败: " + t.getMessage());
+            }
+        });
+    }
+    
+    private void showError(String message) {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupRecyclerView() {

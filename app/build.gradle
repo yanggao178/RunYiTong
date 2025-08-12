@@ -37,7 +37,14 @@ dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
     implementation 'com.github.bumptech.glide:glide:4.12.0'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
-    // 如果需要加载网络图片，可以添加Glide依赖
-    // implementation 'com.github.bumptech.glide:glide:4.12.0'
-    // annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
+    
+    // 网络请求依赖
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.google.code.gson:gson:2.8.9'
+    // OkHttp 核心库
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'  // 使用最新稳定版
+
+    // 可选：日志拦截器（调试用）
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
 }

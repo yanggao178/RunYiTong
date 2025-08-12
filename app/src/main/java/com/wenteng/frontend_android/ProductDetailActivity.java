@@ -57,9 +57,11 @@ public class ProductDetailActivity extends AppCompatActivity {
         if (product != null) {
             productTitle.setText(product.getName());
             productPrice.setText(String.format("¥%.2f", product.getPrice()));
-            productSpecification.setText("标准规格"); // 实际应用中应从产品数据获取
-            productManufacturer.setText("健康医药有限公司"); // 实际应用中应从产品数据获取
-            productPurchaseCount.setText("1000+ 人已购"); // 实际应用中应从产品数据获取
+            
+            // 使用从后端获取的实际数据
+            productSpecification.setText(product.getSpecification() != null ? product.getSpecification() : "标准规格");
+            productManufacturer.setText(product.getManufacturer() != null ? product.getManufacturer() : "健康医药有限公司");
+            productPurchaseCount.setText(product.getPurchaseCount() + "+ 人已购");
             productDetail.setText(product.getDescription() + "\n\n这是商品的详细描述信息，包含了商品的使用方法、注意事项等。");
 
             // 这里可以使用图片加载库加载网络图片，例如Glide或Picasso
