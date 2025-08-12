@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
+    android:gravity="top|start"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -13,34 +13,6 @@
         android:textSize="24sp"
         android:textStyle="bold" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@drawable/bg_card">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="选择科室:"
-            android:textSize="16sp" />
-
-        <Spinner
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:entries="@array/departments"
-            android:prompt="@string/select_department_prompt" />
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@color/primary_color"
-            android:text="预约挂号"
-            android:textColor="@color/white" />
-    </LinearLayout>
+    <!-- 选择科室、checkbox和预约挂号按钮已移除 -->
 
 </LinearLayout>

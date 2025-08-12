@@ -21,6 +21,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        // 隐藏ActionBar以移除Frontend-Android标题
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().hide();
+        }
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
