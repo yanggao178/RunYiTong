@@ -2,46 +2,57 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
     android:orientation="vertical"
     android:padding="16dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="医生开方"
+        android:text="开方"
         android:textSize="24sp"
         android:textStyle="bold" />
+
+    <!-- 症状描述部分已移除 -->
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="症状描述"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:background="@android:color/holo_green_light"
+        android:padding="8dp"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@drawable/bg_card">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="症状描述:"
-            android:textSize="16sp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="16dp"
+        android:background="@color/primary_color"
+        android:padding="12dp">
 
         <EditText
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_marginTop="8dp"
-            android:hint="请描述您的症状..."
-            android:inputType="textMultiLine"
-            android:scrollbars="vertical" />
-
-        <Button
-            android:layout_width="match_parent"
+            android:id="@+id/et_symptoms"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="@color/primary_color"
-            android:text="提交问诊"
-            android:textColor="@color/white" />
-    </LinearLayout>
+            android:layout_weight="1"
+            android:hint="请输入你的症状"
+            android:textColorHint="@color/white"
+            android:textSize="16sp"
+            android:textColor="@color/white"
+            android:background="@null"
+            android:inputType="textMultiLine" />
 
+        <ImageButton
+            android:id="@+id/btn_upload_prescription"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_upload"
+            android:background="@android:color/holo_red_light"
+            android:contentDescription="上传处方图片" />
+    </LinearLayout>
 </LinearLayout>
