@@ -32,6 +32,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         return new ProductViewHolder(view);
     }
 
+    private OnItemClickListener onItemClickListener;
+
+    // 点击事件接口
+    public interface OnItemClickListener {
+        void onItemClick(Product product);
+    }
+
+    // 设置点击事件监听
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
+        this.onItemClickListener = onItemClickListener;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = productList.get(position);
@@ -39,10 +51,15 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         holder.productPrice.setText(String.format("¥%.2f", product.getPrice()));
         holder.productDescription.setText(product.getDescription());
 
-        // 这里可以使用图片加载库加载网络图片，例如Glide或Picasso
-        // Glide.with(context).load(product.getImageUrl()).into(holder.productImage);
         // 暂时使用占位图
         holder.productImage.setImageResource(R.drawable.ic_launcher_background);
+
+        // 添加点击事件
+        holder.itemView.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(product);
+            }
+        });
     }
 
     @Override

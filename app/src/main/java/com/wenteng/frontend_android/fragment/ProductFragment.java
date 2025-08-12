@@ -7,6 +7,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+// 需要添加的导入语句
+import android.content.Intent;
+import com.wenteng.frontend_android.ProductDetailActivity;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -69,6 +72,14 @@ public class ProductFragment extends Fragment {
         productAdapter = new ProductAdapter(getContext(), filteredProductList);
         productRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         productRecyclerView.setAdapter(productAdapter);
+
+        // 设置商品点击事件
+        productAdapter.setOnItemClickListener(product -> {
+            // 启动商品详情页
+            Intent intent = new Intent(getActivity(), ProductDetailActivity.class);
+            intent.putExtra("product", product);
+            startActivity(intent);
+        });
     }
 
     private void setupSearchFunction() {

@@ -23,6 +23,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".ProductDetailActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
+
