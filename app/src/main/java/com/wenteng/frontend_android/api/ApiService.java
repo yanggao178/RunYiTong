@@ -1,10 +1,12 @@
 package com.wenteng.frontend_android.api;
 
 import com.wenteng.frontend_android.model.Product;
+import com.wenteng.frontend_android.model.Book;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import java.util.List;
 
 public interface ApiService {
     
@@ -31,4 +33,26 @@ public interface ApiService {
      */
     @GET("api/v1/products/{id}")
     Call<ApiResponse<Product>> getProduct(@Path("id") int productId);
+    
+    /**
+     * 获取中医古籍列表
+     * @return 中医古籍列表响应
+     */
+    @GET("api/v1/books/chinese-medicine")
+    Call<ApiResponse<List<Book>>> getChineseMedicineBooks();
+    
+    /**
+     * 获取西医经典列表
+     * @return 西医经典列表响应
+     */
+    @GET("api/v1/books/western-medicine")
+    Call<ApiResponse<List<Book>>> getWesternMedicineBooks();
+    
+    /**
+     * 获取单个图书详情
+     * @param bookId 图书ID
+     * @return 图书详情响应
+     */
+    @GET("api/v1/books/{id}")
+    Call<ApiResponse<Book>> getBook(@Path("id") int bookId);
 }

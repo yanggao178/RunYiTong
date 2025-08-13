@@ -49,22 +49,38 @@ async def get_books(
     )
 
 # 获取中医古籍列表
-@router.get("/chinese-medicine", response_model=List[Book])
+@router.get("/chinese-medicine")
 async def get_chinese_medicine_books(db: Session = Depends(get_db)):
     """获取中医古籍列表"""
     books = db.query(BookModel).filter(
         BookModel.category.in_(["中医基础", "中医临床", "中药学", "针灸学"])
     ).all()
-    return books
+    
+    # 转换为字典格式
+    books_data = [Book.from_orm(book).dict() for book in books]
+    
+    return {
+        "success": True,
+        "message": "获取中医古籍成功",
+        "data": books_data
+    }
 
 # 获取西医经典列表
-@router.get("/western-medicine", response_model=List[Book])
+@router.get("/western-medicine")
 async def get_western_medicine_books(db: Session = Depends(get_db)):
     """获取西医经典列表"""
     books = db.query(BookModel).filter(
         BookModel.category.in_(["医学理论", "解剖学", "内科学", "病理学", "中西医结合"])
     ).all()
-    return books
+    
+    # 转换为字典格式
+    books_data = [Book.from_orm(book).dict() for book in books]
+    
+    return {
+        "success": True,
+        "message": "获取西医经典成功",
+        "data": books_data
+    }
 
 # 获取单本图书详情
 @router.get("/{book_id}", response_model=Book)
