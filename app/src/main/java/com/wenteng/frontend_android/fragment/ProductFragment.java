@@ -30,6 +30,10 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import java.net.SocketTimeoutException;
+import java.net.ConnectException;
+import javax.net.ssl.SSLHandshakeException;
+import java.io.IOException;
 
 public class ProductFragment extends Fragment {
 
@@ -63,42 +67,124 @@ public class ProductFragment extends Fragment {
         // 从后端API获取商品数据
         loadProductsFromApi();
     }
-    
     private void loadProductsFromApi() {
+        showError("开始加载商品数据...");
         Call<ApiResponse<ProductListResponse>> call = ApiClient.getApiService().getProducts(0, 50, null, null);
-        
+
         call.enqueue(new Callback<ApiResponse<ProductListResponse>>() {
             @Override
-            public void onResponse(Call<ApiResponse<ProductListResponse>> call, Response<ApiResponse<ProductListResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<ProductListResponse> apiResponse = response.body();
-                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        List<Product> products = apiResponse.getData().getItems();
-                        if (products != null) {
-                            productList.clear();
-                            productList.addAll(products);
-                            filteredProductList.clear();
-                            filteredProductList.addAll(products);
-                            
-                            // 更新UI
-                            if (productAdapter != null) {
-                                productAdapter.notifyDataSetChanged();
-                            }
-                        }
-                    } else {
-                        showError("获取商品数据失败: " + apiResponse.getMessage());
+            public void onResponse(Call<ApiResponse<ProductListResponse>> call,
+                                   Response<ApiResponse<ProductListResponse>> response) {
+
+                // 1. 先检查HTTP状态码
+                showError("HTTP状态码: " + response.code());
+
+                // 2. 检查响应体是否为空
+                if (response.body() == null) {
+                    showError("响应体为null");
+                    try {
+                        showError("错误响应: " + response.errorBody().string());
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+                    return;
+                }
+
+                // 3. 解析业务响应
+                ApiResponse<ProductListResponse> apiResponse = response.body();
+                if (!apiResponse.isSuccess()) {
+                    showError("业务逻辑失败: " + apiResponse.getMessage());
+                    return;
+                }
+
+                // 4. 检查数据是否有效
+                if (apiResponse.getData() == null || apiResponse.getData().getItems() == null) {
+                    showError("商品数据为null");
+                    return;
+                }
+
+                // 5. 处理成功数据
+                List<Product> products = apiResponse.getData().getItems();
+                showError("成功获取 " + products.size() + " 个商品");
+
+                // 更新UI代码
+                if (products != null && !products.isEmpty()) {
+                    // 清空并更新商品列表
+                    productList.clear();
+                    productList.addAll(products);
+                    
+                    // 更新过滤列表
+                    filteredProductList.clear();
+                    filteredProductList.addAll(products);
+                    
+                    // 通知适配器数据已更改
+                    if (productAdapter != null) {
+                        productAdapter.notifyDataSetChanged();
+                    }
+                    
+                    showError("商品列表已更新，共 " + products.size() + " 个商品");
                 } else {
-                    showError("网络请求失败，请检查网络连接");
+                    showError("获取到的商品列表为空");
                 }
             }
-            
+
             @Override
             public void onFailure(Call<ApiResponse<ProductListResponse>> call, Throwable t) {
-                showError("网络连接失败: " + t.getMessage());
+                // 6. 重点检查这里打印的异常
+                showError("网络请求失败: " + t.getClass().getSimpleName() + ": " + t.getMessage());
+                t.printStackTrace();
+
+                // 特殊处理常见异常
+                if (t instanceof SocketTimeoutException) {
+                    showError("连接超时，请检查网络");
+                } else if (t instanceof ConnectException) {
+                    showError("无法连接服务器，请检查API地址");
+                } else if (t instanceof SSLHandshakeException) {
+                    showError("证书验证失败");
+                }
             }
         });
     }
+//    private void loadProductsFromApi() {
+//        showError("开始加载商品数据..."); // 调试信息
+//        Call<ApiResponse<ProductListResponse>> call = ApiClient.getApiService().getProducts(0, 50, null, null);
+//
+//        call.enqueue(new Callback<ApiResponse<ProductListResponse>>() {
+//            @Override
+//            public void onResponse(Call<ApiResponse<ProductListResponse>> call, Response<ApiResponse<ProductListResponse>> response) {
+//                showError("收到响应，状态码: " + response.code()); // 调试信息
+//                if (response.isSuccessful() && response.body() != null) {
+//                    ApiResponse<ProductListResponse> apiResponse = response.body();
+//                    showError("API响应成功: " + apiResponse.isSuccess()); // 调试信息
+//                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+//                        List<Product> products = apiResponse.getData().getItems();
+//                        if (products != null) {
+//                            showError("获取到 " + products.size() + " 个商品"); // 调试信息
+//                            productList.clear();
+//                            productList.addAll(products);
+//                            filteredProductList.clear();
+//                            filteredProductList.addAll(products);
+//
+//                            // 更新UI
+//                            if (productAdapter != null) {
+//                                productAdapter.notifyDataSetChanged();
+//                            }
+//                        }
+//                    } else {
+//                        showError("获取商品数据失败: " + apiResponse.getMessage());
+//                    }
+//                } else {
+//                    showError("网络请求失败，状态码: " + response.code() + ", 错误: " + response.message());
+//                }
+//            }
+//
+//            @Override
+//            public void onFailure(Call<ApiResponse<ProductListResponse>> call, Throwable t) {
+//                showError("网络连接失败: " + t.getMessage());
+//                t.printStackTrace(); // 打印完整错误堆栈
+//            }
+//        });
+//    }
     
     private void showError(String message) {
         if (getContext() != null) {

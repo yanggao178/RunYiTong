@@ -16,7 +16,7 @@ public interface ApiService {
      * @param category 商品分类
      * @return 商品列表响应
      */
-    @GET("api/products/")
+    @GET("api/v1/products/")
     Call<ApiResponse<ProductListResponse>> getProducts(
         @Query("skip") int skip,
         @Query("limit") int limit,
@@ -29,6 +29,6 @@ public interface ApiService {
      * @param productId 商品ID
      * @return 商品详情响应
      */
-    @GET("api/products/{id}")
+    @GET("api/v1/products/{id}")
     Call<ApiResponse<Product>> getProduct(@Path("id") int productId);
 }

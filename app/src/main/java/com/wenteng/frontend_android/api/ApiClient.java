@@ -5,9 +5,31 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import java.util.concurrent.TimeUnit;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Locale;
 
 public class ApiClient {
-    private static final String BASE_URL = "http://10.0.2.2:8000/"; // Android模拟器访问本机的地址
+    // 根据运行环境选择合适的服务器地址
+    private static final String BASE_URL = getBaseUrl();
+    
+    private static String getBaseUrl() {
+        // 检查是否在模拟器中运行
+        String fingerprint = android.os.Build.FINGERPRINT;
+        if (fingerprint != null && (fingerprint.startsWith("generic") 
+                || fingerprint.startsWith("unknown") 
+                || fingerprint.contains("emu64"))) {
+            // 模拟器环境
+            return "http://10.0.2.15:8000/";
+        } else {
+            // 真实设备环境，使用局域网IP地址
+            return "http://192.168.0.7:8000/"; // 本机局域网IP地址
+        }
+    }
     private static Retrofit retrofit = null;
     private static ApiService apiService = null;
     
@@ -28,11 +50,32 @@ public class ApiClient {
                     .writeTimeout(30, TimeUnit.SECONDS)
                     .build();
             
+            // 创建自定义Gson实例处理日期格式
+            Gson gson = new GsonBuilder()
+                    .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")
+                    .registerTypeAdapter(Date.class, (JsonDeserializer<Date>) (json, typeOfT, context) -> {
+                        try {
+                            String dateString = json.getAsString();
+                            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS", Locale.getDefault());
+                            return format.parse(dateString);
+                        } catch (ParseException e) {
+                            try {
+                                // 尝试另一种格式
+                                String dateString = json.getAsString();
+                                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault());
+                                return format.parse(dateString);
+                            } catch (ParseException ex) {
+                                return null;
+                            }
+                        }
+                    })
+                    .create();
+            
             // 创建Retrofit实例
             retrofit = new Retrofit.Builder()
                     .baseUrl(BASE_URL)
                     .client(okHttpClient)
-                    .addConverterFactory(GsonConverterFactory.create())
+                    .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
         }
         return retrofit;

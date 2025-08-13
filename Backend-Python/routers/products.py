@@ -3,15 +3,15 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from database import get_db
 from models import Product as ProductModel
-from schemas import Product, ProductCreate, ProductUpdate, PaginatedResponse
+from schemas import Product, ProductCreate, ProductUpdate, PaginatedResponse, BaseResponse
 
 router = APIRouter()
 
 # 获取商品列表（支持分页和搜索）
-@router.get("/", response_model=PaginatedResponse)
+@router.get("/")
 async def get_products(
-    page: int = Query(1, ge=1, description="页码"),
-    size: int = Query(10, ge=1, le=100, description="每页数量"),
+    skip: int = Query(0, ge=0, description="跳过数量"),
+    limit: int = Query(10, ge=1, le=100, description="限制数量"),
     search: Optional[str] = Query(None, description="搜索关键词"),
     category: Optional[str] = Query(None, description="商品分类"),
     db: Session = Depends(get_db)
@@ -31,28 +31,35 @@ async def get_products(
     total = query.count()
     
     # 分页
-    offset = (page - 1) * size
-    products = query.offset(offset).limit(size).all()
+    products = query.offset(skip).limit(limit).all()
     
-    # 计算总页数
-    pages = (total + size - 1) // size
+    # 构造ProductListResponse格式的数据
+    product_list_data = {
+        "items": [Product.from_orm(product).dict() for product in products],
+        "total": total,
+        "skip": skip,
+        "limit": limit
+    }
     
-    return PaginatedResponse(
-        items=[Product.from_orm(product).dict() for product in products],
-        total=total,
-        page=page,
-        size=size,
-        pages=pages
-    )
+    return {
+        "success": True,
+        "message": "获取商品列表成功",
+        "data": product_list_data
+    }
 
 # 获取单个商品详情
-@router.get("/{product_id}", response_model=Product)
+@router.get("/{product_id}")
 async def get_product(product_id: int, db: Session = Depends(get_db)):
     """获取商品详情"""
     product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
     if not product:
         raise HTTPException(status_code=404, detail="商品不存在")
-    return product
+    
+    return {
+        "success": True,
+        "message": "获取商品详情成功",
+        "data": Product.from_orm(product).dict()
+    }
 
 # 创建商品
 @router.post("/", response_model=Product)
