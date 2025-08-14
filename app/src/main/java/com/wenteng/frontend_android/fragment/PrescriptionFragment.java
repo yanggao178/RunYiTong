@@ -1,10 +1,15 @@
 package com.wenteng.frontend_android.fragment;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -17,7 +22,16 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiResponse;
@@ -42,6 +56,12 @@ public class PrescriptionFragment extends Fragment {
     private Runnable progressUpdateRunnable;
     private Call<ApiResponse<SymptomAnalysis>> currentCall;
     private int progressStep = 0;
+    
+    // 图片选择相关
+    private ActivityResultLauncher<Intent> galleryLauncher;
+    private ActivityResultLauncher<Intent> cameraLauncher;
+    private ActivityResultLauncher<String> cameraPermissionLauncher;
+    private Uri photoUri;
     
     // 状态保存相关
     private static final String KEY_SYMPTOMS_TEXT = "symptoms_text";
@@ -101,10 +121,55 @@ public class PrescriptionFragment extends Fragment {
             }
         });
         
+        // 初始化图片选择相关的ActivityResultLauncher
+        initImagePickers();
+        
         // 恢复保存的状态
         restoreState();
         
         return view;
+    }
+    
+    /**
+     * 初始化图片选择相关的ActivityResultLauncher
+     */
+    private void initImagePickers() {
+        // 相册选择
+        galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
+                    Uri selectedImageUri = result.getData().getData();
+                    if (selectedImageUri != null) {
+                        handleSelectedImage(selectedImageUri);
+                    }
+                }
+            }
+        );
+        
+        // 拍照
+        cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == getActivity().RESULT_OK) {
+                    if (photoUri != null) {
+                        handleSelectedImage(photoUri);
+                    }
+                }
+            }
+        );
+        
+        // 相机权限请求
+        cameraPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    openCamera();
+                } else {
+                    Toast.makeText(getContext(), "需要相机权限才能拍照", Toast.LENGTH_SHORT).show();
+                }
+            }
+        );
     }
     
     /**
@@ -426,12 +491,10 @@ public class PrescriptionFragment extends Fragment {
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {
                     case 0: // 从相册选择
-                        Toast.makeText(getContext(), "从相册选择", Toast.LENGTH_SHORT).show();
-                        // TODO: 实现从相册选择图片的功能
+                        openGallery();
                         break;
                     case 1: // 拍照
-                        Toast.makeText(getContext(), "拍照", Toast.LENGTH_SHORT).show();
-                        // TODO: 实现拍照功能
+                        checkCameraPermissionAndOpen();
                         break;
                     case 2: // 取消
                         dialog.dismiss();
@@ -444,5 +507,79 @@ public class PrescriptionFragment extends Fragment {
         dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_Dialog;
         dialog.getWindow().setGravity(android.view.Gravity.BOTTOM);
         dialog.show();
+    }
+    
+    /**
+     * 打开相册选择图片
+     */
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        galleryLauncher.launch(intent);
+    }
+    
+    /**
+     * 检查相机权限并打开相机
+     */
+    private void checkCameraPermissionAndOpen() {
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.CAMERA) 
+                == PackageManager.PERMISSION_GRANTED) {
+            openCamera();
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+    
+    /**
+     * 打开相机拍照
+     */
+    private void openCamera() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+            // 创建图片文件
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                Toast.makeText(getContext(), "创建图片文件失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            // 如果文件创建成功
+            if (photoFile != null) {
+                photoUri = FileProvider.getUriForFile(getContext(),
+                        "com.wenteng.frontend_android.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                cameraLauncher.launch(takePictureIntent);
+            }
+        } else {
+            Toast.makeText(getContext(), "没有找到相机应用", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * 创建图片文件
+     */
+    private File createImageFile() throws IOException {
+        // 创建图片文件名
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getActivity().getExternalFilesDir("Pictures");
+        
+        return File.createTempFile(
+                imageFileName,  /* prefix */
+                ".jpg",         /* suffix */
+                storageDir      /* directory */
+        );
+    }
+    
+    /**
+     * 处理选择的图片
+     */
+    private void handleSelectedImage(Uri imageUri) {
+        Toast.makeText(getContext(), "图片选择成功，准备分析...", Toast.LENGTH_SHORT).show();
+        // TODO: 这里可以添加图片上传和分析的逻辑
+        // 例如：将图片转换为Base64或直接上传到服务器进行OCR识别
     }
 }
