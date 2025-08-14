@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">Frontend-Android</string>
     <string name="select_department_prompt">请选择科室</string>
+    
+    <!-- Order status strings -->
+    <string name="order_status_all">全部</string>
+    <string name="order_status_pending_shipment">待发货</string>
+    <string name="order_status_pending_receipt">待收货</string>
+    <string name="order_status_completed">已完成</string>
+    
+    <!-- Empty order state strings -->
+    <string name="empty_order_title">暂无订单</string>
+    <string name="empty_order_message">快去购买您喜欢的商品吧</string>
+    <string name="empty_order_image_desc">空订单状态图标</string>
 </resources>

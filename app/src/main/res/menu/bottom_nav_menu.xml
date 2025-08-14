@@ -19,7 +19,7 @@
     <item
         android:id="@+id/nav_health"
         android:icon="@drawable/ic_health"
-        android:title="养生" />
+        android:title="书籍" />
 
     <item
         android:id="@+id/nav_profile"

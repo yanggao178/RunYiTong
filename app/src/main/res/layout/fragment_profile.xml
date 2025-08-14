@@ -28,6 +28,17 @@
             android:text="用户名"
             android:textSize="18sp"
             android:textStyle="bold" />
+
+        <!-- 快递订单按钮 -->
+        <Button
+            android:id="@+id/btn_express_orders"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_card"
+            android:text="快递订单"
+            android:textColor="@color/colorPrimary"
+            android:textSize="16sp" />
     </LinearLayout>
 
     <!-- 功能菜单 -->
