@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
@@ -6,6 +6,7 @@ import uuid
 from database import get_db
 from models import Prescription as PrescriptionModel
 from schemas import Prescription, PrescriptionCreate, PrescriptionUpdate, PaginatedResponse
+from ai.ai_prescription import generate_tcm_prescription
 
 router = APIRouter()
 
@@ -153,34 +154,78 @@ async def upload_prescription_image(
 
 # 症状分析（模拟AI分析）
 @router.post("/analyze-symptoms")
-async def analyze_symptoms(symptoms: str):
-    """症状分析（模拟AI分析功能）"""
-    # 这里可以集成真实的AI分析服务
-    # 目前返回模拟的分析结果
-    
-    analysis_result = {
-        "symptoms": symptoms,
-        "possible_diagnosis": [
-            "根据症状描述，可能的诊断包括：",
-            "1. 常见感冒 - 概率60%",
-            "2. 过敏性鼻炎 - 概率25%",
-            "3. 其他呼吸道疾病 - 概率15%"
-        ],
-        "recommendations": [
-            "建议多休息，多喝水",
-            "如症状持续或加重，请及时就医",
-            "可适当服用对症药物缓解症状"
-        ],
-        "suggested_prescription": {
-            "medicines": [
-                {"name": "感冒灵颗粒", "dosage": "每次1袋，每日3次", "duration": "3-5天"},
-                {"name": "维生素C片", "dosage": "每次2片，每日2次", "duration": "1周"}
-            ],
-            "notes": "请在医生指导下用药，如有不适请立即停药并就医"
+async def analyze_symptoms(symptoms: str = Form(...)):
+    """症状分析（集成AI中医处方生成）"""
+    try:
+        # 从环境变量获取API密钥和模型配置
+        api_key = os.getenv("OPENAI_API_KEY")
+        ai_model = os.getenv("AI_MODEL", "deepseek-chat")
+        if not api_key:
+            # 如果没有API密钥，返回模拟结果
+            analysis_data = {
+                "symptoms": symptoms,
+                "analysis": "暂未配置AI服务，返回模拟分析结果",
+                "syndrome_type": "风寒表证",
+                "treatment_method": "辛温解表",
+                "main_prescription": "桂枝汤加减",
+                "composition": [
+                    {"药材": "桂枝", "剂量": "10g", "角色": "君药"},
+                    {"药材": "白芍", "剂量": "10g", "角色": "臣药"},
+                    {"药材": "生姜", "剂量": "6g", "角色": "佐药"},
+                    {"药材": "大枣", "剂量": "3枚", "角色": "使药"},
+                    {"药材": "甘草", "剂量": "6g", "角色": "使药"}
+                ],
+                "usage": "水煎服，每日1剂，分2次温服",
+                "contraindications": "孕妇慎用，高血压患者注意监测血压"
+            }
+            return {
+                "success": True,
+                "message": "症状分析完成",
+                "data": analysis_data
+            }
+        
+        # 调用AI生成处方
+        prescription = generate_tcm_prescription(
+            symptoms=symptoms,
+            api_key=api_key,
+            patient_info=None,  # 可以根据需要传入患者信息
+            model=ai_model,
+            max_tokens=1000
+        )
+        
+        analysis_data = {
+            "symptoms": symptoms,
+            "analysis": "AI中医辨证分析完成",
+            "syndrome_type": prescription.syndrome_type,
+            "treatment_method": prescription.treatment_method,
+            "main_prescription": prescription.main_prescription,
+            "composition": prescription.composition,
+            "usage": prescription.usage,
+            "contraindications": prescription.contraindications
         }
-    }
-    
-    return analysis_result
+        return {
+            "success": True,
+            "message": "AI症状分析完成",
+            "data": analysis_data
+        }
+        
+    except Exception as e:
+        # 如果AI调用失败，返回错误信息
+        analysis_data = {
+            "symptoms": symptoms,
+            "analysis": f"AI分析失败: {str(e)}",
+            "syndrome_type": "分析失败",
+            "treatment_method": "请咨询专业中医师",
+            "main_prescription": "暂无",
+            "composition": [],
+            "usage": "请遵医嘱",
+            "contraindications": "请咨询医生"
+        }
+        return {
+            "success": False,
+            "message": f"分析失败: {str(e)}",
+            "data": analysis_data
+        }
 
 # 获取用户的处方历史
 @router.get("/user/{user_id}/history", response_model=List[Prescription])

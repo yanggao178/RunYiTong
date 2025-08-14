@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:padding="16dp">
 
     <TextView
+        android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="开方"
@@ -14,23 +14,35 @@
 
     <!-- 症状描述部分已移除 -->
 
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:text="症状分析"
-        android:textSize="16sp"
-        android:textColor="@color/white"
-        android:background="#2E7D32"
-        android:padding="8dp"
-        android:gravity="center"
-        android:layout_marginBottom="8dp" />
+        android:layout_height="match_parent"
+        android:layout_below="@id/tv_title"
+        android:layout_above="@id/ll_symptoms_input"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:background="#F5F5F5"
+        android:padding="8dp">
+        
+        <TextView
+            android:id="@+id/tv_analysis_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="请输入症状描述，点击上传按钮或按回车键进行AI分析"
+            android:textSize="14sp"
+            android:textColor="#333333"
+            android:lineSpacingExtra="4dp"
+            android:padding="12dp" />
+            
+    </ScrollView>
 
     <LinearLayout
+        android:id="@+id/ll_symptoms_input"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:layout_alignParentBottom="true"
         android:layout_marginTop="16dp"
         android:background="@color/primary_color"
         android:padding="12dp">
@@ -49,6 +61,14 @@
             android:minHeight="48dp" />
 
         <ImageButton
+            android:id="@+id/btn_select_image_source"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_image"
+            android:background="@android:color/holo_blue_light"
+            android:contentDescription="选择图片来源" />
+
+        <ImageButton
             android:id="@+id/btn_upload_prescription"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -56,4 +76,5 @@
             android:background="@android:color/holo_red_light"
             android:contentDescription="上传处方图片" />
     </LinearLayout>
-</LinearLayout>
+
+</RelativeLayout>

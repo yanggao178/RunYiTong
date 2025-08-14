@@ -2,10 +2,14 @@ package com.wenteng.frontend_android.api;
 
 import com.wenteng.frontend_android.model.Product;
 import com.wenteng.frontend_android.model.Book;
+import com.wenteng.frontend_android.model.SymptomAnalysis;
 import retrofit2.Call;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Field;
+import retrofit2.http.FormUrlEncoded;
 import java.util.List;
 
 public interface ApiService {
@@ -55,4 +59,13 @@ public interface ApiService {
      */
     @GET("api/v1/books/{id}")
     Call<ApiResponse<Book>> getBook(@Path("id") int bookId);
+    
+    /**
+     * 症状分析接口
+     * @param symptoms 症状描述
+     * @return 症状分析响应
+     */
+    @FormUrlEncoded
+    @POST("api/v1/prescriptions/analyze-symptoms")
+    Call<ApiResponse<SymptomAnalysis>> analyzeSymptoms(@Field("symptoms") String symptoms);
 }
