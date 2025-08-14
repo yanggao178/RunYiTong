@@ -14,7 +14,7 @@
 
     <!-- 症状描述部分已移除 -->
 
-    <ScrollView
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/tv_title"
@@ -24,17 +24,51 @@
         android:background="#F5F5F5"
         android:padding="8dp">
         
-        <TextView
-            android:id="@+id/tv_analysis_result"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="请输入症状描述，点击上传按钮或按回车键进行AI分析"
-            android:textSize="14sp"
-            android:textColor="#333333"
-            android:lineSpacingExtra="4dp"
-            android:padding="12dp" />
+            android:layout_height="match_parent">
             
-    </ScrollView>
+            <TextView
+                android:id="@+id/tv_analysis_result"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="请输入症状描述，点击上传按钮或按回车键进行AI分析"
+                android:textSize="14sp"
+                android:textColor="#333333"
+                android:lineSpacingExtra="4dp"
+                android:padding="12dp" />
+                
+        </ScrollView>
+        
+        <!-- 加载进度条和提示 -->
+        <LinearLayout
+            android:id="@+id/ll_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+            
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginBottom="8dp" />
+                
+            <TextView
+                 android:id="@+id/tv_loading_text"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:text="AI正在分析您的症状\n预计需要10-30秒，请耐心等待"
+                 android:textSize="14sp"
+                 android:textColor="#666666"
+                 android:gravity="center"
+                 android:lineSpacingExtra="2dp" />
+                
+        </LinearLayout>
+        
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/ll_symptoms_input"
