@@ -16,6 +16,12 @@ import com.wenteng.frontend_android.R;
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
+    private ProductFragment productFragment;
+    private RegistrationFragment registrationFragment;
+    private PrescriptionFragment prescriptionFragment;
+    private HealthFragment healthFragment;
+    private ProfileFragment profileFragment;
+    private Fragment currentFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +35,11 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
 
+        // 初始化所有Fragment实例
+        initFragments();
+        
         // 设置默认显示商品Fragment
-        replaceFragment(new ProductFragment());
+        showFragment(productFragment);
 
         // 底部导航点击事件
         // 替换前
@@ -57,36 +66,76 @@ public class MainActivity extends AppCompatActivity {
         // return false;
         // });
 
-        // 替换后
-        // 在底部导航的监听器中
+        // 底部导航点击事件
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment fragment = null;
             int id = item.getItemId();
             if (id == R.id.nav_product) {
-                fragment = new ProductFragment();
+                fragment = productFragment;
             } else if (id == R.id.nav_registration) {
-                fragment = new RegistrationFragment();
+                fragment = registrationFragment;
             } else if (id == R.id.nav_prescription) {
-                fragment = new PrescriptionFragment();
+                fragment = prescriptionFragment;
             } else if (id == R.id.nav_health) {
-                fragment = new HealthFragment();
+                fragment = healthFragment;
             } else if (id == R.id.nav_profile) {
-                fragment = new ProfileFragment();
+                fragment = profileFragment;
             }
 
             if (fragment != null) {
-                replaceFragment(fragment);
+                showFragment(fragment);
             }
             return true;
         });
     }
 
-    // 替换Fragment方法
-    private void replaceFragment(Fragment fragment) {
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.frame_layout, fragment)
-                .commit();
-        // .replace(R.id.fragment_container, fragment) //
-        // .commit();
+    /**
+     * 初始化所有Fragment实例
+     */
+    private void initFragments() {
+        productFragment = new ProductFragment();
+        registrationFragment = new RegistrationFragment();
+        prescriptionFragment = new PrescriptionFragment();
+        healthFragment = new HealthFragment();
+        profileFragment = new ProfileFragment();
+        
+        // 添加所有Fragment到容器中，但先隐藏它们
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.add(R.id.frame_layout, productFragment, "product");
+        transaction.add(R.id.frame_layout, registrationFragment, "registration");
+        transaction.add(R.id.frame_layout, prescriptionFragment, "prescription");
+        transaction.add(R.id.frame_layout, healthFragment, "health");
+        transaction.add(R.id.frame_layout, profileFragment, "profile");
+        
+        // 隐藏所有Fragment
+        transaction.hide(productFragment);
+        transaction.hide(registrationFragment);
+        transaction.hide(prescriptionFragment);
+        transaction.hide(healthFragment);
+        transaction.hide(profileFragment);
+        
+        transaction.commit();
+    }
+    
+    /**
+     * 显示指定Fragment，隐藏其他Fragment
+     */
+    private void showFragment(Fragment fragment) {
+        if (currentFragment == fragment) {
+            return; // 如果是当前Fragment，不需要切换
+        }
+        
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        
+        // 隐藏当前Fragment
+        if (currentFragment != null) {
+            transaction.hide(currentFragment);
+        }
+        
+        // 显示目标Fragment
+        transaction.show(fragment);
+        transaction.commit();
+        
+        currentFragment = fragment;
     }
 }

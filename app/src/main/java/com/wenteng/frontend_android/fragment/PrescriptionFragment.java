@@ -42,6 +42,14 @@ public class PrescriptionFragment extends Fragment {
     private Runnable progressUpdateRunnable;
     private Call<ApiResponse<SymptomAnalysis>> currentCall;
     private int progressStep = 0;
+    
+    // 状态保存相关
+    private static final String KEY_SYMPTOMS_TEXT = "symptoms_text";
+    private static final String KEY_ANALYSIS_RESULT = "analysis_result";
+    private static final String KEY_HAS_RESULT = "has_result";
+    private String savedSymptomsText = "";
+    private String savedAnalysisResult = "";
+    private boolean hasAnalysisResult = false;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -92,6 +100,9 @@ public class PrescriptionFragment extends Fragment {
                 }
             }
         });
+        
+        // 恢复保存的状态
+        restoreState();
         
         return view;
     }
@@ -186,6 +197,9 @@ public class PrescriptionFragment extends Fragment {
             Toast.makeText(getContext(), "请输入症状描述", Toast.LENGTH_SHORT).show();
             return;
         }
+        
+        // 保存当前输入的症状文本
+        savedSymptomsText = symptoms;
         
         // 显示加载状态
         showLoading(true);
@@ -294,7 +308,107 @@ public class PrescriptionFragment extends Fragment {
             result.append(analysis.getContraindications());
         }
         
-        tvAnalysisResult.setText(result.toString());
+        String resultText = result.toString();
+        tvAnalysisResult.setText(resultText);
+        
+        // 保存分析结果状态
+        savedAnalysisResult = resultText;
+        hasAnalysisResult = true;
+    }
+    
+    /**
+     * 保存Fragment状态
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        
+        // 保存症状输入文本
+        if (etSymptoms != null) {
+            savedSymptomsText = etSymptoms.getText().toString();
+        }
+        
+        outState.putString(KEY_SYMPTOMS_TEXT, savedSymptomsText);
+        outState.putString(KEY_ANALYSIS_RESULT, savedAnalysisResult);
+        outState.putBoolean(KEY_HAS_RESULT, hasAnalysisResult);
+    }
+    
+    /**
+     * 恢复Fragment状态
+     */
+    private void restoreState() {
+        // 恢复症状输入文本
+        if (!savedSymptomsText.isEmpty() && etSymptoms != null) {
+            etSymptoms.setText(savedSymptomsText);
+        }
+        
+        // 恢复分析结果
+        if (hasAnalysisResult && !savedAnalysisResult.isEmpty() && tvAnalysisResult != null) {
+            tvAnalysisResult.setText(savedAnalysisResult);
+        }
+    }
+    
+    /**
+     * 从Bundle中恢复状态
+     */
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        
+        if (savedInstanceState != null) {
+            savedSymptomsText = savedInstanceState.getString(KEY_SYMPTOMS_TEXT, "");
+            savedAnalysisResult = savedInstanceState.getString(KEY_ANALYSIS_RESULT, "");
+            hasAnalysisResult = savedInstanceState.getBoolean(KEY_HAS_RESULT, false);
+            
+            // 恢复状态
+            restoreState();
+        }
+    }
+    
+    /**
+     * 处理Fragment显示隐藏状态变化
+     */
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        
+        if (!hidden) {
+            // Fragment变为可见时，恢复状态
+            restoreState();
+        } else {
+            // Fragment被隐藏时，保存当前状态
+            saveCurrentState();
+        }
+    }
+    
+    /**
+     * 保存当前状态
+     */
+    private void saveCurrentState() {
+        // 保存症状输入文本
+        if (etSymptoms != null) {
+            savedSymptomsText = etSymptoms.getText().toString();
+        }
+    }
+    
+    /**
+     * Fragment重新可见时调用
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 恢复状态
+        restoreState();
+    }
+    
+    /**
+     * Fragment暂停时调用
+     */
+    @Override
+    public void onPause() {
+        super.onPause();
+        // 保存当前状态
+        saveCurrentState();
     }
     
     /**
