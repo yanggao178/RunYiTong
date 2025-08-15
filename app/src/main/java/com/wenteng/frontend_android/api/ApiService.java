@@ -3,6 +3,11 @@ package com.wenteng.frontend_android.api;
 import com.wenteng.frontend_android.model.Product;
 import com.wenteng.frontend_android.model.Book;
 import com.wenteng.frontend_android.model.SymptomAnalysis;
+import com.wenteng.frontend_android.model.OCRResult;
+import com.wenteng.frontend_android.model.PrescriptionAnalysis;
+import com.wenteng.frontend_android.model.ImageUploadResult;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -10,6 +15,8 @@ import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.Multipart;
+import retrofit2.http.Part;
 import java.util.List;
 
 public interface ApiService {
@@ -61,11 +68,38 @@ public interface ApiService {
     Call<ApiResponse<Book>> getBook(@Path("id") int bookId);
     
     /**
-     * 症状分析接口
+     * AI症状分析
      * @param symptoms 症状描述
-     * @return 症状分析响应
+     * @return 分析结果响应
      */
     @FormUrlEncoded
     @POST("api/v1/prescriptions/analyze-symptoms")
     Call<ApiResponse<SymptomAnalysis>> analyzeSymptoms(@Field("symptoms") String symptoms);
+    
+    /**
+     * OCR文字识别
+     * @param image 图片文件
+     * @return OCR识别结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/ocr-text-recognition")
+    Call<ApiResponse<OCRResult>> ocrTextRecognition(@Part MultipartBody.Part image);
+    
+    /**
+     * 处方图片智能分析
+     * @param image 处方图片文件
+     * @return 智能分析结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/analyze-prescription-image")
+    Call<ApiResponse<PrescriptionAnalysis>> analyzePrescriptionImage(@Part MultipartBody.Part image);
+    
+    /**
+     * 通用图片上传
+     * @param image 图片文件
+     * @return 上传结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/upload-image")
+    Call<ApiResponse<ImageUploadResult>> uploadImage(@Part MultipartBody.Part image);
 }

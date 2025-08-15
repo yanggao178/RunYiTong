@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="8dp"
+    android:gravity="center">
+
+    <!-- 书籍封面 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="100dp"
+        android:layout_height="140dp"
+        app:cardElevation="8dp"
+        app:cardCornerRadius="6dp"
+        android:layout_marginBottom="4dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/book_cover"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_book_placeholder" />
+
+            <!-- 书脊效果 -->
+            <View
+                android:layout_width="4dp"
+                android:layout_height="match_parent"
+                android:background="#33000000"
+                android:layout_alignParentEnd="true" />
+
+            <!-- 经典标签 -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="经典"
+                android:textSize="8sp"
+                android:textColor="@android:color/white"
+                android:background="@drawable/badge_background"
+                android:backgroundTint="#FF6B35"
+                android:paddingHorizontal="4dp"
+                android:paddingVertical="1dp"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="4dp" />
+
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- 书名 -->
+    <TextView
+        android:id="@+id/book_name"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="#2C3E50"
+        android:maxLines="2"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:lineSpacingExtra="2dp" />
+
+    <!-- 作者 -->
+    <TextView
+        android:id="@+id/book_author"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:textSize="10sp"
+        android:textColor="#7F8C8D"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:layout_marginTop="2dp" />
+
+</LinearLayout>

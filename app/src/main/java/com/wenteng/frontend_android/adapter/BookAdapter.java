@@ -26,6 +26,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
     public BookAdapter(Context context, List<Book> bookList) {
         this.context = context;
         this.bookList = bookList;
+        android.util.Log.d("BookAdapter", "创建BookAdapter，书籍数量: " + bookList.size());
     }
 
     @NonNull
@@ -38,8 +39,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
     @Override
     public void onBindViewHolder(@NonNull BookViewHolder holder, int position) {
         Book book = bookList.get(position);
+        android.util.Log.d("BookAdapter", "绑定书籍 " + position + ": " + book.getName());
+        
         holder.bookName.setText(book.getName());
-        holder.bookAuthor.setText("作者: " + book.getAuthor());
+        holder.bookAuthor.setText(book.getAuthor());
         holder.bookDescription.setText(book.getDescription());
 
         // 使用Glide加载书籍封面

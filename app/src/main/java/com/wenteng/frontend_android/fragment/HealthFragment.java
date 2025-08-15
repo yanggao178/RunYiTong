@@ -1,6 +1,7 @@
 package com.wenteng.frontend_android.fragment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,11 +9,11 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.wenteng.frontend_android.R;
-import com.wenteng.frontend_android.adapter.BookAdapter;
+import com.wenteng.frontend_android.adapter.BookshelfAdapter;
 import com.wenteng.frontend_android.model.Book;
 import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiResponse;
@@ -34,11 +35,13 @@ public class HealthFragment extends Fragment {
 
     private RecyclerView chineseMedicineBooksRecyclerView;
     private RecyclerView westernMedicineBooksRecyclerView;
-    private BookAdapter chineseMedicineBookAdapter;
-    private BookAdapter westernMedicineBookAdapter;
+    private BookshelfAdapter chineseMedicineBookAdapter;
+    private BookshelfAdapter westernMedicineBookAdapter;
     private List<Book> chineseMedicineBooks;
     private List<Book> westernMedicineBooks;
-    private Call<ApiResponse<List<Book>>> booksCall; // 用于取消请求
+    private Call<ApiResponse<List<Book>>> chineseBooksCall; // 用于取消请求
+    private Call<ApiResponse<List<Book>>> westernBooksCall; // 用于取消请求
+    private boolean isDataLoaded = false; // 标记数据是否已加载
 
     @Nullable
     @Override
@@ -46,13 +49,52 @@ public class HealthFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_health, container, false);
         initViews(view);
         initData();
-        setupRecyclerViews();
         return view;
+    }
+    
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.d("HealthFragment", "onResume called");
+        // 在Fragment恢复时检查是否需要加载数据
+        if (!isDataLoaded) {
+            loadBooksData();
+        }
+    }
+    
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        Log.d("HealthFragment", "onHiddenChanged called, hidden=" + hidden);
+        if (!hidden && !isDataLoaded) {
+            // Fragment变为可见且数据未加载时，加载数据
+            loadBooksData();
+        }
+    }
+    
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        Log.d("HealthFragment", "setUserVisibleHint called, isVisibleToUser=" + isVisibleToUser);
+        if (isVisibleToUser && !isDataLoaded) {
+            // Fragment变为可见且数据未加载时，加载数据
+            loadBooksData();
+        }
     }
 
     private void initViews(View view) {
         chineseMedicineBooksRecyclerView = view.findViewById(R.id.chinese_medicine_books);
         westernMedicineBooksRecyclerView = view.findViewById(R.id.western_medicine_books);
+        
+        // 设置书架网格布局管理器
+        if (chineseMedicineBooksRecyclerView != null) {
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3); // 3列网格
+            chineseMedicineBooksRecyclerView.setLayoutManager(gridLayoutManager);
+        }
+        if (westernMedicineBooksRecyclerView != null) {
+            GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3); // 3列网格
+            westernMedicineBooksRecyclerView.setLayoutManager(gridLayoutManager);
+        }
     }
 
     private void initData() {
@@ -60,31 +102,51 @@ public class HealthFragment extends Fragment {
         chineseMedicineBooks = new ArrayList<>();
         westernMedicineBooks = new ArrayList<>();
         
-        // 从API加载数据
+        // 立即创建书架适配器
+        if (getContext() != null) {
+            chineseMedicineBookAdapter = new BookshelfAdapter(getContext(), chineseMedicineBooks);
+            westernMedicineBookAdapter = new BookshelfAdapter(getContext(), westernMedicineBooks);
+            
+            // 设置适配器
+            if (chineseMedicineBooksRecyclerView != null) {
+                chineseMedicineBooksRecyclerView.setAdapter(chineseMedicineBookAdapter);
+            }
+            if (westernMedicineBooksRecyclerView != null) {
+                westernMedicineBooksRecyclerView.setAdapter(westernMedicineBookAdapter);
+            }
+        }
+    }
+    
+    private void loadBooksData() {
+        if (isDataLoaded) {
+            Log.d("HealthFragment", "数据已加载，跳过重复加载");
+            return;
+        }
+        
+        Log.d("HealthFragment", "开始加载书籍数据");
         loadChineseMedicineBooksFromApi();
         loadWesternMedicineBooksFromApi();
     }
-    //private Call<ApiResponse<List<Book>>> booksCall; // 用于取消请求
 
     private void loadChineseMedicineBooksFromApi() {
-        // 显示加载状态
-       // showLoading(true);
+        Log.d("HealthFragment", "开始请求中医书籍数据");
 
         // 取消之前的请求（避免重复请求）
-        if (booksCall != null && !booksCall.isCanceled()) {
-            booksCall.cancel();
+        if (chineseBooksCall != null && !chineseBooksCall.isCanceled()) {
+            chineseBooksCall.cancel();
         }
 
-        booksCall = ApiClient.getApiService().getChineseMedicineBooks();
+        chineseBooksCall = ApiClient.getApiService().getChineseMedicineBooks();
+        Log.d("HealthFragment", "请求URL: " + chineseBooksCall.request().url());
 
-        booksCall.enqueue(new Callback<ApiResponse<List<Book>>>() {
+        chineseBooksCall.enqueue(new Callback<ApiResponse<List<Book>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<Book>>> call, Response<ApiResponse<List<Book>>> response) {
-               // showLoading(false);
+                Log.d("HealthFragment", "中医书籍API响应: " + response.code());
 
                 // 1. 检查Fragment是否已分离
                 if (!isFragmentActive()) {
-                 //   Log.w("API", "Fragment detached, ignoring response");
+                    Log.w("HealthFragment", "Fragment detached, ignoring response");
                     return;
                 }
 
@@ -96,8 +158,8 @@ public class HealthFragment extends Fragment {
 
                 // 3. 检查响应体
                 if (response.body() == null) {
+                    Log.e("HealthFragment", "Empty response body");
                     showMessage("服务器返回空数据");
-                   // Log.e("API", "Empty response body");
                     return;
                 }
 
@@ -105,30 +167,94 @@ public class HealthFragment extends Fragment {
 
                 // 4. 处理业务逻辑错误
                 if (!apiResponse.isSuccess()) {
+                    Log.e("HealthFragment", "API Error: " + apiResponse.getMessage());
                     showMessage(apiResponse.getMessage() != null ?
                             apiResponse.getMessage() : "获取数据失败");
-                   // Log.e("API", "API Error: " + apiResponse.getMessage());
                     return;
                 }
 
                 // 5. 处理数据
                 if (apiResponse.getData() == null || apiResponse.getData().isEmpty()) {
+                    Log.w("HealthFragment", "No Chinese medicine books data");
                     showMessage("暂无中医古籍数据");
                     return;
                 }
 
-                handleSuccessResponse(apiResponse.getData());
+                handleChineseMedicineSuccessResponse(apiResponse.getData());
             }
 
             @Override
             public void onFailure(Call<ApiResponse<List<Book>>> call, Throwable t) {
-               // showLoading(false);
+                Log.e("HealthFragment", "中医书籍API请求失败", t);
 
                 if (!isFragmentActive()) {
                     return;
                 }
 
-                // 6. 处理网络失败
+                // 处理网络失败
+                handleNetworkError(t);
+            }
+        });
+    }
+    
+    private void loadWesternMedicineBooksFromApi() {
+        Log.d("HealthFragment", "开始请求西医书籍数据");
+
+        // 取消之前的请求（避免重复请求）
+        if (westernBooksCall != null && !westernBooksCall.isCanceled()) {
+            westernBooksCall.cancel();
+        }
+
+        westernBooksCall = ApiClient.getApiService().getWesternMedicineBooks();
+        Log.d("HealthFragment", "请求URL: " + westernBooksCall.request().url());
+
+        westernBooksCall.enqueue(new Callback<ApiResponse<List<Book>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<Book>>> call, Response<ApiResponse<List<Book>>> response) {
+                Log.d("HealthFragment", "西医书籍API响应: " + response.code());
+
+                if (!isFragmentActive()) {
+                    Log.w("HealthFragment", "Fragment detached, ignoring response");
+                    return;
+                }
+
+                if (!response.isSuccessful()) {
+                    handleHttpError(response);
+                    return;
+                }
+
+                if (response.body() == null) {
+                    Log.e("HealthFragment", "Empty response body");
+                    showMessage("服务器返回空数据");
+                    return;
+                }
+
+                ApiResponse<List<Book>> apiResponse = response.body();
+
+                if (!apiResponse.isSuccess()) {
+                    Log.e("HealthFragment", "API Error: " + apiResponse.getMessage());
+                    showMessage(apiResponse.getMessage() != null ?
+                            apiResponse.getMessage() : "获取数据失败");
+                    return;
+                }
+
+                if (apiResponse.getData() == null || apiResponse.getData().isEmpty()) {
+                    Log.w("HealthFragment", "No Western medicine books data");
+                    showMessage("暂无西医经典数据");
+                    return;
+                }
+
+                handleWesternMedicineSuccessResponse(apiResponse.getData());
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<Book>>> call, Throwable t) {
+                Log.e("HealthFragment", "西医书籍API请求失败", t);
+
+                if (!isFragmentActive()) {
+                    return;
+                }
+
                 handleNetworkError(t);
             }
         });
@@ -145,7 +271,7 @@ public class HealthFragment extends Fragment {
             String errorBody = response.errorBody() != null ?
                     response.errorBody().string() : "无错误详情";
 
-           // Log.e("API", "HTTP Error: " + response.code() + ", Body: " + errorBody);
+            Log.e("HealthFragment", "HTTP Error: " + response.code() + ", Body: " + errorBody);
 
             switch (response.code()) {
                 case 401:
@@ -164,7 +290,7 @@ public class HealthFragment extends Fragment {
                     showMessage("请求失败，状态码: " + response.code());
             }
         } catch (IOException e) {
-           // Log.e("API", "Error parsing error body", e);
+            Log.e("HealthFragment", "Error parsing error body", e);
             showMessage("网络请求失败");
         }
     }
@@ -182,180 +308,81 @@ public class HealthFragment extends Fragment {
             errorMsg = "网络异常";
         }
 
-       // Log.e("API", "Network Error: " + t.getClass().getSimpleName(), t);
+        Log.e("HealthFragment", "Network Error: " + t.getClass().getSimpleName(), t);
         showMessage(errorMsg);
     }
 
-    private void handleSuccessResponse(List<Book> books) {
+    private void handleChineseMedicineSuccessResponse(List<Book> books) {
+        Log.d("HealthFragment", "收到中医书籍数据: " + books.size() + " 本");
+        for (int i = 0; i < Math.min(books.size(), 3); i++) {
+            Book book = books.get(i);
+            Log.d("HealthFragment", "书籍 " + i + ": " + book.getName() + " - " + book.getAuthor());
+        }
+        
         chineseMedicineBooks.clear();
         chineseMedicineBooks.addAll(books);
+        Log.d("HealthFragment", "中医书籍列表大小: " + chineseMedicineBooks.size());
 
-        // 初始化或更新Adapter
-        if (chineseMedicineBookAdapter == null) {
-            setupChineseMedicineRecyclerView();
-        } else {
-            chineseMedicineBookAdapter.notifyDataSetChanged();
+        // 更新UI
+        if (getActivity() != null && !getActivity().isFinishing()) {
+            getActivity().runOnUiThread(() -> {
+                if (chineseMedicineBookAdapter != null) {
+                    chineseMedicineBookAdapter.notifyDataSetChanged();
+                    Log.d("HealthFragment", "中医书籍适配器数据已更新");
+                }
+            });
         }
 
-        showMessage(String.format(Locale.getDefault(),
-                "已加载 %d 本中医古籍", books.size()));
-
-        // 可选：保存到本地数据库
-       // saveBooksToLocal(books);
+        showMessage(String.format(Locale.getDefault(), "已加载 %d 本中医古籍", books.size()));
     }
+    
+    private void handleWesternMedicineSuccessResponse(List<Book> books) {
+        Log.d("HealthFragment", "收到西医书籍数据: " + books.size() + " 本");
+        for (int i = 0; i < Math.min(books.size(), 3); i++) {
+            Book book = books.get(i);
+            Log.d("HealthFragment", "书籍 " + i + ": " + book.getName() + " - " + book.getAuthor());
+        }
+        
+        westernMedicineBooks.clear();
+        westernMedicineBooks.addAll(books);
+        Log.d("HealthFragment", "西医书籍列表大小: " + westernMedicineBooks.size());
 
-//    private void showLoading(boolean show) {
-//        if (isFragmentActive()) {
-//            // 这里替换为你实际的加载UI控制逻辑
-//            if (progressBar != null) {
-//                progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
-//            }
-//        }
-//    }
+        // 更新UI
+        if (getActivity() != null && !getActivity().isFinishing()) {
+            getActivity().runOnUiThread(() -> {
+                if (westernMedicineBookAdapter != null) {
+                    westernMedicineBookAdapter.notifyDataSetChanged();
+                    Log.d("HealthFragment", "西医书籍适配器数据已更新");
+                }
+            });
+        }
+
+        showMessage(String.format(Locale.getDefault(), "已加载 %d 本西医经典", books.size()));
+        
+        // 标记数据已加载
+        isDataLoaded = true;
+    }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         // 取消网络请求
-        if (booksCall != null) {
-            booksCall.cancel();
+        if (chineseBooksCall != null) {
+            chineseBooksCall.cancel();
         }
-    }
-//    private void loadChineseMedicineBooksFromApi() {
-//        Call<ApiResponse<List<Book>>> call = ApiClient.getApiService().getChineseMedicineBooks();
-//
-//        call.enqueue(new Callback<ApiResponse<List<Book>>>() {
-//            @Override
-//            public void onResponse(Call<ApiResponse<List<Book>>> call, Response<ApiResponse<List<Book>>> response) {
-//                if (response.isSuccessful() && response.body() != null) {
-//                    ApiResponse<List<Book>> apiResponse = response.body();
-//                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-//                        List<Book> books = apiResponse.getData();
-//                        chineseMedicineBooks.clear();
-//                        chineseMedicineBooks.addAll(books);
-//
-//                        // 更新UI - 确保Fragment仍然活跃
-//                        if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
-//                            if (chineseMedicineBookAdapter != null) {
-//                                chineseMedicineBookAdapter.notifyDataSetChanged();
-//                            } else {
-//                                // 如果adapter还未初始化，重新设置RecyclerView
-//                                setupChineseMedicineRecyclerView();
-//                            }
-//
-//                            showMessage("成功加载 " + books.size() + " 本中医古籍");
-//                        }
-//                    } else {
-//                        if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
-//                            showMessage("获取中医古籍失败: " + apiResponse.getMessage());
-//                        }
-//                    }
-//                } else {
-//                    if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
-//                        showMessage("网络请求失败，状态码: " + response.code());
-//                    }
-//                }
-//            }
-//
-//            @Override
-//            public void onFailure(Call<ApiResponse<List<Book>>> call, Throwable t) {
-//                if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
-//                    showMessage("加载中医古籍失败: " + t.getMessage());
-//                }
-//                t.printStackTrace();
-//            }
-//        });
-//    }
-    
-    private void loadWesternMedicineBooksFromApi() {
-        Call<ApiResponse<List<Book>>> call = ApiClient.getApiService().getWesternMedicineBooks();
-        
-        call.enqueue(new Callback<ApiResponse<List<Book>>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<List<Book>>> call, Response<ApiResponse<List<Book>>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<List<Book>> apiResponse = response.body();
-                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        List<Book> books = apiResponse.getData();
-                        westernMedicineBooks.clear();
-                        westernMedicineBooks.addAll(books);
-                        
-                        // 更新UI - 确保Fragment仍然活跃
-                        if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
-                            if (westernMedicineBookAdapter != null) {
-                                westernMedicineBookAdapter.notifyDataSetChanged();
-                            } else {
-                                // 如果adapter还未初始化，重新设置RecyclerView
-                                setupWesternMedicineRecyclerView();
-                            }
-                            
-                            showMessage("成功加载 " + books.size() + " 本西医经典");
-                        }
-                    } else {
-                        if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
-                            showMessage("获取西医经典失败: " + apiResponse.getMessage());
-                        }
-                    }
-                } else {
-                    if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
-                        showMessage("网络请求失败，状态码: " + response.code());
-                    }
-                }
-            }
-            
-            @Override
-            public void onFailure(Call<ApiResponse<List<Book>>> call, Throwable t) {
-                if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
-                    showMessage("加载西医经典失败: " + t.getMessage());
-                }
-                t.printStackTrace();
-            }
-        });
+        if (westernBooksCall != null) {
+            westernBooksCall.cancel();
+        }
+        // 重置数据加载状态
+        isDataLoaded = false;
     }
     
     private void showMessage(String message) {
-        if (getContext() != null) {
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void setupRecyclerViews() {
-        // 初始设置RecyclerView，使用空数据
-        setupChineseMedicineRecyclerView();
-        setupWesternMedicineRecyclerView();
-    }
-    
-    private void setupChineseMedicineRecyclerView() {
-        if (isAdded() && getContext() != null && chineseMedicineBooksRecyclerView != null && 
-            getActivity() != null && !getActivity().isFinishing()) {
-            try {
-                chineseMedicineBookAdapter = new BookAdapter(getContext(), chineseMedicineBooks);
-                chineseMedicineBooksRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-                chineseMedicineBooksRecyclerView.setAdapter(chineseMedicineBookAdapter);
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-                // Fragment状态异常，延迟重试
-                if (getView() != null) {
-                    getView().post(() -> setupChineseMedicineRecyclerView());
-                }
-            }
-        }
-    }
-    
-    private void setupWesternMedicineRecyclerView() {
-        if (isAdded() && getContext() != null && westernMedicineBooksRecyclerView != null && 
-            getActivity() != null && !getActivity().isFinishing()) {
-            try {
-                westernMedicineBookAdapter = new BookAdapter(getContext(), westernMedicineBooks);
-                westernMedicineBooksRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-                westernMedicineBooksRecyclerView.setAdapter(westernMedicineBookAdapter);
-            } catch (IllegalStateException e) {
-                e.printStackTrace();
-                // Fragment状态异常，延迟重试
-                if (getView() != null) {
-                    getView().post(() -> setupWesternMedicineRecyclerView());
-                }
-            }
+        Log.d("HealthFragment", message);
+        if (getActivity() != null && !getActivity().isFinishing() && isAdded()) {
+            getActivity().runOnUiThread(() -> {
+                Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
+            });
         }
     }
 }

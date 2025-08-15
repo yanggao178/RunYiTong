@@ -37,6 +37,11 @@ import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiResponse;
 import com.wenteng.frontend_android.api.ApiService;
 import com.wenteng.frontend_android.model.SymptomAnalysis;
+import com.wenteng.frontend_android.model.OCRResult;
+import com.wenteng.frontend_android.model.PrescriptionAnalysis;
+import com.wenteng.frontend_android.model.ImageUploadResult;
+import com.wenteng.frontend_android.utils.ImageUtils;
+import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -56,6 +61,12 @@ public class PrescriptionFragment extends Fragment {
     private Runnable progressUpdateRunnable;
     private Call<ApiResponse<SymptomAnalysis>> currentCall;
     private int progressStep = 0;
+    
+    // 图片处理相关
+    private Call<ApiResponse<OCRResult>> ocrCall;
+    private Call<ApiResponse<PrescriptionAnalysis>> analysisCall;
+    private Call<ApiResponse<ImageUploadResult>> uploadCall;
+    private Uri selectedImageUri;
     
     // 图片选择相关
     private ActivityResultLauncher<Intent> galleryLauncher;
@@ -242,6 +253,15 @@ public class PrescriptionFragment extends Fragment {
         if (currentCall != null && !currentCall.isCanceled()) {
             currentCall.cancel();
         }
+        if (ocrCall != null && !ocrCall.isCanceled()) {
+            ocrCall.cancel();
+        }
+        if (analysisCall != null && !analysisCall.isCanceled()) {
+            analysisCall.cancel();
+        }
+        if (uploadCall != null && !uploadCall.isCanceled()) {
+            uploadCall.cancel();
+        }
         if (timeoutHandler != null) {
             if (timeoutRunnable != null) {
                 timeoutHandler.removeCallbacks(timeoutRunnable);
@@ -249,6 +269,11 @@ public class PrescriptionFragment extends Fragment {
             if (progressUpdateRunnable != null) {
                 timeoutHandler.removeCallbacks(progressUpdateRunnable);
             }
+        }
+        
+        // 清理临时文件
+        if (getContext() != null) {
+            ImageUtils.cleanupTempFiles(getContext());
         }
     }
     
@@ -578,8 +603,628 @@ public class PrescriptionFragment extends Fragment {
      * 处理选择的图片
      */
     private void handleSelectedImage(Uri imageUri) {
-        Toast.makeText(getContext(), "图片选择成功，准备分析...", Toast.LENGTH_SHORT).show();
-        // TODO: 这里可以添加图片上传和分析的逻辑
-        // 例如：将图片转换为Base64或直接上传到服务器进行OCR识别
+        if (imageUri == null) {
+            Toast.makeText(getContext(), "图片选择失败", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        selectedImageUri = imageUri;
+        
+        // 显示图片处理选项对话框
+        showImageProcessingDialog();
+    }
+    
+    /**
+     * 显示图片处理选项对话框
+     */
+    private void showImageProcessingDialog() {
+        // 创建自定义对话框
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_image_processing_options, null);
+        builder.setView(dialogView);
+        
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        
+        // 设置点击事件
+        dialogView.findViewById(R.id.card_ocr).setOnClickListener(v -> {
+            dialog.dismiss();
+            performOCRRecognition();
+        });
+        
+        dialogView.findViewById(R.id.card_analysis).setOnClickListener(v -> {
+            dialog.dismiss();
+            performPrescriptionAnalysis();
+        });
+        
+        dialogView.findViewById(R.id.card_upload).setOnClickListener(v -> {
+            dialog.dismiss();
+            uploadImageToServer();
+        });
+        
+        dialogView.findViewById(R.id.card_preview).setOnClickListener(v -> {
+            dialog.dismiss();
+            previewImage();
+        });
+        
+        dialogView.findViewById(R.id.iv_close).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.btn_cancel).setOnClickListener(v -> dialog.dismiss());
+        
+        dialog.show();
+    }
+    
+    /**
+     * 执行OCR文字识别
+     */
+    private void performOCRRecognition() {
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 检查图片大小
+        if (ImageUtils.isImageTooLarge(getContext(), selectedImageUri)) {
+            Toast.makeText(getContext(), "图片过大，正在压缩...", Toast.LENGTH_SHORT).show();
+        }
+        
+        // 创建MultipartBody.Part
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "file");
+        if (imagePart == null) {
+            Toast.makeText(getContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        showLoading(true);
+        tvLoadingText.setText("正在识别文字...");
+        
+        ocrCall = apiService.ocrTextRecognition(imagePart);
+        ocrCall.enqueue(new Callback<ApiResponse<OCRResult>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<OCRResult>> call, Response<ApiResponse<OCRResult>> response) {
+                showLoading(false);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<OCRResult> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        displayOCRResult(apiResponse.getData());
+                    } else {
+                        Toast.makeText(getContext(), "OCR识别失败: " + apiResponse.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(getContext(), "网络请求失败", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<OCRResult>> call, Throwable t) {
+                showLoading(false);
+                if (!call.isCanceled()) {
+                    Toast.makeText(getContext(), "OCR识别失败: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+    
+    /**
+     * 执行处方智能分析
+     */
+    private void performPrescriptionAnalysis() {
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 创建MultipartBody.Part
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "file");
+        if (imagePart == null) {
+            Toast.makeText(getContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        showLoading(true);
+        tvLoadingText.setText("正在分析处方...");
+        
+        analysisCall = apiService.analyzePrescriptionImage(imagePart);
+        analysisCall.enqueue(new Callback<ApiResponse<PrescriptionAnalysis>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<PrescriptionAnalysis>> call, Response<ApiResponse<PrescriptionAnalysis>> response) {
+                showLoading(false);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<PrescriptionAnalysis> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        displayPrescriptionAnalysis(apiResponse.getData());
+                    } else {
+                        Toast.makeText(getContext(), "处方分析失败: " + apiResponse.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(getContext(), "网络请求失败", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<PrescriptionAnalysis>> call, Throwable t) {
+                showLoading(false);
+                if (!call.isCanceled()) {
+                    Toast.makeText(getContext(), "处方分析失败: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+    
+    /**
+     * 上传图片到服务器
+     */
+    private void uploadImageToServer() {
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 创建MultipartBody.Part
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "file");
+        if (imagePart == null) {
+            Toast.makeText(getContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        showLoading(true);
+        tvLoadingText.setText("正在上传图片...");
+        
+        uploadCall = apiService.uploadImage(imagePart);
+        uploadCall.enqueue(new Callback<ApiResponse<ImageUploadResult>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<ImageUploadResult>> call, Response<ApiResponse<ImageUploadResult>> response) {
+                showLoading(false);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<ImageUploadResult> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        displayUploadResult(apiResponse.getData());
+                    } else {
+                        Toast.makeText(getContext(), "图片上传失败: " + apiResponse.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(getContext(), "网络请求失败", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<ImageUploadResult>> call, Throwable t) {
+                showLoading(false);
+                if (!call.isCanceled()) {
+                    Toast.makeText(getContext(), "图片上传失败: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+    }
+    
+    /**
+     * 预览图片
+     */
+    private void previewImage() {
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 创建图片预览对话框
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_image_preview, null);
+        builder.setView(dialogView);
+        
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        
+        // 获取控件引用
+        android.widget.ImageView imageView = dialogView.findViewById(R.id.iv_preview);
+        TextView tvImageInfo = dialogView.findViewById(R.id.tv_image_info);
+        android.widget.ProgressBar pbLoading = dialogView.findViewById(R.id.pb_loading);
+        android.widget.ImageView ivClosePreview = dialogView.findViewById(R.id.iv_close_preview);
+        android.widget.Button btnEdit = dialogView.findViewById(R.id.btn_edit);
+        android.widget.Button btnClose = dialogView.findViewById(R.id.btn_close);
+        android.widget.ImageButton btnZoomIn = dialogView.findViewById(R.id.btn_zoom_in);
+        android.widget.ImageButton btnZoomOut = dialogView.findViewById(R.id.btn_zoom_out);
+        
+        // 显示加载状态
+        pbLoading.setVisibility(View.VISIBLE);
+        
+        // 异步加载图片
+        new Thread(() -> {
+            try {
+                // 获取图片信息
+                long imageSize = ImageUtils.getImageSize(getContext(), selectedImageUri);
+                String imageSizeStr = ImageUtils.formatFileSize(imageSize);
+                String imageInfo = ImageUtils.getImageInfo(getContext(), selectedImageUri);
+                
+                // 在主线程更新UI
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        // 设置图片
+                        imageView.setImageURI(selectedImageUri);
+                        
+                        // 显示图片信息
+                        tvImageInfo.setText("图片大小: " + imageSizeStr + "\n" + imageInfo);
+                        
+                        // 隐藏加载状态
+                        pbLoading.setVisibility(View.GONE);
+                    });
+                }
+            } catch (Exception e) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        pbLoading.setVisibility(View.GONE);
+                        tvImageInfo.setText("加载图片信息失败");
+                    });
+                }
+            }
+        }).start();
+        
+        // 设置缩放功能
+        final float[] currentScale = {1.0f};
+        final float maxScale = 3.0f;
+        final float minScale = 0.5f;
+        
+        btnZoomIn.setOnClickListener(v -> {
+            if (currentScale[0] < maxScale) {
+                currentScale[0] += 0.2f;
+                imageView.setScaleX(currentScale[0]);
+                imageView.setScaleY(currentScale[0]);
+            }
+        });
+        
+        btnZoomOut.setOnClickListener(v -> {
+            if (currentScale[0] > minScale) {
+                currentScale[0] -= 0.2f;
+                imageView.setScaleX(currentScale[0]);
+                imageView.setScaleY(currentScale[0]);
+            }
+        });
+        
+        // 设置点击事件
+        ivClosePreview.setOnClickListener(v -> dialog.dismiss());
+        
+        btnEdit.setOnClickListener(v -> {
+            dialog.dismiss();
+            editImage();
+        });
+        
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+        
+        dialog.show();
+    }
+    
+    /**
+     * 编辑图片（增强版）
+     */
+    private void editImage() {
+        // 创建自定义对话框
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_image_edit_options, null);
+        builder.setView(dialogView);
+        
+        AlertDialog dialog = builder.create();
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        
+        // 设置点击事件
+        dialogView.findViewById(R.id.card_rotate_cw).setOnClickListener(v -> {
+            dialog.dismiss();
+            performImageEdit(ImageUtils.EditOperation.ROTATE_90_CW);
+        });
+        
+        dialogView.findViewById(R.id.card_rotate_ccw).setOnClickListener(v -> {
+            dialog.dismiss();
+            performImageEdit(ImageUtils.EditOperation.ROTATE_90_CCW);
+        });
+        
+        dialogView.findViewById(R.id.card_flip_horizontal).setOnClickListener(v -> {
+            dialog.dismiss();
+            performImageEdit(ImageUtils.EditOperation.FLIP_HORIZONTAL);
+        });
+        
+        dialogView.findViewById(R.id.card_flip_vertical).setOnClickListener(v -> {
+            dialog.dismiss();
+            performImageEdit(ImageUtils.EditOperation.FLIP_VERTICAL);
+        });
+        
+        dialogView.findViewById(R.id.card_image_info).setOnClickListener(v -> {
+            dialog.dismiss();
+            showImageDetailInfo();
+        });
+        
+        dialogView.findViewById(R.id.iv_close_edit).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.btn_cancel_edit).setOnClickListener(v -> dialog.dismiss());
+        
+        dialog.show();
+    }
+    
+    /**
+     * 显示OCR识别结果
+     */
+    private void displayOCRResult(OCRResult result) {
+        if (result == null) {
+            Toast.makeText(getContext(), "OCR识别结果为空", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        StringBuilder resultText = new StringBuilder();
+        resultText.append("=== OCR文字识别结果 ===\n\n");
+        
+        if (!TextUtils.isEmpty(result.getExtractedText())) {
+            resultText.append("识别文字:\n").append(result.getExtractedText()).append("\n\n");
+        }
+        
+        resultText.append("文字长度: ").append(result.getTextLength()).append("\n");
+        resultText.append("包含中文: ").append(result.isHasChinese() ? "是" : "否").append("\n");
+        
+        if (!TextUtils.isEmpty(result.getConfidence())) {
+            resultText.append("识别置信度: ").append(result.getConfidence()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(result.getErrorDetails())) {
+            resultText.append("\n错误详情: ").append(result.getErrorDetails());
+        }
+        
+        tvAnalysisResult.setText(resultText.toString());
+        tvAnalysisResult.setVisibility(View.VISIBLE);
+        
+        // 保存结果状态
+        hasAnalysisResult = true;
+        savedAnalysisResult = resultText.toString();
+    }
+    
+    /**
+     * 显示处方分析结果
+     */
+    private void displayPrescriptionAnalysis(PrescriptionAnalysis analysis) {
+        if (analysis == null) {
+            Toast.makeText(getContext(), "处方分析结果为空", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        StringBuilder resultText = new StringBuilder();
+        resultText.append("=== 处方智能分析结果 ===\n\n");
+        
+        if (!TextUtils.isEmpty(analysis.getOcrText())) {
+            resultText.append("OCR识别文字:\n").append(analysis.getOcrText()).append("\n\n");
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getAnalysisType())) {
+            resultText.append("分析类型: ").append(analysis.getAnalysisType()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getSyndromeType())) {
+            resultText.append("证型: ").append(analysis.getSyndromeType()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getTreatmentMethod())) {
+            resultText.append("治法: ").append(analysis.getTreatmentMethod()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getMainPrescription())) {
+            resultText.append("主方: ").append(analysis.getMainPrescription()).append("\n");
+        }
+        
+        if (analysis.getComposition() != null && !analysis.getComposition().isEmpty()) {
+            resultText.append("\n药物组成:\n");
+            for (PrescriptionAnalysis.HerbComposition herb : analysis.getComposition()) {
+                resultText.append("• ").append(herb.toString()).append("\n");
+            }
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getUsage())) {
+            resultText.append("\n用法: ").append(analysis.getUsage()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getContraindications())) {
+            resultText.append("禁忌: ").append(analysis.getContraindications()).append("\n");
+        }
+        
+        if (analysis.getDetectedHerbs() != null && !analysis.getDetectedHerbs().isEmpty()) {
+            resultText.append("\n检测到的中药: ").append(String.join(", ", analysis.getDetectedHerbs())).append("\n");
+        }
+        
+        if (analysis.getPossibleSymptoms() != null && !analysis.getPossibleSymptoms().isEmpty()) {
+            resultText.append("可能症状: ").append(String.join(", ", analysis.getPossibleSymptoms())).append("\n");
+        }
+        
+        if (analysis.getRecommendations() != null && !analysis.getRecommendations().isEmpty()) {
+            resultText.append("\n建议:\n");
+            for (String recommendation : analysis.getRecommendations()) {
+                resultText.append("• ").append(recommendation).append("\n");
+            }
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getConfidence())) {
+            resultText.append("\n分析置信度: ").append(analysis.getConfidence()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getMessage())) {
+            resultText.append("\n消息: ").append(analysis.getMessage()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getAiError())) {
+            resultText.append("\nAI错误: ").append(analysis.getAiError()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(analysis.getErrorDetails())) {
+            resultText.append("错误详情: ").append(analysis.getErrorDetails());
+        }
+        
+        tvAnalysisResult.setText(resultText.toString());
+        tvAnalysisResult.setVisibility(View.VISIBLE);
+        
+        // 保存结果状态
+        hasAnalysisResult = true;
+        savedAnalysisResult = resultText.toString();
+    }
+    
+    /**
+     * 显示上传结果
+     */
+    private void displayUploadResult(ImageUploadResult result) {
+        if (result == null) {
+            Toast.makeText(getContext(), "上传结果为空", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        StringBuilder resultText = new StringBuilder();
+        resultText.append("=== 图片上传结果 ===\n\n");
+        
+        if (!TextUtils.isEmpty(result.getFilename())) {
+            resultText.append("文件名: ").append(result.getFilename()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(result.getUrl())) {
+            resultText.append("访问URL: ").append(result.getUrl()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(result.getFileSize())) {
+            resultText.append("文件大小: ").append(result.getFileSize()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(result.getUploadTime())) {
+            resultText.append("上传时间: ").append(result.getUploadTime()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(result.getMessage())) {
+            resultText.append("\n消息: ").append(result.getMessage()).append("\n");
+        }
+        
+        if (!TextUtils.isEmpty(result.getErrorDetails())) {
+            resultText.append("错误详情: ").append(result.getErrorDetails());
+        }
+        
+        tvAnalysisResult.setText(resultText.toString());
+        tvAnalysisResult.setVisibility(View.VISIBLE);
+        
+        // 保存结果状态
+        hasAnalysisResult = true;
+        savedAnalysisResult = resultText.toString();
+        
+        Toast.makeText(getContext(), "图片上传成功！", Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * 执行图片编辑操作
+     * @param operation 编辑操作类型
+     */
+    private void performImageEdit(ImageUtils.EditOperation operation) {
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 显示加载提示
+        showLoading(true);
+        tvLoadingText.setText("正在编辑图片...");
+        
+        ImageUtils.editImageAsync(getContext(), selectedImageUri, operation, new ImageUtils.ImageProcessCallback() {
+            @Override
+            public void onSuccess(android.graphics.Bitmap result) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        
+                        // 保存编辑后的图片
+                        String filename = "edited_image_" + System.currentTimeMillis();
+                        Uri editedUri = ImageUtils.saveBitmapToUri(getContext(), result, filename);
+                        
+                        if (editedUri != null) {
+                            selectedImageUri = editedUri;
+                            Toast.makeText(getContext(), "图片编辑成功", Toast.LENGTH_SHORT).show();
+                            
+                            // 重新显示预览
+                            previewImage();
+                        } else {
+                            Toast.makeText(getContext(), "保存编辑后的图片失败", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+            
+            @Override
+            public void onError(String error) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(() -> {
+                        showLoading(false);
+                        Toast.makeText(getContext(), "图片编辑失败: " + error, Toast.LENGTH_LONG).show();
+                    });
+                }
+            }
+        });
+    }
+    
+    /**
+     * 显示图片详细信息
+     */
+    private void showImageDetailInfo() {
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        String imageInfo = ImageUtils.getImageInfo(getContext(), selectedImageUri);
+        
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("图片详细信息")
+                .setMessage(imageInfo)
+                .setPositiveButton("确定", null)
+                .setNeutralButton("生成缩略图", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        generateAndShowThumbnail();
+                    }
+                })
+                .show();
+    }
+    
+    /**
+     * 生成并显示缩略图
+     */
+    private void generateAndShowThumbnail() {
+        if (selectedImageUri == null) {
+            return;
+        }
+        
+        showLoading(true);
+        tvLoadingText.setText("正在生成缩略图...");
+        
+        // 在后台线程生成缩略图
+        new Thread(() -> {
+            android.graphics.Bitmap thumbnail = ImageUtils.generateThumbnail(getContext(), selectedImageUri);
+            
+            if (getActivity() != null) {
+                getActivity().runOnUiThread(() -> {
+                    showLoading(false);
+                    
+                    if (thumbnail != null) {
+                        showThumbnailDialog(thumbnail);
+                    } else {
+                        Toast.makeText(getContext(), "生成缩略图失败", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).start();
+    }
+    
+    /**
+     * 显示缩略图对话框
+     * @param thumbnail 缩略图Bitmap
+     */
+    private void showThumbnailDialog(android.graphics.Bitmap thumbnail) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_image_preview, null);
+        
+        android.widget.ImageView imageView = dialogView.findViewById(R.id.iv_preview);
+        TextView tvImageInfo = dialogView.findViewById(R.id.tv_image_info);
+        
+        imageView.setImageBitmap(thumbnail);
+        tvImageInfo.setText("缩略图 (200x200)");
+        
+        builder.setView(dialogView)
+                .setTitle("缩略图预览")
+                .setPositiveButton("关闭", null)
+                .show();
     }
 }

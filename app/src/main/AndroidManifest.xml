@@ -25,7 +25,8 @@
         <!-- Declare MainActivity as the default activity -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -34,11 +35,13 @@
 
         <activity
             android:name=".ProductDetailActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
             
         <activity
             android:name=".activity.OrderActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
             
         <!-- FileProvider for camera functionality -->
         <provider

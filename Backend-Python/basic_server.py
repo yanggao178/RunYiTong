@@ -49,7 +49,8 @@ books_data = [
         "author": "佚名",
         "category": "中医基础",
         "description": "中国最早的医学典籍，传统医学四大经典著作之一。",
-        "cover_url": "https://example.com/huangdi.jpg"
+        "cover_url": "https://example.com/huangdi.jpg",
+        "publish_date": "2023-01-01T00:00:00.000000"
     },
     {
         "id": 2,
@@ -57,7 +58,8 @@ books_data = [
         "author": "李时珍",
         "category": "中药学",
         "description": "集我国16世纪以前药学成就之大成。",
-        "cover_url": "https://example.com/bencao.jpg"
+        "cover_url": "https://example.com/bencao.jpg",
+        "publish_date": "2023-01-02T00:00:00.000000"
     },
     {
         "id": 3,
@@ -65,7 +67,8 @@ books_data = [
         "author": "希波克拉底",
         "category": "医学理论",
         "description": "西方医学的奠基之作。",
-        "cover_url": "https://example.com/hippocrates.jpg"
+        "cover_url": "https://example.com/hippocrates.jpg",
+        "publish_date": "2023-01-03T00:00:00.000000"
     }
 ]
 
@@ -158,15 +161,15 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                     "limit": limit
                 }
             
-            elif path == '/api/books/chinese':
+            elif path == '/api/v1/books/chinese-medicine':
                 # 中医图书
                 chinese_books = [b for b in books_data if "中医" in b["category"] or "中药" in b["category"]]
-                response_data["data"] = {"items": chinese_books}
+                response_data["data"] = chinese_books
             
-            elif path == '/api/books/western':
+            elif path == '/api/v1/books/western-medicine':
                 # 西医图书
                 western_books = [b for b in books_data if "医学理论" in b["category"] or b["author"] in ["希波克拉底", "维萨里", "奥斯勒"]]
-                response_data["data"] = {"items": western_books}
+                response_data["data"] = western_books
             
             elif path.startswith('/api/books/'):
                 # 单个图书

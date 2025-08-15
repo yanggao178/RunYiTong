@@ -121,7 +121,9 @@ public class MainActivity extends AppCompatActivity {
      * 显示指定Fragment，隐藏其他Fragment
      */
     private void showFragment(Fragment fragment) {
+        android.util.Log.d("MainActivity", "showFragment called, target: " + fragment.getClass().getSimpleName());
         if (currentFragment == fragment) {
+            android.util.Log.d("MainActivity", "Same fragment, no switch needed");
             return; // 如果是当前Fragment，不需要切换
         }
         
@@ -129,13 +131,16 @@ public class MainActivity extends AppCompatActivity {
         
         // 隐藏当前Fragment
         if (currentFragment != null) {
+            android.util.Log.d("MainActivity", "Hiding current fragment: " + currentFragment.getClass().getSimpleName());
             transaction.hide(currentFragment);
         }
         
         // 显示目标Fragment
+        android.util.Log.d("MainActivity", "Showing target fragment: " + fragment.getClass().getSimpleName());
         transaction.show(fragment);
         transaction.commit();
         
         currentFragment = fragment;
+        android.util.Log.d("MainActivity", "Fragment switch completed");
     }
 }

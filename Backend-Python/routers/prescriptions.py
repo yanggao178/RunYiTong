@@ -3,6 +3,14 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 import os
 import uuid
+import cv2
+import numpy as np
+import pytesseract
+from PIL import Image
+import io
+
+# 设置Tesseract可执行文件路径
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 from database import get_db
 from models import Prescription as PrescriptionModel
 from schemas import Prescription, PrescriptionCreate, PrescriptionUpdate, PaginatedResponse
@@ -269,3 +277,268 @@ async def update_prescription_status(
     db.refresh(db_prescription)
     
     return {"message": "处方状态更新成功", "status": status}
+
+# OCR文字识别
+@router.post("/ocr-text-recognition")
+async def ocr_text_recognition(file: UploadFile = File(...)):
+    """OCR文字识别 - 从图片中提取文字"""
+    try:
+        # 检查文件类型
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="只能上传图片文件")
+        
+        # 读取图片数据
+        image_data = await file.read()
+        
+        # 使用PIL打开图片
+        image = Image.open(io.BytesIO(image_data))
+        
+        # 图片预处理
+        # 转换为OpenCV格式
+        opencv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+        
+        # 转换为灰度图
+        gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
+        
+        # 应用高斯模糊去噪
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        
+        # 应用阈值处理
+        _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        
+        # 使用pytesseract进行OCR识别
+        # 配置OCR参数，支持中英文
+        custom_config = r'--oem 3 --psm 6 -l chi_sim+eng'
+        
+        try:
+            # 检查tesseract是否可用
+            pytesseract.get_tesseract_version()
+            # 尝试使用中英文识别
+            extracted_text = pytesseract.image_to_string(thresh, config=custom_config)
+        except pytesseract.TesseractNotFoundError:
+            raise HTTPException(status_code=500, detail="OCR引擎未安装，请联系管理员安装Tesseract OCR")
+        except Exception as ocr_error:
+            try:
+                # 如果中文识别失败，使用英文识别
+                extracted_text = pytesseract.image_to_string(thresh, lang='eng')
+            except:
+                raise HTTPException(status_code=500, detail=f"OCR识别失败: {str(ocr_error)}")
+        
+        # 清理提取的文本
+        cleaned_text = extracted_text.strip().replace('\n\n', '\n')
+        
+        return {
+            "success": True,
+            "message": "OCR文字识别完成",
+            "data": {
+                "extracted_text": cleaned_text,
+                "text_length": len(cleaned_text),
+                "has_chinese": any('\u4e00' <= char <= '\u9fff' for char in cleaned_text),
+                "confidence": "high" if len(cleaned_text) > 10 else "medium"
+            }
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"OCR识别失败: {str(e)}",
+            "data": {
+                "extracted_text": "",
+                "error_details": str(e)
+            }
+        }
+
+# 处方图片智能分析
+@router.post("/analyze-prescription-image")
+async def analyze_prescription_image(file: UploadFile = File(...)):
+    """处方图片智能分析 - 识别处方内容并进行中医分析"""
+    try:
+        # 检查文件类型
+        if not file.content_type.startswith('image/'):
+            raise HTTPException(status_code=400, detail="只能上传图片文件")
+        
+        # 先进行OCR文字识别
+        image_data = await file.read()
+        image = Image.open(io.BytesIO(image_data))
+        
+        # 图片预处理
+        opencv_image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
+        gray = cv2.cvtColor(opencv_image, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        _, thresh = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        
+        # OCR识别
+        try:
+            # 检查tesseract是否可用
+            pytesseract.get_tesseract_version()
+            custom_config = r'--oem 3 --psm 6 -l chi_sim+eng'
+            extracted_text = pytesseract.image_to_string(thresh, config=custom_config)
+        except pytesseract.TesseractNotFoundError:
+            return {
+                "success": False,
+                "message": "OCR引擎未安装，请联系管理员安装Tesseract OCR",
+                "data": {"error_details": "Tesseract OCR engine not found"}
+            }
+        except Exception as ocr_error:
+            try:
+                extracted_text = pytesseract.image_to_string(thresh, lang='eng')
+            except:
+                return {
+                    "success": False,
+                    "message": f"OCR识别失败: {str(ocr_error)}",
+                    "data": {"error_details": str(ocr_error)}
+                }
+        
+        cleaned_text = extracted_text.strip()
+        
+        # 如果提取到文字，进行智能分析
+        if len(cleaned_text) > 5:
+            # 调用AI进行处方分析
+            api_key = os.getenv("OPENAI_API_KEY")
+            if api_key:
+                try:
+                    # 使用AI分析处方内容
+                    prescription_analysis = generate_tcm_prescription(
+                        symptoms=f"根据处方图片识别的内容进行分析：{cleaned_text}",
+                        api_key=api_key,
+                        patient_info=None,
+                        model=os.getenv("AI_MODEL", "deepseek-chat"),
+                        max_tokens=1000
+                    )
+                    
+                    analysis_result = {
+                        "ocr_text": cleaned_text,
+                        "analysis_type": "AI智能分析",
+                        "syndrome_type": prescription_analysis.syndrome_type,
+                        "treatment_method": prescription_analysis.treatment_method,
+                        "main_prescription": prescription_analysis.main_prescription,
+                        "composition": prescription_analysis.composition,
+                        "usage": prescription_analysis.usage,
+                        "contraindications": prescription_analysis.contraindications,
+                        "confidence": "high"
+                    }
+                except Exception as ai_error:
+                    # AI分析失败，返回基础分析
+                    analysis_result = {
+                        "ocr_text": cleaned_text,
+                        "analysis_type": "基础文本分析",
+                        "detected_herbs": extract_herb_names(cleaned_text),
+                        "possible_symptoms": extract_symptoms(cleaned_text),
+                        "recommendations": ["请咨询专业中医师确认处方内容", "注意药物用量和禁忌"],
+                        "confidence": "medium",
+                        "ai_error": str(ai_error)
+                    }
+            else:
+                # 没有AI配置，进行基础分析
+                analysis_result = {
+                    "ocr_text": cleaned_text,
+                    "analysis_type": "基础文本分析",
+                    "detected_herbs": extract_herb_names(cleaned_text),
+                    "possible_symptoms": extract_symptoms(cleaned_text),
+                    "recommendations": ["请咨询专业中医师确认处方内容", "注意药物用量和禁忌"],
+                    "confidence": "medium"
+                }
+        else:
+            analysis_result = {
+                "ocr_text": cleaned_text,
+                "analysis_type": "识别失败",
+                "message": "图片中的文字内容识别不清晰，请上传更清晰的处方图片",
+                "confidence": "low"
+            }
+        
+        return {
+            "success": True,
+            "message": "处方图片分析完成",
+            "data": analysis_result
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"处方图片分析失败: {str(e)}",
+            "data": {
+                "error_details": str(e)
+            }
+        }
+
+# 辅助函数：提取中药名称
+def extract_herb_names(text: str) -> List[str]:
+    """从文本中提取可能的中药名称"""
+    common_herbs = [
+        "当归", "川芎", "白芍", "熟地黄", "人参", "白术", "茯苓", "甘草",
+        "黄芪", "党参", "麦冬", "五味子", "枸杞子", "菊花", "金银花",
+        "连翘", "板蓝根", "大青叶", "桔梗", "杏仁", "桂枝", "生姜",
+        "大枣", "陈皮", "半夏", "茯神", "远志", "酸枣仁", "龙骨", "牡蛎"
+    ]
+    
+    detected_herbs = []
+    for herb in common_herbs:
+        if herb in text:
+            detected_herbs.append(herb)
+    
+    return detected_herbs
+
+# 辅助函数：提取症状关键词
+def extract_symptoms(text: str) -> List[str]:
+    """从文本中提取可能的症状关键词"""
+    symptom_keywords = [
+        "咳嗽", "发热", "头痛", "腹痛", "胸闷", "气短", "乏力", "失眠",
+        "心悸", "眩晕", "恶心", "呕吐", "腹泻", "便秘", "食欲不振",
+        "口干", "口苦", "咽痛", "鼻塞", "流涕", "盗汗", "自汗"
+    ]
+    
+    detected_symptoms = []
+    for symptom in symptom_keywords:
+        if symptom in text:
+            detected_symptoms.append(symptom)
+    
+    return detected_symptoms
+
+# 通用图片上传接口（不绑定处方ID）
+@router.post("/upload-image")
+async def upload_image(file: UploadFile = File(...)):
+    """通用图片上传接口"""
+    try:
+        print(f"收到上传请求 - 文件名: {file.filename}, 内容类型: {file.content_type}")
+        
+        # 检查文件类型
+        if not file.content_type or not file.content_type.startswith('image/'):
+            print(f"文件类型检查失败: {file.content_type}")
+            raise HTTPException(status_code=400, detail="只能上传图片文件")
+        
+        # 创建上传目录
+        upload_dir = "static/prescriptions"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # 生成唯一文件名
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        # 保存文件
+        with open(file_path, "wb") as buffer:
+            content = await file.read()
+            buffer.write(content)
+        
+        return {
+            "success": True,
+            "message": "图片上传成功",
+            "data": {
+                "image_url": f"/static/prescriptions/{unique_filename}",
+                "filename": unique_filename,
+                "file_size": len(content),
+                "content_type": file.content_type
+            }
+        }
+        
+    except Exception as e:
+        print(f"图片上传异常: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "message": f"图片上传失败: {str(e)}",
+            "data": {
+                "error_details": str(e)
+            }
+        }

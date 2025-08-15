@@ -48,7 +48,8 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
         Product product = productList.get(position);
         holder.productName.setText(product.getName());
-        holder.productPrice.setText(String.format("¥%.2f", product.getPrice()));
+        // 更新价格显示格式，去掉¥符号，因为布局中已经有了
+        holder.productPrice.setText(String.format("%.2f", product.getPrice()));
         holder.productDescription.setText(product.getDescription());
 
         // 暂时使用占位图
