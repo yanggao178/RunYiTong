@@ -26,20 +26,39 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
         
-        // 隐藏ActionBar以移除Frontend-Android标题
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().hide();
+        try {
+            android.util.Log.d("MainActivity", "onCreate started");
+            
+            // 确保应用始终以纵向模式显示
+            setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            
+            setContentView(R.layout.activity_main);
+            android.util.Log.d("MainActivity", "Layout set successfully");
+            
+            // 隐藏ActionBar以移除Frontend-Android标题
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().hide();
+            }
+
+            bottomNavigationView = findViewById(R.id.bottom_navigation);
+            if (bottomNavigationView == null) {
+                android.util.Log.e("MainActivity", "BottomNavigationView not found!");
+                return;
+            }
+            android.util.Log.d("MainActivity", "BottomNavigationView initialized");
+
+            // 初始化所有Fragment实例
+            initFragments();
+            android.util.Log.d("MainActivity", "Fragments initialized");
+            
+            // 设置默认显示商品Fragment
+            showFragment(productFragment);
+            android.util.Log.d("MainActivity", "Default fragment shown");
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error in onCreate", e);
+            // 可以在这里添加崩溃报告或用户友好的错误提示
         }
-
-        bottomNavigationView = findViewById(R.id.bottom_navigation);
-
-        // 初始化所有Fragment实例
-        initFragments();
-        
-        // 设置默认显示商品Fragment
-        showFragment(productFragment);
 
         // 底部导航点击事件
         // 替换前
@@ -93,28 +112,38 @@ public class MainActivity extends AppCompatActivity {
      * 初始化所有Fragment实例
      */
     private void initFragments() {
-        productFragment = new ProductFragment();
-        registrationFragment = new RegistrationFragment();
-        prescriptionFragment = new PrescriptionFragment();
-        healthFragment = new HealthFragment();
-        profileFragment = new ProfileFragment();
-        
-        // 添加所有Fragment到容器中，但先隐藏它们
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(R.id.frame_layout, productFragment, "product");
-        transaction.add(R.id.frame_layout, registrationFragment, "registration");
-        transaction.add(R.id.frame_layout, prescriptionFragment, "prescription");
-        transaction.add(R.id.frame_layout, healthFragment, "health");
-        transaction.add(R.id.frame_layout, profileFragment, "profile");
-        
-        // 隐藏所有Fragment
-        transaction.hide(productFragment);
-        transaction.hide(registrationFragment);
-        transaction.hide(prescriptionFragment);
-        transaction.hide(healthFragment);
-        transaction.hide(profileFragment);
-        
-        transaction.commit();
+        try {
+            android.util.Log.d("MainActivity", "Creating fragment instances");
+            productFragment = new ProductFragment();
+            registrationFragment = new RegistrationFragment();
+            prescriptionFragment = new PrescriptionFragment();
+            healthFragment = new HealthFragment();
+            profileFragment = new ProfileFragment();
+            android.util.Log.d("MainActivity", "All fragments created successfully");
+            
+            // 添加所有Fragment到容器中，但先隐藏它们
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.add(R.id.frame_layout, productFragment, "product");
+            transaction.add(R.id.frame_layout, registrationFragment, "registration");
+            transaction.add(R.id.frame_layout, prescriptionFragment, "prescription");
+            transaction.add(R.id.frame_layout, healthFragment, "health");
+            transaction.add(R.id.frame_layout, profileFragment, "profile");
+            android.util.Log.d("MainActivity", "All fragments added to transaction");
+            
+            // 隐藏所有Fragment
+            transaction.hide(productFragment);
+            transaction.hide(registrationFragment);
+            transaction.hide(prescriptionFragment);
+            transaction.hide(healthFragment);
+            transaction.hide(profileFragment);
+            android.util.Log.d("MainActivity", "All fragments hidden");
+            
+            transaction.commit();
+            android.util.Log.d("MainActivity", "Fragment transaction committed");
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error initializing fragments", e);
+            throw e; // 重新抛出异常，让调用者知道初始化失败
+        }
     }
     
     /**

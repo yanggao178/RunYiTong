@@ -64,9 +64,10 @@
     <!-- 中医古籍书架 -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         app:cardElevation="2dp"
         app:cardCornerRadius="16dp">
 
@@ -118,10 +119,55 @@
                 android:background="#E0E0E0"
                 android:layout_marginBottom="12dp" />
 
+            <!-- 中医搜索框 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/search_bg"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_search"
+                    android:tint="@color/tradtional_chinese"
+                    android:layout_marginEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/chinese_medicine_search"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="搜索中医古籍..."
+                    android:textSize="14sp"
+                    android:textColor="#2C3E50"
+                    android:textColorHint="#95A5A6"
+                    android:background="@android:color/transparent"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+                <ImageView
+                    android:id="@+id/chinese_medicine_clear_search"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_close"
+                    android:tint="#95A5A6"
+                    android:visibility="gone"
+                    android:layout_marginStart="8dp" />
+
+            </LinearLayout>
+
             <!-- 中医书架容器 -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp">
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
                 <!-- 固定的书架背景 -->
                 <ImageView
@@ -156,8 +202,10 @@
     <!-- 西医经典书架 -->
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="16dp"
         app:cardElevation="2dp"
         app:cardCornerRadius="16dp">
@@ -210,10 +258,55 @@
                 android:background="#E0E0E0"
                 android:layout_marginBottom="12dp" />
 
+            <!-- 西医搜索框 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/search_bg"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:layout_marginBottom="12dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_search"
+                    android:tint="@color/western_medicine"
+                    android:layout_marginEnd="8dp" />
+
+                <EditText
+                    android:id="@+id/western_medicine_search"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:hint="搜索西医经典..."
+                    android:textSize="14sp"
+                    android:textColor="#2C3E50"
+                    android:textColorHint="#95A5A6"
+                    android:background="@android:color/transparent"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch"
+                    android:maxLines="1"
+                    android:singleLine="true" />
+
+                <ImageView
+                    android:id="@+id/western_medicine_clear_search"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/ic_close"
+                    android:tint="#95A5A6"
+                    android:visibility="gone"
+                    android:layout_marginStart="8dp" />
+
+            </LinearLayout>
+
             <!-- 西医书架容器 -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp">
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
                 <!-- 固定的书架背景 -->
                 <ImageView

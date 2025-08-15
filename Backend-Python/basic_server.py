@@ -101,7 +101,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
             elif path == '/health':
                 response_data["message"] = "服务运行正常"
             
-            elif path == '/api/products/':
+            elif path == '/api/products/' or path == '/api/v1/products/':
                 # 商品列表
                 search = query_params.get('search', [None])[0]
                 category = query_params.get('category', [None])[0]
@@ -126,7 +126,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                     "limit": limit
                 }
             
-            elif path.startswith('/api/products/'):
+            elif path.startswith('/api/products/') or path.startswith('/api/v1/products/'):
                 # 单个商品
                 product_id = int(path.split('/')[-1])
                 product = next((p for p in products_data if p["id"] == product_id), None)
@@ -242,7 +242,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                     response_data["success"] = False
                     response_data["message"] = "请求格式错误"
             
-            elif self.path == '/api/prescriptions/analyze-symptoms':
+            elif self.path == '/api/prescriptions/analyze-symptoms' or self.path == '/api/v1/prescriptions/analyze-symptoms':
                 # AI症状分析
                 try:
                     data = json.loads(post_data.decode('utf-8'))
@@ -258,6 +258,28 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                 except:
                     response_data["success"] = False
                     response_data["message"] = "请求格式错误"
+            
+            elif self.path == '/api/v1/prescriptions/ocr-text-recognition':
+                # OCR文字识别
+                response_data["data"] = {
+                    "text": "模拟OCR识别结果：处方内容示例",
+                    "confidence": 0.85
+                }
+            
+            elif self.path == '/api/v1/prescriptions/analyze-prescription-image':
+                # 处方图片分析
+                response_data["data"] = {
+                    "analysis": "模拟处方分析结果",
+                    "medicines": ["阿莫西林", "板蓝根颗粒"],
+                    "dosage": "按医嘱服用"
+                }
+            
+            elif self.path == '/api/v1/prescriptions/upload-image':
+                # 图片上传
+                response_data["data"] = {
+                    "image_url": "http://localhost:8000/static/prescriptions/mock_image.jpg",
+                    "upload_id": "mock_upload_123"
+                }
             
             else:
                 response_data["success"] = False
@@ -287,7 +309,7 @@ def main():
     print("=" * 60)
     print(f"启动HTTP服务器...")
     print(f"服务地址: http://localhost:{PORT}")
-    print(f"测试接口: http://localhost:{PORT}/api/products/")
+    print(f"测试接口: http://localhost:{PORT}/api/v1/products/")
     print(f"按 Ctrl+C 停止服务器")
     print("=" * 60)
     print()

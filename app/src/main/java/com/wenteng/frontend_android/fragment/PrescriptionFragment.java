@@ -149,6 +149,9 @@ public class PrescriptionFragment extends Fragment {
         galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
+                // 恢复屏幕方向
+                restoreScreenOrientation();
+                
                 if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
                     Uri selectedImageUri = result.getData().getData();
                     if (selectedImageUri != null) {
@@ -162,6 +165,9 @@ public class PrescriptionFragment extends Fragment {
         cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
+                // 恢复屏幕方向
+                restoreScreenOrientation();
+                
                 if (result.getResultCode() == getActivity().RESULT_OK) {
                     if (photoUri != null) {
                         handleSelectedImage(photoUri);
@@ -463,8 +469,9 @@ public class PrescriptionFragment extends Fragment {
         super.onHiddenChanged(hidden);
         
         if (!hidden) {
-            // Fragment变为可见时，恢复状态
+            // Fragment变为可见时，恢复状态和屏幕方向
             restoreState();
+            restoreScreenOrientation();
         } else {
             // Fragment被隐藏时，保存当前状态
             saveCurrentState();
@@ -487,8 +494,9 @@ public class PrescriptionFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // 恢复状态
+        // 恢复状态和屏幕方向
         restoreState();
+        restoreScreenOrientation();
     }
     
     /**
@@ -538,8 +546,17 @@ public class PrescriptionFragment extends Fragment {
      * 打开相册选择图片
      */
     private void openGallery() {
+        // 先设置屏幕方向为纵向
+        if (getActivity() != null) {
+            getActivity().setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
+        // 强制使用纵向模式
+        intent.putExtra("android.intent.extra.screenOrientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        
         galleryLauncher.launch(intent);
     }
     
@@ -559,6 +576,11 @@ public class PrescriptionFragment extends Fragment {
      * 打开相机拍照
      */
     private void openCamera() {
+        // 先设置屏幕方向为纵向
+        if (getActivity() != null) {
+            getActivity().setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(getActivity().getPackageManager()) != null) {
             // 创建图片文件
@@ -576,10 +598,24 @@ public class PrescriptionFragment extends Fragment {
                         "com.wenteng.frontend_android.fileprovider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+                // 强制使用纵向模式
+                takePictureIntent.putExtra("android.intent.extra.screenOrientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                takePictureIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                
                 cameraLauncher.launch(takePictureIntent);
             }
         } else {
             Toast.makeText(getContext(), "没有找到相机应用", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * 恢复屏幕方向
+     */
+    private void restoreScreenOrientation() {
+        if (getActivity() != null) {
+            // 恢复为纵向模式，保持应用一致的方向
+            getActivity().setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
     }
     
@@ -618,39 +654,79 @@ public class PrescriptionFragment extends Fragment {
      * 显示图片处理选项对话框
      */
     private void showImageProcessingDialog() {
-        // 创建自定义对话框
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_image_processing_options, null);
-        builder.setView(dialogView);
+        android.util.Log.d("PrescriptionFragment", "开始显示图片处理选项对话框");
         
-        AlertDialog dialog = builder.create();
-        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        // 基本的Fragment状态检查
+        if (getContext() == null || !isAdded()) {
+            android.util.Log.w("PrescriptionFragment", "Fragment状态异常，Context: " + getContext() + ", isAdded: " + isAdded());
+            // 延迟重试一次
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (getContext() != null && isAdded()) {
+                    android.util.Log.d("PrescriptionFragment", "重试显示对话框");
+                    showImageProcessingDialog();
+                } else {
+                    android.util.Log.e("PrescriptionFragment", "重试后Fragment状态仍异常，直接使用简单对话框");
+                    showSimpleProcessingDialog();
+                }
+            }, 100);
+            return;
+        }
         
-        // 设置点击事件
-        dialogView.findViewById(R.id.card_ocr).setOnClickListener(v -> {
-            dialog.dismiss();
-            performOCRRecognition();
-        });
+        // 直接使用简单对话框，避免复杂布局可能的问题
+        android.util.Log.d("PrescriptionFragment", "Fragment状态正常，直接显示简单对话框");
+        showSimpleProcessingDialog();
+    }
+    
+    /**
+     * 显示简单的处理选项对话框（备用方案）
+     */
+    private void showSimpleProcessingDialog() {
+        if (getContext() == null || !isAdded() || isDetached()) {
+            return;
+        }
         
-        dialogView.findViewById(R.id.card_analysis).setOnClickListener(v -> {
-            dialog.dismiss();
-            performPrescriptionAnalysis();
-        });
-        
-        dialogView.findViewById(R.id.card_upload).setOnClickListener(v -> {
-            dialog.dismiss();
-            uploadImageToServer();
-        });
-        
-        dialogView.findViewById(R.id.card_preview).setOnClickListener(v -> {
-            dialog.dismiss();
-            previewImage();
-        });
-        
-        dialogView.findViewById(R.id.iv_close).setOnClickListener(v -> dialog.dismiss());
-        dialogView.findViewById(R.id.btn_cancel).setOnClickListener(v -> dialog.dismiss());
-        
-        dialog.show();
+        try {
+            String[] options = {"OCR文字识别", "处方智能分析", "上传到服务器", "预览图片"};
+            
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            AlertDialog dialog = builder.setTitle("选择处理方式")
+                   .setItems(options, (dlg, which) -> {
+                       switch (which) {
+                           case 0:
+                               performOCRRecognition();
+                               break;
+                           case 1:
+                               performPrescriptionAnalysis();
+                               break;
+                           case 2:
+                               uploadImageToServer();
+                               break;
+                           case 3:
+                               previewImage();
+                               break;
+                       }
+                   })
+                   .setNegativeButton("取消", null)
+                   .create();
+            
+            // 设置对话框居中显示
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setGravity(Gravity.CENTER);
+                // 设置对话框宽度为屏幕宽度的90%
+                android.view.WindowManager.LayoutParams layoutParams = dialog.getWindow().getAttributes();
+                layoutParams.width = (int) (getResources().getDisplayMetrics().widthPixels * 0.9);
+                layoutParams.height = android.view.WindowManager.LayoutParams.WRAP_CONTENT;
+                dialog.getWindow().setAttributes(layoutParams);
+            }
+            
+            dialog.show();
+                   
+            android.util.Log.d("PrescriptionFragment", "显示简单对话框成功");
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "显示简单对话框也失败: " + e.getMessage(), e);
+            Toast.makeText(getContext(), "对话框显示异常，请重新选择图片", Toast.LENGTH_LONG).show();
+        }
     }
     
     /**

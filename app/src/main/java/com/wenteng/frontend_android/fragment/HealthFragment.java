@@ -21,10 +21,16 @@ import com.wenteng.frontend_android.api.ApiResponse;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import android.widget.Toast;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.inputmethod.EditorInfo;
 import java.net.SocketTimeoutException;
 import java.net.ConnectException;
 import java.io.IOException;
@@ -42,6 +48,16 @@ public class HealthFragment extends Fragment {
     private Call<ApiResponse<List<Book>>> chineseBooksCall; // 用于取消请求
     private Call<ApiResponse<List<Book>>> westernBooksCall; // 用于取消请求
     private boolean isDataLoaded = false; // 标记数据是否已加载
+    
+    // 搜索相关组件
+    private EditText chineseMedicineSearchEditText;
+    private EditText westernMedicineSearchEditText;
+    private ImageView chineseMedicineClearSearch;
+    private ImageView westernMedicineClearSearch;
+    
+    // 原始数据列表（用于搜索过滤）
+    private List<Book> originalChineseMedicineBooks;
+    private List<Book> originalWesternMedicineBooks;
 
     @Nullable
     @Override
@@ -86,6 +102,12 @@ public class HealthFragment extends Fragment {
         chineseMedicineBooksRecyclerView = view.findViewById(R.id.chinese_medicine_books);
         westernMedicineBooksRecyclerView = view.findViewById(R.id.western_medicine_books);
         
+        // 初始化搜索组件
+        chineseMedicineSearchEditText = view.findViewById(R.id.chinese_medicine_search);
+        westernMedicineSearchEditText = view.findViewById(R.id.western_medicine_search);
+        chineseMedicineClearSearch = view.findViewById(R.id.chinese_medicine_clear_search);
+        westernMedicineClearSearch = view.findViewById(R.id.western_medicine_clear_search);
+        
         // 设置书架网格布局管理器
         if (chineseMedicineBooksRecyclerView != null) {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3); // 3列网格
@@ -95,17 +117,33 @@ public class HealthFragment extends Fragment {
             GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3); // 3列网格
             westernMedicineBooksRecyclerView.setLayoutManager(gridLayoutManager);
         }
+        
+        // 设置搜索功能
+        setupSearchFunctionality();
     }
 
     private void initData() {
         // 初始化空列表
         chineseMedicineBooks = new ArrayList<>();
         westernMedicineBooks = new ArrayList<>();
+        originalChineseMedicineBooks = new ArrayList<>();
+        originalWesternMedicineBooks = new ArrayList<>();
         
         // 立即创建书架适配器
         if (getContext() != null) {
             chineseMedicineBookAdapter = new BookshelfAdapter(getContext(), chineseMedicineBooks);
             westernMedicineBookAdapter = new BookshelfAdapter(getContext(), westernMedicineBooks);
+            
+            // 设置书籍点击监听器
+            chineseMedicineBookAdapter.setOnBookClickListener(book -> {
+                // 处理中医书籍点击事件
+                handleBookClick(book, "中医古籍");
+            });
+            
+            westernMedicineBookAdapter.setOnBookClickListener(book -> {
+                // 处理西医书籍点击事件
+                handleBookClick(book, "西医经典");
+            });
             
             // 设置适配器
             if (chineseMedicineBooksRecyclerView != null) {
@@ -319,6 +357,11 @@ public class HealthFragment extends Fragment {
             Log.d("HealthFragment", "书籍 " + i + ": " + book.getName() + " - " + book.getAuthor());
         }
         
+        // 保存原始数据
+        originalChineseMedicineBooks.clear();
+        originalChineseMedicineBooks.addAll(books);
+        
+        // 更新显示数据
         chineseMedicineBooks.clear();
         chineseMedicineBooks.addAll(books);
         Log.d("HealthFragment", "中医书籍列表大小: " + chineseMedicineBooks.size());
@@ -343,6 +386,11 @@ public class HealthFragment extends Fragment {
             Log.d("HealthFragment", "书籍 " + i + ": " + book.getName() + " - " + book.getAuthor());
         }
         
+        // 保存原始数据
+        originalWesternMedicineBooks.clear();
+        originalWesternMedicineBooks.addAll(books);
+        
+        // 更新显示数据
         westernMedicineBooks.clear();
         westernMedicineBooks.addAll(books);
         Log.d("HealthFragment", "西医书籍列表大小: " + westernMedicineBooks.size());
@@ -384,5 +432,174 @@ public class HealthFragment extends Fragment {
                 Toast.makeText(getActivity(), message, Toast.LENGTH_SHORT).show();
             });
         }
+    }
+    
+    // === 搜索功能实现 ===
+    
+    private void setupSearchFunctionality() {
+        // 设置中医搜索功能
+        setupChineseMedicineSearch();
+        
+        // 设置西医搜索功能
+        setupWesternMedicineSearch();
+    }
+    
+    private void setupChineseMedicineSearch() {
+        if (chineseMedicineSearchEditText == null || chineseMedicineClearSearch == null) return;
+        
+        // 搜索文本变化监听
+        chineseMedicineSearchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim();
+                filterChineseMedicineBooks(query);
+                
+                // 显示/隐藏清除按钮
+                chineseMedicineClearSearch.setVisibility(query.isEmpty() ? View.GONE : View.VISIBLE);
+            }
+            
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+        
+        // 搜索按钮点击监听
+        chineseMedicineSearchEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                String query = chineseMedicineSearchEditText.getText().toString().trim();
+                filterChineseMedicineBooks(query);
+                return true;
+            }
+            return false;
+        });
+        
+        // 清除按钮点击监听
+        chineseMedicineClearSearch.setOnClickListener(v -> {
+            chineseMedicineSearchEditText.setText("");
+            filterChineseMedicineBooks("");
+            chineseMedicineClearSearch.setVisibility(View.GONE);
+        });
+    }
+    
+    private void setupWesternMedicineSearch() {
+        if (westernMedicineSearchEditText == null || westernMedicineClearSearch == null) return;
+        
+        // 搜索文本变化监听
+        westernMedicineSearchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+            
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                String query = s.toString().trim();
+                filterWesternMedicineBooks(query);
+                
+                // 显示/隐藏清除按钮
+                westernMedicineClearSearch.setVisibility(query.isEmpty() ? View.GONE : View.VISIBLE);
+            }
+            
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+        
+        // 搜索按钮点击监听
+        westernMedicineSearchEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                String query = westernMedicineSearchEditText.getText().toString().trim();
+                filterWesternMedicineBooks(query);
+                return true;
+            }
+            return false;
+        });
+        
+        // 清除按钮点击监听
+        westernMedicineClearSearch.setOnClickListener(v -> {
+            westernMedicineSearchEditText.setText("");
+            filterWesternMedicineBooks("");
+            westernMedicineClearSearch.setVisibility(View.GONE);
+        });
+    }
+    
+    private void filterChineseMedicineBooks(String query) {
+        if (originalChineseMedicineBooks == null) return;
+        
+        List<Book> filteredBooks;
+        if (query.isEmpty()) {
+            // 如果搜索词为空，显示所有书籍
+            filteredBooks = new ArrayList<>(originalChineseMedicineBooks);
+        } else {
+            // 过滤书籍
+            filteredBooks = originalChineseMedicineBooks.stream()
+                    .filter(book -> book.getName().toLowerCase().contains(query.toLowerCase()) ||
+                                   book.getAuthor().toLowerCase().contains(query.toLowerCase()) ||
+                                   (book.getDescription() != null && 
+                                    book.getDescription().toLowerCase().contains(query.toLowerCase())))
+                    .collect(Collectors.toList());
+        }
+        
+        // 更新显示列表
+        chineseMedicineBooks.clear();
+        chineseMedicineBooks.addAll(filteredBooks);
+        
+        // 更新UI
+        if (chineseMedicineBookAdapter != null) {
+            chineseMedicineBookAdapter.notifyDataSetChanged();
+        }
+        
+        Log.d("HealthFragment", "中医书籍搜索: '" + query + "', 结果: " + filteredBooks.size() + " 本");
+    }
+    
+    private void filterWesternMedicineBooks(String query) {
+        if (originalWesternMedicineBooks == null) return;
+        
+        List<Book> filteredBooks;
+        if (query.isEmpty()) {
+            // 如果搜索词为空，显示所有书籍
+            filteredBooks = new ArrayList<>(originalWesternMedicineBooks);
+        } else {
+            // 过滤书籍
+            filteredBooks = originalWesternMedicineBooks.stream()
+                    .filter(book -> book.getName().toLowerCase().contains(query.toLowerCase()) ||
+                                   book.getAuthor().toLowerCase().contains(query.toLowerCase()) ||
+                                   (book.getDescription() != null && 
+                                    book.getDescription().toLowerCase().contains(query.toLowerCase())))
+                    .collect(Collectors.toList());
+        }
+        
+        // 更新显示列表
+        westernMedicineBooks.clear();
+        westernMedicineBooks.addAll(filteredBooks);
+        
+        // 更新UI
+        if (westernMedicineBookAdapter != null) {
+            westernMedicineBookAdapter.notifyDataSetChanged();
+        }
+        
+        Log.d("HealthFragment", "西医书籍搜索: '" + query + "', 结果: " + filteredBooks.size() + " 本");
+    }
+    
+    /**
+     * 处理书籍点击事件
+     * @param book 被点击的书籍
+     * @param category 书籍分类
+     */
+    private void handleBookClick(Book book, String category) {
+        Log.d("HealthFragment", "书籍点击: " + book.getName() + " (" + category + ")");
+        
+        // 显示书籍详情
+        String message = String.format("《%s》\n作者：%s\n分类：%s\n\n%s", 
+                book.getName(), 
+                book.getAuthor(), 
+                category,
+                book.getDescription() != null ? book.getDescription() : "暂无描述");
+        
+        showMessage("书籍详情：" + book.getName());
+        
+        // TODO: 这里可以扩展为跳转到书籍详情页面
+        // 例如：Intent intent = new Intent(getActivity(), BookDetailActivity.class);
+        // intent.putExtra("book_id", book.getId());
+        // startActivity(intent);
     }
 }

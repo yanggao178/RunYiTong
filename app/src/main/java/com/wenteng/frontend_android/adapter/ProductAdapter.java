@@ -46,21 +46,47 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
 
     @Override
     public void onBindViewHolder(@NonNull ProductViewHolder holder, int position) {
+        if (productList == null || position < 0 || position >= productList.size()) {
+            return;
+        }
+        
         Product product = productList.get(position);
-        holder.productName.setText(product.getName());
-        // 更新价格显示格式，去掉¥符号，因为布局中已经有了
-        holder.productPrice.setText(String.format("%.2f", product.getPrice()));
-        holder.productDescription.setText(product.getDescription());
+        if (product == null) {
+            return;
+        }
+        
+        // 安全设置产品名称
+        if (holder.productName != null) {
+            holder.productName.setText(product.getName() != null ? product.getName() : "未知商品");
+        }
+        
+        // 安全设置价格
+        if (holder.productPrice != null) {
+            try {
+                holder.productPrice.setText(String.format("%.2f", product.getPrice()));
+            } catch (Exception e) {
+                holder.productPrice.setText("0.00");
+            }
+        }
+        
+        // 安全设置描述
+        if (holder.productDescription != null) {
+            holder.productDescription.setText(product.getDescription() != null ? product.getDescription() : "暂无描述");
+        }
 
         // 暂时使用占位图
-        holder.productImage.setImageResource(R.drawable.ic_launcher_background);
+        if (holder.productImage != null) {
+            holder.productImage.setImageResource(R.drawable.ic_launcher_background);
+        }
 
         // 添加点击事件
-        holder.itemView.setOnClickListener(v -> {
-            if (onItemClickListener != null) {
-                onItemClickListener.onItemClick(product);
-            }
-        });
+        if (holder.itemView != null) {
+            holder.itemView.setOnClickListener(v -> {
+                if (onItemClickListener != null && product != null) {
+                    onItemClickListener.onItemClick(product);
+                }
+            });
+        }
     }
 
     @Override

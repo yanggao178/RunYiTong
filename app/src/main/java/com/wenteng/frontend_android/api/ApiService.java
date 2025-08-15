@@ -6,8 +6,8 @@ import com.wenteng.frontend_android.model.SymptomAnalysis;
 import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
 import com.wenteng.frontend_android.model.ImageUploadResult;
+import com.wenteng.frontend_android.model.Department;
 import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -102,4 +102,46 @@ public interface ApiService {
     @Multipart
     @POST("api/v1/prescriptions/upload-image")
     Call<ApiResponse<ImageUploadResult>> uploadImage(@Part MultipartBody.Part image);
+    
+    /**
+     * 获取科室列表
+     * @return 科室列表响应
+     */
+    @GET("api/appointments/departments")
+    Call<ApiResponse<DepartmentListResponse>> getDepartments();
+    
+    /**
+     * 获取医院列表
+     * @return 医院列表响应
+     */
+    @GET("api/appointments/hospitals")
+    Call<ApiResponse<HospitalListResponse>> getHospitals();
+    
+    /**
+     * 获取医生列表
+     * @param departmentId 科室ID（可选）
+     * @param hospitalId 医院ID（可选）
+     * @return 医生列表响应
+     */
+    @GET("api/appointments/doctors")
+    Call<ApiResponse<DoctorListResponse>> getDoctors(
+        @Query("department_id") Integer departmentId,
+        @Query("hospital_id") Integer hospitalId
+    );
+    
+    /**
+     * 获取指定医院的科室列表
+     * @param hospitalId 医院ID
+     * @return 科室列表响应
+     */
+    @GET("api/appointments/hospitals/{hospital_id}/departments")
+    Call<ApiResponse<DepartmentListResponse>> getHospitalDepartments(@Path("hospital_id") int hospitalId);
+    
+    /**
+     * 根据医院ID获取科室列表
+     * @param hospitalId 医院ID
+     * @return 科室列表
+     */
+    @GET("api/appointments/hospitals/{hospital_id}/departments")
+    Call<List<Department>> getDepartmentsByHospital(@Path("hospital_id") int hospitalId);
 }

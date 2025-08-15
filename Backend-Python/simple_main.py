@@ -259,6 +259,161 @@ async def get_departments():
     ]
     return BaseResponse(data={"items": departments})
 
+@app.get("/api/appointments/hospitals", response_model=BaseResponse)
+async def get_hospitals():
+    """获取医院列表"""
+    hospitals = [
+        {
+            "id": 1,
+            "name": "北京协和医院",
+            "address": "北京市东城区东单帅府园1号",
+            "phone": "010-69156114",
+            "level": "三甲",
+            "description": "综合性三级甲等医院",
+            "departments": [1, 2, 3, 4]
+        },
+        {
+            "id": 2,
+            "name": "北京大学第一医院",
+            "address": "北京市西城区西什库大街8号",
+            "phone": "010-83572211",
+            "level": "三甲",
+            "description": "综合性三级甲等医院",
+            "departments": [1, 2, 4]
+        },
+        {
+            "id": 3,
+            "name": "中国中医科学院广安门医院",
+            "address": "北京市西城区北线阁5号",
+            "phone": "010-88001122",
+            "level": "三甲",
+            "description": "中医特色三级甲等医院",
+            "departments": [1, 3, 4]
+        },
+        {
+            "id": 4,
+            "name": "首都医科大学附属北京儿童医院",
+            "address": "北京市西城区南礼士路56号",
+            "phone": "010-59616161",
+            "level": "三甲",
+            "description": "儿科专科三级甲等医院",
+            "departments": [4]
+        }
+    ]
+    return BaseResponse(data={"items": hospitals})
+
+@app.get("/api/appointments/doctors", response_model=BaseResponse)
+async def get_doctors(department_id: Optional[int] = None, hospital_id: Optional[int] = None):
+    """获取医生列表"""
+    doctors = [
+        {
+            "id": 1,
+            "name": "张明华",
+            "title": "主任医师",
+            "department_id": 1,
+            "department_name": "内科",
+            "hospital_id": 1,
+            "hospital_name": "北京协和医院",
+            "specialties": ["心血管疾病", "高血压", "糖尿病"],
+            "experience_years": 25,
+            "education": "北京协和医学院博士",
+            "introduction": "从事内科临床工作25年，擅长心血管疾病诊治",
+            "available_times": ["周一上午", "周三下午", "周五上午"]
+        },
+        {
+            "id": 2,
+            "name": "李建国",
+            "title": "副主任医师",
+            "department_id": 2,
+            "department_name": "外科",
+            "hospital_id": 1,
+            "hospital_name": "北京协和医院",
+            "specialties": ["普通外科", "腹腔镜手术", "胆囊疾病"],
+            "experience_years": 18,
+            "education": "北京大学医学部硕士",
+            "introduction": "专注普通外科及微创手术，手术经验丰富",
+            "available_times": ["周二上午", "周四上午", "周六上午"]
+        },
+        {
+            "id": 3,
+            "name": "王中医",
+            "title": "主任医师",
+            "department_id": 3,
+            "department_name": "中医科",
+            "hospital_id": 3,
+            "hospital_name": "中国中医科学院广安门医院",
+            "specialties": ["中医内科", "针灸", "中药调理"],
+            "experience_years": 30,
+            "education": "北京中医药大学博士",
+            "introduction": "中医世家传承，擅长中医诊疗和针灸治疗",
+            "available_times": ["周一下午", "周三上午", "周五下午"]
+        },
+        {
+            "id": 4,
+            "name": "陈小儿",
+            "title": "主任医师",
+            "department_id": 4,
+            "department_name": "儿科",
+            "hospital_id": 4,
+            "hospital_name": "首都医科大学附属北京儿童医院",
+            "specialties": ["儿童呼吸系统疾病", "儿童感染性疾病", "新生儿疾病"],
+            "experience_years": 22,
+            "education": "首都医科大学博士",
+            "introduction": "专业从事儿科临床工作，对儿童常见病有丰富经验",
+            "available_times": ["周一上午", "周二下午", "周四上午"]
+        },
+        {
+            "id": 5,
+            "name": "赵心脏",
+            "title": "主任医师",
+            "department_id": 1,
+            "department_name": "内科",
+            "hospital_id": 2,
+            "hospital_name": "北京大学第一医院",
+            "specialties": ["心脏病", "心律失常", "心力衰竭"],
+            "experience_years": 28,
+            "education": "北京大学医学部博士",
+            "introduction": "心血管疾病专家，在心脏病诊治方面有深厚造诣",
+            "available_times": ["周二上午", "周四下午", "周六上午"]
+        }
+    ]
+    
+    # 根据科室ID筛选
+    if department_id:
+        doctors = [d for d in doctors if d["department_id"] == department_id]
+    
+    # 根据医院ID筛选
+    if hospital_id:
+        doctors = [d for d in doctors if d["hospital_id"] == hospital_id]
+    
+    return BaseResponse(data={"items": doctors})
+
+@app.get("/api/appointments/hospitals/{hospital_id}/departments", response_model=BaseResponse)
+async def get_hospital_departments(hospital_id: int):
+    """获取指定医院的科室列表"""
+    # 医院科室映射
+    hospital_departments = {
+        1: [1, 2, 3, 4],  # 北京协和医院
+        2: [1, 2, 4],     # 北京大学第一医院
+        3: [1, 3, 4],     # 广安门医院
+        4: [4]            # 儿童医院
+    }
+    
+    all_departments = [
+        {"id": 1, "name": "内科", "description": "内科疾病诊治"},
+        {"id": 2, "name": "外科", "description": "外科手术治疗"},
+        {"id": 3, "name": "中医科", "description": "中医诊疗"},
+        {"id": 4, "name": "儿科", "description": "儿童疾病诊治"}
+    ]
+    
+    if hospital_id not in hospital_departments:
+        raise HTTPException(status_code=404, detail="医院不存在")
+    
+    available_dept_ids = hospital_departments[hospital_id]
+    available_departments = [d for d in all_departments if d["id"] in available_dept_ids]
+    
+    return BaseResponse(data={"items": available_departments})
+
 if __name__ == "__main__":
     print("=" * 60)
     print("           AI Medical Backend - 简化版")

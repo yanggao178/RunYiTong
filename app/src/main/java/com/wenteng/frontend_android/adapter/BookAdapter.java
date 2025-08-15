@@ -38,12 +38,22 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull BookViewHolder holder, int position) {
+        if (bookList == null || position >= bookList.size()) {
+            android.util.Log.e("BookAdapter", "Invalid position or null bookList: " + position);
+            return;
+        }
+        
         Book book = bookList.get(position);
+        if (book == null) {
+            android.util.Log.e("BookAdapter", "Book is null at position: " + position);
+            return;
+        }
+        
         android.util.Log.d("BookAdapter", "绑定书籍 " + position + ": " + book.getName());
         
-        holder.bookName.setText(book.getName());
-        holder.bookAuthor.setText(book.getAuthor());
-        holder.bookDescription.setText(book.getDescription());
+        holder.bookName.setText(book.getName() != null ? book.getName() : "未知书名");
+        holder.bookAuthor.setText(book.getAuthor() != null ? book.getAuthor() : "未知作者");
+        holder.bookDescription.setText(book.getDescription() != null ? book.getDescription() : "暂无描述");
 
         // 使用Glide加载书籍封面
         Glide.with(context)
@@ -54,7 +64,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
 
     @Override
     public int getItemCount() {
-        return bookList.size();
+        return bookList != null ? bookList.size() : 0;
     }
 
     public static class BookViewHolder extends RecyclerView.ViewHolder {

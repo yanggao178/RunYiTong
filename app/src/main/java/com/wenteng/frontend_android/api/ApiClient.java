@@ -82,6 +82,13 @@ public class ApiClient {
     }
     
     /**
+     * 获取ApiClient实例
+     */
+    public static ApiClient getInstance() {
+        return new ApiClient();
+    }
+    
+    /**
      * 获取API服务实例
      */
     public static ApiService getApiService() {

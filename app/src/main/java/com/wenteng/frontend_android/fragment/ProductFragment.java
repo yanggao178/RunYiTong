@@ -56,8 +56,20 @@ public class ProductFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        productRecyclerView = view.findViewById(R.id.product_recycler_view);
-        searchEditText = view.findViewById(R.id.search_edit_text);
+        try {
+            productRecyclerView = view.findViewById(R.id.product_recycler_view);
+            searchEditText = view.findViewById(R.id.search_edit_text);
+            
+            if (productRecyclerView == null) {
+                showError("无法找到商品列表视图");
+            }
+            if (searchEditText == null) {
+                showError("无法找到搜索框");
+            }
+        } catch (Exception e) {
+            showError("初始化视图失败: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void initData() {
@@ -193,17 +205,36 @@ public class ProductFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        productAdapter = new ProductAdapter(getContext(), filteredProductList);
-        productRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        productRecyclerView.setAdapter(productAdapter);
+        try {
+            if (productRecyclerView == null || getContext() == null) {
+                showError("无法设置商品列表，视图或上下文为空");
+                return;
+            }
+            
+            productAdapter = new ProductAdapter(getContext(), filteredProductList);
+            productRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            productRecyclerView.setAdapter(productAdapter);
 
-        // 设置商品点击事件
-        productAdapter.setOnItemClickListener(product -> {
-            // 启动商品详情页
-            Intent intent = new Intent(getActivity(), ProductDetailActivity.class);
-            intent.putExtra("product", product);
-            startActivity(intent);
-        });
+            // 设置商品点击事件
+            productAdapter.setOnItemClickListener(product -> {
+                try {
+                    if (getActivity() != null && product != null) {
+                        // 启动商品详情页
+                        Intent intent = new Intent(getActivity(), ProductDetailActivity.class);
+                        intent.putExtra("product", product);
+                        startActivity(intent);
+                    } else {
+                        showError("无法打开商品详情");
+                    }
+                } catch (Exception e) {
+                    showError("打开商品详情失败: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+        } catch (Exception e) {
+            showError("设置商品列表失败: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void setupSearchFunction() {
@@ -227,17 +258,31 @@ public class ProductFragment extends Fragment {
     }
 
     private void filterProducts(String query) {
-        filteredProductList.clear();
-        if (query.isEmpty()) {
-            filteredProductList.addAll(productList);
-        } else {
-            String lowerCaseQuery = query.toLowerCase();
-            for (Product product : productList) {
-                if (product.getName().toLowerCase().contains(lowerCaseQuery)) {
-                    filteredProductList.add(product);
+        try {
+            if (filteredProductList == null || productList == null) {
+                showError("商品列表未初始化");
+                return;
+            }
+            
+            filteredProductList.clear();
+            if (query == null || query.isEmpty()) {
+                filteredProductList.addAll(productList);
+            } else {
+                String lowerCaseQuery = query.toLowerCase();
+                for (Product product : productList) {
+                    if (product != null && product.getName() != null && 
+                        product.getName().toLowerCase().contains(lowerCaseQuery)) {
+                        filteredProductList.add(product);
+                    }
                 }
             }
+            
+            if (productAdapter != null) {
+                productAdapter.notifyDataSetChanged();
+            }
+        } catch (Exception e) {
+            showError("搜索商品失败: " + e.getMessage());
+            e.printStackTrace();
         }
-        productAdapter.notifyDataSetChanged();
     }
 }
