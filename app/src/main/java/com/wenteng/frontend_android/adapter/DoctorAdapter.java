@@ -37,6 +37,7 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.DoctorView
     @Override
     public void onBindViewHolder(@NonNull DoctorViewHolder holder, int position) {
         Doctor doctor = doctorList.get(position);
+        android.util.Log.d("DoctorAdapter", "绑定医生数据，位置: " + position + ", 医生: " + doctor.getName());
         holder.bind(doctor, position == selectedPosition);
         
         holder.itemView.setOnClickListener(v -> {
@@ -55,7 +56,9 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.DoctorView
     
     @Override
     public int getItemCount() {
-        return doctorList != null ? doctorList.size() : 0;
+        int count = doctorList != null ? doctorList.size() : 0;
+        android.util.Log.d("DoctorAdapter", "getItemCount返回: " + count);
+        return count;
     }
     
     static class DoctorViewHolder extends RecyclerView.ViewHolder {

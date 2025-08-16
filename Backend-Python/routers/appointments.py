@@ -54,6 +54,136 @@ async def get_appointments(
         pages=pages
     )
 
+# 获取医院列表
+@router.get("/hospitals")
+async def get_hospitals():
+    """获取医院列表"""
+    hospitals = [
+        {
+            "id": 1,
+            "name": "北京协和医院",
+            "address": "北京市东城区东单帅府园1号",
+            "phone": "010-69156114",
+            "level": "三甲",
+            "description": "国家卫生健康委直属医院"
+        },
+        {
+            "id": 2,
+            "name": "北京大学第一医院",
+            "address": "北京市西城区西什库大街8号",
+            "phone": "010-83572211",
+            "level": "三甲",
+            "description": "北京大学附属医院"
+        },
+        {
+            "id": 3,
+            "name": "中国人民解放军总医院",
+            "address": "北京市海淀区复兴路28号",
+            "phone": "010-66887329",
+            "level": "三甲",
+            "description": "解放军总医院"
+        },
+        {
+            "id": 4,
+            "name": "首都医科大学附属北京天坛医院",
+            "address": "北京市丰台区南四环西路119号",
+            "phone": "010-59978585",
+            "level": "三甲",
+            "description": "首都医科大学附属医院"
+        }
+    ]
+    
+    return {
+        "success": True,
+        "message": "获取医院列表成功",
+        "data": {"hospitals": hospitals}
+    }
+
+# 获取医生列表
+@router.get("/doctors")
+async def get_doctors(
+    department_id: Optional[int] = Query(None, description="科室ID"),
+    hospital_id: Optional[int] = Query(None, description="医院ID")
+):
+    """获取医生列表"""
+    doctors = [
+        {
+            "id": 1,
+            "name": "张医生",
+            "title": "主任医师",
+            "department_id": 1,
+            "department_name": "内科",
+            "hospital_id": 1,
+            "hospital_name": "北京协和医院",
+            "specialties": ["心血管疾病", "高血压"],
+            "experience_years": 15,
+            "education": "北京医科大学博士",
+            "introduction": "擅长心血管疾病的诊断和治疗",
+            "available_times": ["09:00-12:00", "14:00-17:00"]
+        },
+        {
+            "id": 2,
+            "name": "李医生",
+            "title": "副主任医师",
+            "department_id": 2,
+            "department_name": "外科",
+            "hospital_id": 1,
+            "hospital_name": "北京协和医院",
+            "specialties": ["普通外科", "腹腔镜手术"],
+            "experience_years": 12,
+            "education": "清华大学医学院硕士",
+            "introduction": "擅长普通外科手术",
+            "available_times": ["08:00-12:00", "13:30-17:30"]
+        },
+        {
+            "id": 3,
+            "name": "王医生",
+            "title": "主治医师",
+            "department_id": 3,
+            "department_name": "儿科",
+            "hospital_id": 2,
+            "hospital_name": "北京大学第一医院",
+            "specialties": ["儿童呼吸系统疾病", "小儿感冒"],
+            "experience_years": 8,
+            "education": "北京大学医学部硕士",
+            "introduction": "擅长儿童呼吸系统疾病的诊治",
+            "available_times": ["09:30-12:00", "14:30-17:00"]
+        },
+        {
+            "id": 4,
+            "name": "赵医生",
+            "title": "主任医师",
+            "department_id": 4,
+            "department_name": "妇产科",
+            "hospital_id": 2,
+            "hospital_name": "北京大学第一医院",
+            "specialties": ["妇科肿瘤", "妇科内分泌"],
+            "experience_years": 20,
+            "education": "协和医科大学博士",
+            "introduction": "擅长妇科肿瘤的诊断和治疗",
+            "available_times": ["08:30-11:30", "14:00-16:30"]
+        }
+    ]
+    
+    # 根据参数过滤医生
+    filtered_doctors = doctors
+    if hospital_id is not None:
+        filtered_doctors = [d for d in filtered_doctors if d["hospital_id"] == hospital_id]
+    if department_id is not None:
+        # 这里简化处理，实际应该根据department_id查询对应的科室名称
+        department_names = {
+            1: "内科", 2: "外科", 3: "儿科", 4: "妇产科",
+            5: "眼科", 6: "耳鼻喉科", 7: "皮肤科", 8: "神经科"
+        }
+        if department_id in department_names:
+            filtered_doctors = [d for d in filtered_doctors if d["department_id"] == department_id]
+    
+    return {
+        "success": True,
+        "message": "获取医生列表成功",
+        "data": {"doctors": filtered_doctors}
+    }
+
 # 获取单个预约详情
 @router.get("/{appointment_id}", response_model=Appointment)
 async def get_appointment(appointment_id: int, db: Session = Depends(get_db)):

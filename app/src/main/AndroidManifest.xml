@@ -9,6 +9,13 @@
     <!-- 相机和存储权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    
+    <!-- 定位权限 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    
+    <!-- WiFi状态权限（用于网络定位辅助） -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
         android:allowBackup="true"
@@ -44,6 +51,14 @@
             android:exported="false"
             android:screenOrientation="portrait" />
             
+        <activity
+            android:name=".activity.SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".activity.AddressActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
         <!-- FileProvider for camera functionality -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -54,6 +69,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+        
+
     </application>
 
 </manifest>

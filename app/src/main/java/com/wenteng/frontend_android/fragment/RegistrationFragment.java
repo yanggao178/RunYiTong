@@ -27,8 +27,8 @@ import java.util.ArrayList;
 public class RegistrationFragment extends Fragment {
     
     // UI控件
-    private CardView cardByHospital, cardByDoctor;
-    private LinearLayout contentArea;
+    private Button btnHospitalRegistration, btnDoctorRegistration;
+    private LinearLayout contentArea, layoutHospitalList;
     private RecyclerView recyclerViewHospitals, recyclerViewDoctors, recyclerViewDepartments;
     private Spinner spinnerTimeSlots;
     private EditText editTextSymptoms, editTextPatientName, editTextPatientPhone, editTextPatientId;
@@ -61,6 +61,9 @@ public class RegistrationFragment extends Fragment {
         initApiService();
         setupClickListeners();
         
+        // 设置初始按钮状态
+        updateButtonSelection();
+        
         // 默认显示按医院挂号
         showHospitalRegistration();
         
@@ -68,9 +71,10 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void initViews(View view) {
-        cardByHospital = view.findViewById(R.id.card_by_hospital);
-        cardByDoctor = view.findViewById(R.id.card_by_doctor);
+        btnHospitalRegistration = view.findViewById(R.id.btn_hospital_registration);
+        btnDoctorRegistration = view.findViewById(R.id.btn_doctor_registration);
         contentArea = view.findViewById(R.id.content_area);
+        layoutHospitalList = view.findViewById(R.id.layout_hospital_list);
         recyclerViewHospitals = view.findViewById(R.id.recycler_hospitals);
         recyclerViewDoctors = view.findViewById(R.id.recycler_doctors);
         recyclerViewDepartments = view.findViewById(R.id.recycler_departments);
@@ -94,45 +98,61 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void setupClickListeners() {
-        // 按医院挂号卡片点击
-        cardByHospital.setOnClickListener(v -> {
-            isHospitalMode = true;
-            updateCardSelection();
-            showHospitalRegistration();
+        // 按医院挂号按钮点击
+        btnHospitalRegistration.setOnClickListener(v -> {
+            if (!isHospitalMode) {
+                isHospitalMode = true;
+                updateButtonSelection();
+                showHospitalRegistration();
+            }
         });
         
-        // 按医生挂号卡片点击
-        cardByDoctor.setOnClickListener(v -> {
-            isHospitalMode = false;
-            updateCardSelection();
-            showDoctorRegistration();
+        // 按医生挂号按钮点击
+        btnDoctorRegistration.setOnClickListener(v -> {
+            if (isHospitalMode) {
+                isHospitalMode = false;
+                updateButtonSelection();
+                showDoctorRegistration();
+            }
         });
         
         // 确认预约按钮点击
         btnConfirmAppointment.setOnClickListener(v -> confirmAppointment());
     }
     
-    private void updateCardSelection() {
+    private void updateButtonSelection() {
         if (isHospitalMode) {
-            cardByHospital.setCardElevation(8f);
-            cardByDoctor.setCardElevation(2f);
+            btnHospitalRegistration.setSelected(true);
+            btnDoctorRegistration.setSelected(false);
         } else {
-            cardByHospital.setCardElevation(2f);
-            cardByDoctor.setCardElevation(8f);
+            btnHospitalRegistration.setSelected(false);
+            btnDoctorRegistration.setSelected(true);
         }
     }
     
     private void showHospitalRegistration() {
-        // 显示医院列表，隐藏医生列表
+        // 显示医院列表容器和医院列表，隐藏医生列表
+        layoutHospitalList.setVisibility(View.VISIBLE);
         recyclerViewHospitals.setVisibility(View.VISIBLE);
         recyclerViewDoctors.setVisibility(View.GONE);
+        recyclerViewDepartments.setVisibility(View.GONE);
         
+        android.util.Log.d("RegistrationFragment", "显示医院挂号界面，RecyclerView可见性: " + recyclerViewHospitals.getVisibility());
+        
+        updateButtonSelection();
         loadHospitals();
     }
     
     private void showDoctorRegistration() {
-        // 显示医生列表，隐藏医院列表
+        // 显示医生列表，隐藏医院列表容器和医院列表
+        layoutHospitalList.setVisibility(View.GONE);
         recyclerViewHospitals.setVisibility(View.GONE);
+        
+        // 显示医生列表容器和医生RecyclerView
+        View layoutDoctorList = getView().findViewById(R.id.layout_doctor_list);
+        if (layoutDoctorList != null) {
+            layoutDoctorList.setVisibility(View.VISIBLE);
+        }
         recyclerViewDoctors.setVisibility(View.VISIBLE);
         
         loadDoctors();
@@ -147,8 +167,13 @@ public class RegistrationFragment extends Fragment {
                 showLoading(false);
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     hospitalList = response.body().getData().getHospitals();
+                    android.util.Log.d("RegistrationFragment", "接收到医院数据，数量: " + (hospitalList != null ? hospitalList.size() : 0));
+                    if (hospitalList != null && !hospitalList.isEmpty()) {
+                        android.util.Log.d("RegistrationFragment", "第一个医院: " + hospitalList.get(0).getName());
+                    }
                     setupHospitalAdapter();
                 } else {
+                    android.util.Log.e("RegistrationFragment", "API响应失败: " + response.code());
                     showError("加载医院列表失败");
                 }
             }
@@ -168,10 +193,19 @@ public class RegistrationFragment extends Fragment {
             @Override
             public void onResponse(Call<ApiResponse<DoctorListResponse>> call, Response<ApiResponse<DoctorListResponse>> response) {
                 showLoading(false);
+                android.util.Log.d("RegistrationFragment", "医生API响应码: " + response.code());
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     doctorList = response.body().getData().getDoctors();
+                    android.util.Log.d("RegistrationFragment", "接收到医生数据，数量: " + (doctorList != null ? doctorList.size() : 0));
+                    if (doctorList != null && !doctorList.isEmpty()) {
+                        android.util.Log.d("RegistrationFragment", "第一个医生: " + doctorList.get(0).getName());
+                    }
                     setupDoctorAdapter();
                 } else {
+                    android.util.Log.e("RegistrationFragment", "API响应失败: " + response.code());
+                    if (response.body() != null) {
+                        android.util.Log.e("RegistrationFragment", "响应体: " + response.body().toString());
+                    }
                     showError("加载医生列表失败");
                 }
             }
@@ -179,6 +213,7 @@ public class RegistrationFragment extends Fragment {
             @Override
             public void onFailure(Call<ApiResponse<DoctorListResponse>> call, Throwable t) {
                 showLoading(false);
+                android.util.Log.e("RegistrationFragment", "网络错误: " + t.getMessage());
                 showError("网络错误：" + t.getMessage());
             }
         });
@@ -209,21 +244,28 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void setupHospitalAdapter() {
+        android.util.Log.d("RegistrationFragment", "设置医院适配器，医院列表大小: " + (hospitalList != null ? hospitalList.size() : 0));
         hospitalAdapter = new HospitalAdapter(hospitalList, hospital -> {
             selectedHospital = hospital;
             updateSelectedInfo();
             loadDepartmentsByHospital(hospital.getId());
         });
         recyclerViewHospitals.setAdapter(hospitalAdapter);
+        android.util.Log.d("RegistrationFragment", "医院适配器设置完成");
     }
     
     private void setupDoctorAdapter() {
+        android.util.Log.d("RegistrationFragment", "设置医生适配器，医生列表大小: " + (doctorList != null ? doctorList.size() : 0));
+        if (doctorList != null && !doctorList.isEmpty()) {
+            android.util.Log.d("RegistrationFragment", "第一个医生: " + doctorList.get(0).getName());
+        }
         doctorAdapter = new DoctorAdapter(doctorList, doctor -> {
             selectedDoctor = doctor;
             updateSelectedInfo();
             setupTimeSlots(doctor.getAvailableTimes());
         });
         recyclerViewDoctors.setAdapter(doctorAdapter);
+        android.util.Log.d("RegistrationFragment", "医生适配器设置完成");
     }
     
     private void setupDepartmentAdapter() {

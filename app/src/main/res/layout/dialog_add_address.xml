@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="0dp"
+    android:background="@drawable/dialog_background">
+
+    <!-- 对话框标题 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/primary_color"
+        android:padding="20dp"
+        android:gravity="center">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_location"
+            android:tint="@android:color/white"
+            android:layout_marginRight="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="添加收货地址"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+
+    <!-- 表单内容 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- 收货人姓名 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="收货人姓名"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#2C3E50"
+            android:layout_marginBottom="8dp"
+            android:drawableLeft="@drawable/ic_person"
+            android:drawablePadding="8dp"
+            android:drawableTint="@color/primary_color"
+            android:gravity="center_vertical" />
+
+        <EditText
+            android:id="@+id/et_name"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="请输入收货人姓名"
+            android:textSize="16sp"
+            android:textColor="#2C3E50"
+            android:textColorHint="#95A5A6"
+            android:background="@drawable/edittext_enhanced_background"
+            android:padding="16dp"
+            android:layout_marginBottom="20dp"
+            android:inputType="textPersonName"
+            android:maxLines="1"
+            android:elevation="2dp" />
+
+        <!-- 联系电话 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="联系电话"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#2C3E50"
+            android:layout_marginBottom="8dp"
+            android:drawableLeft="@drawable/ic_phone"
+            android:drawablePadding="8dp"
+            android:drawableTint="@color/primary_color"
+            android:gravity="center_vertical" />
+
+        <EditText
+            android:id="@+id/et_phone"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:hint="请输入联系电话"
+            android:textSize="16sp"
+            android:textColor="#2C3E50"
+            android:textColorHint="#95A5A6"
+            android:background="@drawable/edittext_enhanced_background"
+            android:padding="16dp"
+            android:layout_marginBottom="20dp"
+            android:inputType="phone"
+            android:maxLines="1"
+            android:elevation="2dp" />
+
+        <!-- 详细地址 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="详细地址"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="#2C3E50"
+            android:layout_marginBottom="8dp"
+            android:drawableLeft="@drawable/ic_location"
+            android:drawablePadding="8dp"
+            android:drawableTint="@color/primary_color"
+            android:gravity="center_vertical" />
+
+        <!-- 地址输入框和定位按钮的容器 -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="28dp">
+
+            <EditText
+                android:id="@+id/et_address"
+                android:layout_width="match_parent"
+                android:layout_height="88dp"
+                android:hint="请输入详细地址"
+                android:textSize="16sp"
+                android:textColor="#2C3E50"
+                android:textColorHint="#95A5A6"
+                android:background="@drawable/edittext_enhanced_background"
+                android:padding="16dp"
+                android:paddingRight="56dp"
+                android:inputType="textMultiLine"
+                android:gravity="top"
+                android:maxLines="3"
+                android:elevation="2dp" />
+
+            <!-- 定位按钮 -->
+            <ImageButton
+                android:id="@+id/btn_location"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="8dp"
+                android:background="@drawable/location_button_background"
+                android:src="@drawable/ic_location_on"
+                android:tint="@color/primary_color"
+                android:contentDescription="定位"
+                android:elevation="4dp" />
+
+        </RelativeLayout>
+
+        <!-- 按钮区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="8dp">
+
+            <Button
+                android:id="@+id/btn_cancel"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:text="取消"
+                android:textSize="16sp"
+                android:textColor="#7F8C8D"
+                android:background="@drawable/button_enhanced_secondary"
+                android:layout_marginRight="12dp"
+                android:elevation="4dp" />
+
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="0dp"
+                android:layout_height="52dp"
+                android:layout_weight="1"
+                android:text="保存"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="@drawable/button_enhanced_primary"
+                android:layout_marginLeft="12dp"
+                android:elevation="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

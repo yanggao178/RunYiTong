@@ -1,15 +1,22 @@
+
 plugins {
     alias(libs.plugins.android.application)
 }
 
 android {
     namespace 'com.wenteng.frontend_android'
-    compileSdk 35
+    compileSdk 34
+    
+    configurations.all {
+        resolutionStrategy {
+            force 'androidx.activity:activity:1.6.1'
+        }
+    }
 
     defaultConfig {
         applicationId "com.wenteng.frontend_android"
-        minSdk 23
-        targetSdk 35
+        minSdk 24
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 
@@ -18,7 +25,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -26,7 +33,22 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+    buildFeatures {
+        buildConfig true
+    }
+
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES']
+            excludes += ['META-INF/LICENSE']
+            excludes += ['META-INF/LICENSE.txt']
+            excludes += ['META-INF/NOTICE']
+            excludes += ['META-INF/NOTICE.txt']
+        }
+    }
 }
+
+
 
 dependencies {
     implementation libs.appcompat
@@ -48,4 +70,6 @@ dependencies {
 
     // 可选：日志拦截器（调试用）
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+    
+
 }

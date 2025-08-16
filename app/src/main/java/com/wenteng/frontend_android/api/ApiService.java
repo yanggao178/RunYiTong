@@ -107,14 +107,14 @@ public interface ApiService {
      * 获取科室列表
      * @return 科室列表响应
      */
-    @GET("api/appointments/departments")
+    @GET("api/v1/appointments/departments")
     Call<ApiResponse<DepartmentListResponse>> getDepartments();
     
     /**
      * 获取医院列表
      * @return 医院列表响应
      */
-    @GET("api/appointments/hospitals")
+    @GET("api/v1/appointments/hospitals")
     Call<ApiResponse<HospitalListResponse>> getHospitals();
     
     /**
@@ -123,7 +123,7 @@ public interface ApiService {
      * @param hospitalId 医院ID（可选）
      * @return 医生列表响应
      */
-    @GET("api/appointments/doctors")
+    @GET("api/v1/appointments/doctors")
     Call<ApiResponse<DoctorListResponse>> getDoctors(
         @Query("department_id") Integer departmentId,
         @Query("hospital_id") Integer hospitalId
@@ -134,7 +134,7 @@ public interface ApiService {
      * @param hospitalId 医院ID
      * @return 科室列表响应
      */
-    @GET("api/appointments/hospitals/{hospital_id}/departments")
+    @GET("api/v1/appointments/hospitals/{hospital_id}/departments")
     Call<ApiResponse<DepartmentListResponse>> getHospitalDepartments(@Path("hospital_id") int hospitalId);
     
     /**
@@ -142,6 +142,6 @@ public interface ApiService {
      * @param hospitalId 医院ID
      * @return 科室列表
      */
-    @GET("api/appointments/hospitals/{hospital_id}/departments")
+    @GET("api/v1/appointments/hospitals/{hospital_id}/departments")
     Call<List<Department>> getDepartmentsByHospital(@Path("hospital_id") int hospitalId);
 }
