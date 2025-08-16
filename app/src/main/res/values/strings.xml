@@ -12,4 +12,26 @@
     <string name="empty_order_title">暂无订单</string>
     <string name="empty_order_message">快去购买您喜欢的商品吧</string>
     <string name="empty_order_image_desc">空订单状态图标</string>
+    
+    <!-- Image processing dialog strings -->
+    <string name="image_processing_options">图片处理选项</string>
+    <string name="ocr_text_recognition">OCR文字识别</string>
+    <string name="smart_analysis">处方智能分析</string>
+    <string name="upload_to_server">上传到服务器</string>
+    <string name="preview_image">预览图片</string>
+    <string name="cancel">取消</string>
+    
+    <!-- Image processing dialog descriptions -->
+    <string name="ocr_description">智能识别图片中的文字内容</string>
+    <string name="analysis_description">AI分析处方内容和用药建议</string>
+    <string name="upload_description">保存图片到云端存储</string>
+    <string name="preview_description">查看图片详细信息</string>
+    
+    <!-- Content descriptions -->
+    <string name="processing_options_icon">处理选项</string>
+    <string name="close_dialog">关闭</string>
+    <string name="ocr_icon">OCR识别</string>
+    <string name="analysis_icon">智能分析</string>
+    <string name="upload_icon">上传</string>
+    <string name="preview_icon">预览</string>
 </resources>

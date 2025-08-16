@@ -22,13 +22,13 @@
             android:src="@drawable/ic_image_processing"
             android:tint="@android:color/white"
             android:layout_marginEnd="12dp"
-            android:contentDescription="处理选项" />
+            android:contentDescription="@string/processing_options_icon" />
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="选择处理方式"
+            android:text="@string/image_processing_options"
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -41,7 +41,7 @@
             android:tint="@android:color/white"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
-            android:contentDescription="关闭" />
+            android:contentDescription="@string/close_dialog" />
 
     </LinearLayout>
 
@@ -77,12 +77,12 @@
                     android:background="@drawable/circle_background_light"
                     android:padding="12dp"
                     android:layout_marginBottom="12dp"
-                    android:contentDescription="OCR识别" />
+                    android:contentDescription="@string/ocr_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="OCR文字识别"
+                    android:text="@string/ocr_text_recognition"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -91,7 +91,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="智能识别图片中的文字内容"
+                    android:text="@string/ocr_description"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
@@ -126,12 +126,12 @@
                     android:background="@drawable/circle_background_accent"
                     android:padding="12dp"
                     android:layout_marginBottom="12dp"
-                    android:contentDescription="智能分析" />
+                    android:contentDescription="@string/analysis_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="处方智能分析"
+                    android:text="@string/smart_analysis"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -140,7 +140,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="AI分析处方内容和用药建议"
+                    android:text="@string/analysis_description"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
@@ -175,12 +175,12 @@
                     android:background="@drawable/circle_background_success"
                     android:padding="12dp"
                     android:layout_marginBottom="12dp"
-                    android:contentDescription="上传" />
+                    android:contentDescription="@string/upload_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="上传到服务器"
+                    android:text="@string/upload_to_server"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -189,7 +189,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="保存图片到云端存储"
+                    android:text="@string/upload_description"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
@@ -223,12 +223,12 @@
                     android:background="@drawable/circle_background_warning"
                     android:padding="12dp"
                     android:layout_marginBottom="12dp"
-                    android:contentDescription="预览" />
+                    android:contentDescription="@string/preview_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="预览图片"
+                    android:text="@string/preview_image"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -237,7 +237,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="查看图片详细信息"
+                    android:text="@string/preview_description"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
@@ -262,7 +262,7 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
-            android:text="取消"
+            android:text="@string/cancel"
             android:textColor="@color/text_secondary"
             android:background="@drawable/button_outline"
             android:layout_marginEnd="8dp" />

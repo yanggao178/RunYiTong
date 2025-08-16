@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:interpolator="@android:anim/accelerate_interpolator">
+    
+    <!-- 缩放动画：从1.0倍缩小到0.8倍 -->
+    <scale
+        android:duration="200"
+        android:fromXScale="1.0"
+        android:fromYScale="1.0"
+        android:pivotX="50%"
+        android:pivotY="50%"
+        android:toXScale="0.8"
+        android:toYScale="0.8" />
+    
+    <!-- 透明度动画：从不透明到透明 -->
+    <alpha
+        android:duration="200"
+        android:fromAlpha="1.0"
+        android:toAlpha="0.0" />
+    
+    <!-- 平移动画：向下方滑出 -->
+    <translate
+        android:duration="200"
+        android:fromYDelta="0"
+        android:toYDelta="10%p" />
+        
+</set>

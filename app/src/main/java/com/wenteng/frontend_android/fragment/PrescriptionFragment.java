@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -41,6 +42,10 @@ import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
 import com.wenteng.frontend_android.model.ImageUploadResult;
 import com.wenteng.frontend_android.utils.ImageUtils;
+import com.wenteng.frontend_android.dialog.ImageProcessingDialogFragment;
+import com.wenteng.frontend_android.dialog.ImagePickerDialogFragment;
+import com.wenteng.frontend_android.dialog.TestDialogFragment;
+import com.wenteng.frontend_android.dialog.CustomImageProcessingDialog;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -67,6 +72,7 @@ public class PrescriptionFragment extends Fragment {
     private Call<ApiResponse<PrescriptionAnalysis>> analysisCall;
     private Call<ApiResponse<ImageUploadResult>> uploadCall;
     private Uri selectedImageUri;
+    private String imageSource = "unknown"; // 记录图片来源："camera" 或 "gallery"
     
     // 图片选择相关
     private ActivityResultLauncher<Intent> galleryLauncher;
@@ -148,32 +154,13 @@ public class PrescriptionFragment extends Fragment {
         // 相册选择
         galleryLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                // 恢复屏幕方向
-                restoreScreenOrientation();
-                
-                if (result.getResultCode() == getActivity().RESULT_OK && result.getData() != null) {
-                    Uri selectedImageUri = result.getData().getData();
-                    if (selectedImageUri != null) {
-                        handleSelectedImage(selectedImageUri);
-                    }
-                }
-            }
+            result -> handleImageSelectionResult(result, "gallery")
         );
         
         // 拍照
         cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
-            result -> {
-                // 恢复屏幕方向
-                restoreScreenOrientation();
-                
-                if (result.getResultCode() == getActivity().RESULT_OK) {
-                    if (photoUri != null) {
-                        handleSelectedImage(photoUri);
-                    }
-                }
-            }
+            result -> handleImageSelectionResult(result, "camera")
         );
         
         // 相机权限请求
@@ -181,9 +168,11 @@ public class PrescriptionFragment extends Fragment {
             new ActivityResultContracts.RequestPermission(),
             isGranted -> {
                 if (isGranted) {
+                    Log.d("PrescriptionFragment", "相机权限已授予");
                     openCamera();
                 } else {
-                    Toast.makeText(getContext(), "需要相机权限才能拍照", Toast.LENGTH_SHORT).show();
+                    Log.w("PrescriptionFragment", "相机权限被拒绝");
+                    showSafeToast("需要相机权限才能拍照");
                 }
             }
         );
@@ -512,52 +501,201 @@ public class PrescriptionFragment extends Fragment {
     /**
      * 显示图片选择对话框
      */
+    /**
+     * 显示图片选择对话框
+     * 使用自定义DialogFragment替代简单的AlertDialog，提供更好的用户体验
+     */
     private void showImagePickerDialog() {
-        final String[] options = {"从相册选择", "拍照", "取消"};
+        android.util.Log.d("PrescriptionFragment", "=== 开始显示图片选择对话框 ===");
+        android.util.Log.d("PrescriptionFragment", "Fragment状态 - Context: " + (getContext() != null) + ", isAdded: " + isAdded() + ", isDetached: " + isDetached() + ", isRemoving: " + isRemoving());
         
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("选择图片来源");
+        // 检查Fragment状态
+        if (getContext() == null || !isAdded() || isDetached() || isRemoving()) {
+            android.util.Log.w("PrescriptionFragment", "Fragment状态不正常，无法显示对话框");
+            Toast.makeText(getActivity(), "页面状态异常，请重试", Toast.LENGTH_SHORT).show();
+            return;
+        }
         
-        // 设置对话框从底部弹出
-        builder.setItems(options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case 0: // 从相册选择
-                        openGallery();
-                        break;
-                    case 1: // 拍照
-                        checkCameraPermissionAndOpen();
-                        break;
-                    case 2: // 取消
-                        dialog.dismiss();
-                        break;
+        try {
+            android.util.Log.d("PrescriptionFragment", "开始创建ImagePickerDialogFragment");
+            
+            // 创建自定义图片选择对话框
+            ImagePickerDialogFragment dialogFragment = ImagePickerDialogFragment.newInstance();
+            
+            // 设置回调监听器
+            dialogFragment.setOnImagePickerOptionSelectedListener(new ImagePickerDialogFragment.OnImagePickerOptionSelectedListener() {
+                @Override
+                public void onGallerySelected() {
+                    android.util.Log.d("PrescriptionFragment", "用户选择从相册选择");
+                    openGallery();
                 }
-            }
-        });
+                
+                @Override
+                public void onCameraSelected() {
+                    android.util.Log.d("PrescriptionFragment", "用户选择拍照");
+                    checkCameraPermissionAndOpen();
+                }
+                
+                @Override
+                public void onDialogCancelled() {
+                    android.util.Log.d("PrescriptionFragment", "用户取消图片选择对话框");
+                }
+            });
+            
+            // 显示对话框
+            android.util.Log.d("PrescriptionFragment", "准备显示ImagePickerDialogFragment");
+            dialogFragment.show(getParentFragmentManager(), "ImagePickerDialog");
+            android.util.Log.d("PrescriptionFragment", "ImagePickerDialogFragment显示完成");
+            
+            // 显示提示信息
+            Toast.makeText(requireActivity(), "请选择图片来源", Toast.LENGTH_SHORT).show();
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "显示ImagePickerDialogFragment时发生异常: " + e.getMessage(), e);
+            e.printStackTrace();
+            
+            // 异常情况下使用简单对话框作为备用方案
+            android.util.Log.d("PrescriptionFragment", "异常情况下使用简单AlertDialog作为备用方案");
+            showFallbackImagePickerDialog();
+        }
+    }
+    
+    /**
+     * 备用的简单图片选择对话框
+     * 当自定义对话框无法正常显示时使用
+     */
+    private void showFallbackImagePickerDialog() {
+        android.util.Log.d("PrescriptionFragment", "显示备用图片选择对话框");
         
-        AlertDialog dialog = builder.create();
-        dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_Dialog;
-        dialog.getWindow().setGravity(android.view.Gravity.BOTTOM);
-        dialog.show();
+        try {
+            final String[] options = {"从相册选择", "拍照", "取消"};
+            
+            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+            builder.setTitle("选择图片来源");
+            
+            // 设置对话框选项
+            builder.setItems(options, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    switch (which) {
+                        case 0: // 从相册选择
+                            android.util.Log.d("PrescriptionFragment", "备用对话框：用户选择从相册选择");
+                            openGallery();
+                            break;
+                        case 1: // 拍照
+                            android.util.Log.d("PrescriptionFragment", "备用对话框：用户选择拍照");
+                            checkCameraPermissionAndOpen();
+                            break;
+                        case 2: // 取消
+                            android.util.Log.d("PrescriptionFragment", "备用对话框：用户取消");
+                            dialog.dismiss();
+                            break;
+                    }
+                }
+            });
+            
+            AlertDialog dialog = builder.create();
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().getAttributes().windowAnimations = android.R.style.Animation_Dialog;
+                dialog.getWindow().setGravity(android.view.Gravity.BOTTOM);
+            }
+            dialog.show();
+            
+            android.util.Log.d("PrescriptionFragment", "备用对话框显示成功");
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "显示备用对话框时发生异常: " + e.getMessage(), e);
+            Toast.makeText(getContext(), "无法显示选择对话框，请重试", Toast.LENGTH_SHORT).show();
+        }
     }
     
     /**
      * 打开相册选择图片
      */
     private void openGallery() {
-        // 先设置屏幕方向为纵向
-        if (getActivity() != null) {
-            getActivity().setRequestedOrientation(android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        android.util.Log.d("PrescriptionFragment", "=== openGallery 开始 ===");
+        
+        try {
+            // 检查Fragment和Activity状态
+            if (getActivity() == null || !isAdded() || isRemoving()) {
+                android.util.Log.e("PrescriptionFragment", "Fragment状态异常，无法打开相册");
+                return;
+            }
+            
+            // 创建标准的图片选择Intent
+            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("image/*");
+            
+            // 检查是否有应用可以处理这个Intent
+            if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                android.util.Log.d("PrescriptionFragment", "启动相册选择器");
+                galleryLauncher.launch(intent);
+            } else {
+                android.util.Log.e("PrescriptionFragment", "没有找到可用的图片选择应用");
+                showSafeToast("没有找到可用的图片选择应用");
+            }
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "打开相册时发生异常: " + e.getMessage(), e);
+            showSafeToast("打开相册失败，请重试");
         }
         
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        // 强制使用纵向模式
-        intent.putExtra("android.intent.extra.screenOrientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        android.util.Log.d("PrescriptionFragment", "=== openGallery 结束 ===");
+    }
+    
+    /**
+     * 备用相册选择方法，使用不同的Intent方式
+     */
+    private void openGalleryAlternative() {
+        android.util.Log.d("PrescriptionFragment", "=== openGalleryAlternative 开始 ===");
         
-        galleryLauncher.launch(intent);
+        try {
+            // 检查Fragment和Activity状态
+            if (getActivity() == null || !isAdded() || isRemoving()) {
+                android.util.Log.e("PrescriptionFragment", "Fragment状态异常，无法打开相册");
+                return;
+            }
+            
+            // 尝试使用GET_CONTENT方式
+            Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+            intent.setType("image/*");
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            
+            // 检查是否有应用可以处理这个Intent
+            if (intent.resolveActivity(getActivity().getPackageManager()) != null) {
+                android.util.Log.d("PrescriptionFragment", "启动备用相册选择器");
+                galleryLauncher.launch(intent);
+            } else {
+                android.util.Log.e("PrescriptionFragment", "没有找到可用的文件选择应用");
+                showSafeToast("没有找到可用的文件选择应用");
+            }
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "打开备用相册时发生异常: " + e.getMessage(), e);
+            showSafeToast("打开相册失败，请重试");
+        }
+        
+        android.util.Log.d("PrescriptionFragment", "=== openGalleryAlternative 结束 ===");
+    }
+    
+    /**
+     * 测试相册选择功能
+     */
+    public void testGallerySelection() {
+        android.util.Log.d("PrescriptionFragment", "=== 测试相册选择功能 ===");
+        
+        // 先测试标准方法
+        android.util.Log.d("PrescriptionFragment", "测试标准相册选择方法");
+        openGallery();
+        
+        // 延迟测试备用方法
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                android.util.Log.d("PrescriptionFragment", "如果标准方法失败，可以尝试备用方法");
+                // openGalleryAlternative(); // 暂时注释，避免同时启动两个选择器
+            }
+        }, 5000);
     }
     
     /**
@@ -600,7 +738,7 @@ public class PrescriptionFragment extends Fragment {
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
                 // 强制使用纵向模式
                 takePictureIntent.putExtra("android.intent.extra.screenOrientation", android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                takePictureIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                // 移除 FLAG_ACTIVITY_NEW_TASK 标志，避免在新任务栈中启动导致无法返回结果
                 
                 cameraLauncher.launch(takePictureIntent);
             }
@@ -639,43 +777,574 @@ public class PrescriptionFragment extends Fragment {
      * 处理选择的图片
      */
     private void handleSelectedImage(Uri imageUri) {
+        android.util.Log.d("PrescriptionFragment", "=== handleSelectedImage 开始 ===");
+        android.util.Log.d("PrescriptionFragment", "接收到的imageUri: " + imageUri);
+        
         if (imageUri == null) {
+            android.util.Log.e("PrescriptionFragment", "imageUri为null，显示错误提示");
             Toast.makeText(getContext(), "图片选择失败", Toast.LENGTH_SHORT).show();
             return;
         }
         
+        android.util.Log.d("PrescriptionFragment", "设置selectedImageUri");
         selectedImageUri = imageUri;
+        android.util.Log.d("PrescriptionFragment", "selectedImageUri已设置为: " + selectedImageUri);
         
-        // 显示图片处理选项对话框
-        showImageProcessingDialog();
+        // 测试 ImageProcessingDialogFragment 的 onCreateDialog 方法
+       // testImageProcessingDialogCreation();
+        
+        // 直接显示图片处理选项对话框
+        android.util.Log.d("PrescriptionFragment", "准备调用showImageProcessingDialog()");
+        try {
+            showImageProcessingDialog();
+            android.util.Log.d("PrescriptionFragment", "showImageProcessingDialog()调用完成");
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "调用showImageProcessingDialog()时发生异常: " + e.getMessage(), e);
+        }
+        
+        android.util.Log.d("PrescriptionFragment", "=== handleSelectedImage 结束 ===");
+    }
+    
+    /**
+     * 测试 ImageProcessingDialogFragment 的 onCreateDialog 方法
+     */
+    private void testImageProcessingDialogCreation() {
+        android.util.Log.d("PrescriptionFragment", "=== 开始测试 ImageProcessingDialogFragment.onCreateDialog() ===");
+        
+        try {
+            // 创建 DialogFragment 实例
+            ImageProcessingDialogFragment testDialog = ImageProcessingDialogFragment.newInstance(selectedImageUri, imageSource, true);
+            android.util.Log.d("PrescriptionFragment", "DialogFragment 实例创建成功");
+            
+            // 设置监听器
+            testDialog.setOnProcessingOptionSelectedListener(new ImageProcessingDialogFragment.OnProcessingOptionSelectedListener() {
+                @Override
+                public void onOCRSelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - OCR选项被选中");
+                }
+                
+                @Override
+                public void onAnalysisSelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - 分析选项被选中");
+                }
+                
+                @Override
+                public void onUploadSelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - 上传选项被选中");
+                }
+                
+                @Override
+                public void onPreviewSelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - 预览选项被选中");
+                }
+                
+                @Override
+                public void onDialogCancelled() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - 对话框被取消");
+                }
+            });
+            
+            android.util.Log.d("PrescriptionFragment", "监听器设置完成，准备显示测试对话框");
+            
+            // 显示对话框进行测试
+            testDialog.show(getParentFragmentManager(), "TestImageProcessingDialog");
+            android.util.Log.d("PrescriptionFragment", "测试对话框显示调用完成");
+            
+            // 延迟检查对话框状态
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    androidx.fragment.app.Fragment dialog = getParentFragmentManager().findFragmentByTag("TestImageProcessingDialog");
+                    if (dialog != null && dialog.isAdded()) {
+                        android.util.Log.d("PrescriptionFragment", "✅ 测试成功：ImageProcessingDialogFragment.onCreateDialog() 正常工作");
+                        // 关闭测试对话框
+                        if (dialog instanceof ImageProcessingDialogFragment) {
+                            ((ImageProcessingDialogFragment) dialog).dismiss();
+                        }
+                    } else {
+                        android.util.Log.e("PrescriptionFragment", "❌ 测试失败：ImageProcessingDialogFragment.onCreateDialog() 可能存在问题");
+                    }
+                }
+            }, 1000);
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "❌ 测试异常：ImageProcessingDialogFragment.onCreateDialog() 发生错误: " + e.getMessage(), e);
+            e.printStackTrace();
+        }
+        
+        android.util.Log.d("PrescriptionFragment", "=== ImageProcessingDialogFragment.onCreateDialog() 测试完成 ===");
+    }
+    
+    /**
+     * 测试基本对话框功能
+     */
+    private void testBasicDialog() {
+        android.util.Log.d("PrescriptionFragment", "=== 开始测试基本对话框功能 ===");
+        
+        try {
+            // 检查基本状态
+            if (getContext() == null) {
+                android.util.Log.e("PrescriptionFragment", "Context为null");
+                return;
+            }
+            
+            if (!isAdded()) {
+                android.util.Log.e("PrescriptionFragment", "Fragment未添加到Activity");
+                return;
+            }
+            
+            android.util.Log.d("PrescriptionFragment", "基本状态检查通过，显示测试对话框");
+            
+            // 显示简单的AlertDialog测试
+            new android.app.AlertDialog.Builder(requireContext())
+                .setTitle("对话框测试")
+                .setMessage("基本对话框功能正常。\n\n现在选择下一步操作：")
+                .setPositiveButton("新自定义对话框", (dialog, which) -> {
+                    android.util.Log.d("PrescriptionFragment", "用户选择新自定义对话框");
+                    showCustomImageProcessingDialog();
+                })
+                .setNegativeButton("原自定义对话框", (dialog, which) -> {
+                    android.util.Log.d("PrescriptionFragment", "用户选择原自定义对话框");
+                    showImageProcessingDialog();
+                })
+                .setNeutralButton("测试DialogFragment", (dialog, which) -> {
+                    android.util.Log.d("PrescriptionFragment", "用户选择测试DialogFragment");
+                    showTestDialogFragment();
+                })
+                .setCancelable(true)
+                .show();
+                
+            android.util.Log.d("PrescriptionFragment", "测试对话框显示成功");
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "测试基本对话框时发生异常: " + e.getMessage(), e);
+            e.printStackTrace();
+            Toast.makeText(getContext(), "对话框功能异常: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    /**
+     * 显示测试用的DialogFragment
+     */
+    private void showTestDialogFragment() {
+        android.util.Log.d("PrescriptionFragment", "=== 开始显示测试DialogFragment ===");
+        
+        try {
+            // 检查Fragment状态
+            if (!isAdded() || getFragmentManager() == null) {
+                android.util.Log.e("PrescriptionFragment", "Fragment状态异常，无法显示DialogFragment");
+                Toast.makeText(getContext(), "Fragment状态异常", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            // 创建并显示测试DialogFragment
+            TestDialogFragment testDialog = TestDialogFragment.newInstance();
+            testDialog.show(getParentFragmentManager(), "TestDialogFragment");
+            
+            android.util.Log.d("PrescriptionFragment", "测试DialogFragment显示调用完成");
+            
+            // 延迟检查对话框是否成功显示
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                try {
+                    if (testDialog.isAdded() && testDialog.getDialog() != null && testDialog.getDialog().isShowing()) {
+                        android.util.Log.d("PrescriptionFragment", "✓ 测试DialogFragment显示成功");
+                    } else {
+                        android.util.Log.e("PrescriptionFragment", "✗ 测试DialogFragment显示失败");
+                        Toast.makeText(getContext(), "测试DialogFragment显示失败", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("PrescriptionFragment", "检查测试DialogFragment状态时异常: " + e.getMessage(), e);
+                }
+            }, 500);
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "显示测试DialogFragment时发生异常: " + e.getMessage(), e);
+            e.printStackTrace();
+            Toast.makeText(getContext(), "显示测试对话框异常: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    /**
+     * 显示新的自定义图片处理对话框
+     */
+    private void showCustomImageProcessingDialog() {
+        android.util.Log.d("PrescriptionFragment", "=== 开始显示新的自定义图片处理对话框 ===");
+        
+        try {
+            // 检查Fragment状态
+            if (!isAdded() || getParentFragmentManager() == null) {
+                android.util.Log.e("PrescriptionFragment", "Fragment状态异常，无法显示自定义对话框");
+                Toast.makeText(getContext(), "Fragment状态异常", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            if (selectedImageUri == null) {
+                android.util.Log.e("PrescriptionFragment", "selectedImageUri为null");
+                Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            
+            android.util.Log.d("PrescriptionFragment", "创建CustomImageProcessingDialog实例");
+            
+            // 创建并配置自定义对话框
+            CustomImageProcessingDialog customDialog = CustomImageProcessingDialog.newInstance();
+            customDialog.setOnProcessingOptionSelectedListener(new CustomImageProcessingDialog.OnProcessingOptionSelectedListener() {
+                @Override
+                public void onOCRSelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - OCR识别被选择");
+                    performOCRRecognition();
+                }
+                
+                @Override
+                public void onAnalysisSelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - 处方分析被选择");
+                    performPrescriptionAnalysis();
+                }
+                
+                @Override
+                public void onUploadSelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - 上传服务器被选择");
+                    uploadImageToServer();
+                }
+                
+                @Override
+                public void onPreviewSelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - 预览图片被选择");
+                    previewImage();
+                }
+                
+                @Override
+                public void onDialogCancelled() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框被取消");
+                }
+            });
+            
+            // 显示对话框
+            customDialog.show(getParentFragmentManager(), "CustomImageProcessingDialog");
+            android.util.Log.d("PrescriptionFragment", "自定义对话框显示调用完成");
+            
+            // 延迟检查对话框是否成功显示
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                try {
+                    if (customDialog.isAdded() && customDialog.getDialog() != null && customDialog.getDialog().isShowing()) {
+                        android.util.Log.d("PrescriptionFragment", "✓ 自定义对话框显示成功");
+                        Toast.makeText(getContext(), "自定义对话框显示成功", Toast.LENGTH_SHORT).show();
+                    } else {
+                        android.util.Log.e("PrescriptionFragment", "✗ 自定义对话框显示失败");
+                        Toast.makeText(getContext(), "自定义对话框显示失败，使用备用方案", Toast.LENGTH_SHORT).show();
+                        showSimpleProcessingDialog();
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("PrescriptionFragment", "检查自定义对话框状态时异常: " + e.getMessage(), e);
+                }
+            }, 500);
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "显示自定义对话框时发生异常: " + e.getMessage(), e);
+            e.printStackTrace();
+            Toast.makeText(getContext(), "显示自定义对话框异常: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            
+            // 异常时使用备用方案
+            showSimpleProcessingDialog();
+        }
     }
     
     /**
      * 显示图片处理选项对话框
+     * 使用DialogFragment替代AlertDialog，提供更好的生命周期管理
      */
+    // ...existing code...
+    /**
+     * 显示图片处理选项对话框
+     * 使用DialogFragment替代AlertDialog，提供更好的生命周期管理
+     */
+    // ...existing code...
     private void showImageProcessingDialog() {
-        android.util.Log.d("PrescriptionFragment", "开始显示图片处理选项对话框");
-        
-        // 基本的Fragment状态检查
-        if (getContext() == null || !isAdded()) {
-            android.util.Log.w("PrescriptionFragment", "Fragment状态异常，Context: " + getContext() + ", isAdded: " + isAdded());
-            // 延迟重试一次
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                if (getContext() != null && isAdded()) {
-                    android.util.Log.d("PrescriptionFragment", "重试显示对话框");
-                    showImageProcessingDialog();
-                } else {
-                    android.util.Log.e("PrescriptionFragment", "重试后Fragment状态仍异常，直接使用简单对话框");
-                    showSimpleProcessingDialog();
-                }
-            }, 100);
+        final String TAG = "PrescriptionFragment";
+        final String DIALOG_TAG = "ImageProcessingDialog";
+
+        Log.d(TAG, "=== showImageProcessingDialog START ===");
+        Log.d(TAG, "Fragment state: isAdded=" + isAdded() + ", isDetached=" + isDetached() + ", isRemoving=" + isRemoving() + ", getContext()!=null=" + (getContext() != null));
+        Log.d(TAG, "selectedImageUri=" + (selectedImageUri != null ? selectedImageUri.toString() : "null"));
+
+        if (getContext() == null || !isAdded() || isDetached() || isRemoving()) {
+            Log.w(TAG, "Fragment state invalid, cannot show dialog");
+            showSafeToast("页面状态异常，无法显示对话框");
             return;
         }
-        
-        // 直接使用简单对话框，避免复杂布局可能的问题
-        android.util.Log.d("PrescriptionFragment", "Fragment状态正常，直接显示简单对话框");
-        showSimpleProcessingDialog();
+        if (selectedImageUri == null) {
+            Log.w(TAG, "selectedImageUri is null");
+            showSafeToast("请先选择图片");
+            return;
+        }
+
+        try {
+            androidx.fragment.app.FragmentManager parentFm = getParentFragmentManager();
+            androidx.fragment.app.FragmentManager childFm = getChildFragmentManager();
+
+            // 如果 parentFm 已保存状态，短延迟重试（避免 IllegalStateException / 丢失）
+            if (parentFm != null && parentFm.isStateSaved()) {
+                Log.w(TAG, "parent FragmentManager state saved, 延迟重试显示对话框");
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    try {
+                        showImageProcessingDialog();
+                    } catch (Exception ex) {
+                        Log.e(TAG, "延迟重试失败: " + ex.getMessage(), ex);
+                        showSimpleProcessingDialog();
+                    }
+                }, 300);
+                return;
+            }
+
+            ImageProcessingDialogFragment dialogFragment = ImageProcessingDialogFragment.newInstance(selectedImageUri, imageSource, true);
+            if (dialogFragment == null) {
+                Log.e(TAG, "创建 ImageProcessingDialogFragment 失败");
+                showSimpleProcessingDialog();
+                return;
+            }
+
+            dialogFragment.setOnProcessingOptionSelectedListener(new ImageProcessingDialogFragment.OnProcessingOptionSelectedListener() {
+                @Override public void onOCRSelected() { performOCRRecognition(); }
+                @Override public void onAnalysisSelected() { performPrescriptionAnalysis(); }
+                @Override public void onUploadSelected() { uploadImageToServer(); }
+                @Override public void onPreviewSelected() { previewImage(); }
+                @Override public void onDialogCancelled() { Log.d(TAG, "用户取消对话框"); }
+            });
+
+            // 先尝试使用父 FragmentManager 且通过同步 add(commitNowAllowingStateLoss) 立即添加（可避免异步被覆盖）
+            boolean shown = false;
+            if (parentFm != null) {
+                try {
+                    // 移除可能存在的旧 fragment（同步）
+                    androidx.fragment.app.Fragment existing = parentFm.findFragmentByTag(DIALOG_TAG);
+                    if (existing != null) {
+                        Log.d(TAG, "发现同tag旧对话框，尝试同步移除");
+                        parentFm.beginTransaction().remove(existing).commitNowAllowingStateLoss();
+                    }
+
+                    Log.d(TAG, "尝试使用 parentFm 同步 add(dialog)");
+                    parentFm.beginTransaction().add(dialogFragment, DIALOG_TAG).commitNowAllowingStateLoss();
+                    // commitNowAllowingStateLoss 已经执行，验证是否添加
+                    shown = dialogFragment.isAdded() || (parentFm.findFragmentByTag(DIALOG_TAG) != null && parentFm.findFragmentByTag(DIALOG_TAG).isAdded());
+                    Log.d(TAG, "parentFm add result: isAdded=" + dialogFragment.isAdded() + ", shown=" + shown);
+                } catch (Exception e) {
+                    Log.w(TAG, "parentFm 同步添加失败: " + e.getMessage(), e);
+                    shown = false;
+                }
+            }
+
+            // 如果 parentFm 失败，则尝试用 childFragmentManager 的同步 add
+            if (!shown && childFm != null) {
+                try {
+                    androidx.fragment.app.Fragment existingChild = childFm.findFragmentByTag(DIALOG_TAG);
+                    if (existingChild != null) {
+                        Log.d(TAG, "childFm 发现同tag旧对话框，尝试同步移除");
+                        childFm.beginTransaction().remove(existingChild).commitNowAllowingStateLoss();
+                    }
+
+                    Log.d(TAG, "尝试使用 childFm 同步 add(dialog)");
+                    childFm.beginTransaction().add(dialogFragment, DIALOG_TAG).commitNowAllowingStateLoss();
+                    shown = dialogFragment.isAdded() || (childFm.findFragmentByTag(DIALOG_TAG) != null && childFm.findFragmentByTag(DIALOG_TAG).isAdded());
+                    Log.d(TAG, "childFm add result: isAdded=" + dialogFragment.isAdded() + ", shown=" + shown);
+                } catch (Exception e) {
+                    Log.w(TAG, "childFm 同步添加失败: " + e.getMessage(), e);
+                    shown = false;
+                }
+            }
+
+            // 最后退回到标准的 show()（可能异步），并立即 executePendingTransactions 以便快速检测
+            if (!shown) {
+                try {
+                    Log.d(TAG, "使用 dialogFragment.show(parentFm) 作为回退方案");
+                    if (parentFm != null) {
+                        dialogFragment.show(parentFm, DIALOG_TAG);
+                        try { parentFm.executePendingTransactions(); } catch (Exception ignore) {}
+                        shown = dialogFragment.isAdded() || (parentFm.findFragmentByTag(DIALOG_TAG) != null && parentFm.findFragmentByTag(DIALOG_TAG).isAdded());
+                    } else if (childFm != null) {
+                        dialogFragment.show(childFm, DIALOG_TAG);
+                        try { childFm.executePendingTransactions(); } catch (Exception ignore) {}
+                        shown = dialogFragment.isAdded() || (childFm.findFragmentByTag(DIALOG_TAG) != null && childFm.findFragmentByTag(DIALOG_TAG).isAdded());
+                    }
+                    Log.d(TAG, "show() fallback result: shown=" + shown);
+                } catch (Exception showEx) {
+                    Log.w(TAG, "show() 回退方案失败: " + showEx.getMessage(), showEx);
+                    shown = false;
+                }
+            }
+
+            // 最终验证并在失败时使用简单对话框作为降级
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                try {
+                    boolean nowAdded = false;
+                    if (parentFm != null) {
+                        androidx.fragment.app.Fragment f = parentFm.findFragmentByTag(DIALOG_TAG);
+                        nowAdded = f != null && f.isAdded();
+                    }
+                    if (!nowAdded && childFm != null) {
+                        androidx.fragment.app.Fragment f2 = childFm.findFragmentByTag(DIALOG_TAG);
+                        nowAdded = f2 != null && f2.isAdded();
+                    }
+
+                    Log.d(TAG, "最终检查对话框是否已添加: nowAdded=" + nowAdded + ", dialog.isAdded=" + dialogFragment.isAdded());
+                    if (!nowAdded) {
+                        Log.e(TAG, "对话框未显示，降级到简单对话框");
+                        showSimpleProcessingDialog();
+                    } else {
+                        Log.d(TAG, "对话框显示成功");
+                    }
+                } catch (Exception ex) {
+                    Log.e(TAG, "最终检查异常: " + ex.getMessage(), ex);
+                    showSimpleProcessingDialog();
+                }
+            }, 250);
+
+            // 立即给用户提示
+            showSafeToast("请选择处理方式");
+
+        } catch (Exception e) {
+            Log.e("PrescriptionFragment", "showImageProcessingDialog 异常: " + e.getMessage(), e);
+            showSimpleProcessingDialog();
+        }
     }
+// ...existing code...
+// ...existing code...
+    // private void showImageProcessingDialog() {
+    //     android.util.Log.d("PrescriptionFragment", "=== 开始显示图片处理选项对话框 ===");
+    //     android.util.Log.d("PrescriptionFragment", "Fragment状态 - Context: " + (getContext() != null) + ", isAdded: " + isAdded() + ", isDetached: " + isDetached() + ", isRemoving: " + isRemoving());
+    //     android.util.Log.d("PrescriptionFragment", "selectedImageUri: " + (selectedImageUri != null ? selectedImageUri.toString() : "null"));
+        
+    //     // 检查Fragment状态
+    //     if (getContext() == null || !isAdded() || isDetached() || isRemoving()) {
+    //         android.util.Log.w("PrescriptionFragment", "Fragment状态不正常，无法显示对话框");
+    //         Toast.makeText(getActivity(), "页面状态异常，请重试", Toast.LENGTH_SHORT).show();
+    //         return;
+    //     }
+        
+    //     // 检查是否有选中的图片
+    //     if (selectedImageUri == null) {
+    //         android.util.Log.w("PrescriptionFragment", "没有选中的图片，无法显示处理选项对话框");
+    //         Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+    //         return;
+    //     }
+        
+    //     try {
+    //         android.util.Log.d("PrescriptionFragment", "开始创建DialogFragment");
+            
+    //         // 检查FragmentManager状态
+    //         if (getParentFragmentManager() == null) {
+    //             android.util.Log.e("PrescriptionFragment", "FragmentManager为null");
+    //             throw new IllegalStateException("FragmentManager is null");
+    //         }
+            
+    //         android.util.Log.d("PrescriptionFragment", "FragmentManager状态正常，开始创建对话框实例");
+            
+    //         // 创建DialogFragment实例
+    //         ImageProcessingDialogFragment dialogFragment = ImageProcessingDialogFragment.newInstance(selectedImageUri, imageSource, true);
+            
+    //         if (dialogFragment == null) {
+    //             android.util.Log.e("PrescriptionFragment", "DialogFragment创建失败");
+    //             throw new RuntimeException("Failed to create DialogFragment");
+    //         }
+            
+    //         android.util.Log.d("PrescriptionFragment", "DialogFragment创建成功，设置监听器");
+            
+    //         // 设置回调监听器
+    //         dialogFragment.setOnProcessingOptionSelectedListener(new ImageProcessingDialogFragment.OnProcessingOptionSelectedListener() {
+    //             @Override
+    //             public void onOCRSelected() {
+    //                 android.util.Log.d("PrescriptionFragment", "用户选择OCR识别");
+    //                 performOCRRecognition();
+    //             }
+                
+    //             @Override
+    //             public void onAnalysisSelected() {
+    //                 android.util.Log.d("PrescriptionFragment", "用户选择处方分析");
+    //                 performPrescriptionAnalysis();
+    //             }
+                
+    //             @Override
+    //             public void onUploadSelected() {
+    //                 android.util.Log.d("PrescriptionFragment", "用户选择上传服务器");
+    //                 uploadImageToServer();
+    //             }
+                
+    //             @Override
+    //             public void onPreviewSelected() {
+    //                 android.util.Log.d("PrescriptionFragment", "用户选择预览图片");
+    //                 previewImage();
+    //             }
+                
+    //             @Override
+    //             public void onDialogCancelled() {
+    //                 android.util.Log.d("PrescriptionFragment", "用户取消对话框");
+    //             }
+    //         });
+            
+    //         android.util.Log.d("PrescriptionFragment", "监听器设置完成，准备显示对话框");
+            
+    //         // 检查是否已经有同名的对话框存在
+    //         androidx.fragment.app.Fragment existingDialog = getParentFragmentManager().findFragmentByTag("ImageProcessingDialog");
+    //         if (existingDialog != null) {
+    //             android.util.Log.w("PrescriptionFragment", "已存在同名对话框，先移除");
+    //             getParentFragmentManager().beginTransaction().remove(existingDialog).commitAllowingStateLoss();
+    //         }
+            
+    //         // 显示对话框前的最终检查
+    //         android.util.Log.d("PrescriptionFragment", "显示对话框前的最终状态检查:");
+    //         com.wenteng.frontend_android.debug.DialogDebugHelper.checkFragmentState(this, "PrescriptionFragment");
+            
+    //         // 显示对话框
+    //         android.util.Log.d("PrescriptionFragment", "开始显示DialogFragment");
+    //         try {
+    //             dialogFragment.show(getParentFragmentManager(), "ImageProcessingDialog");
+    //             android.util.Log.d("PrescriptionFragment", "DialogFragment.show()调用完成");
+                
+    //             // 开始监控对话框生命周期
+    //             com.wenteng.frontend_android.debug.DialogDebugHelper.monitorDialogLifecycle(dialogFragment, "ImageProcessingDialog");
+                
+    //         } catch (Exception showException) {
+    //             android.util.Log.e("PrescriptionFragment", "显示对话框时发生异常: " + showException.getMessage(), showException);
+    //             showSimpleProcessingDialog();
+    //             return;
+    //         }
+            
+    //         // 延迟检查对话框是否真的显示了
+    //         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
+    //             @Override
+    //             public void run() {
+    //                 androidx.fragment.app.Fragment dialog = getParentFragmentManager().findFragmentByTag("ImageProcessingDialog");
+    //                 if (dialog != null && dialog.isAdded()) {
+    //                     android.util.Log.d("PrescriptionFragment", "✅ 对话框显示成功确认");
+    //                     if (dialog instanceof com.wenteng.frontend_android.dialog.ImageProcessingDialogFragment) {
+    //                         com.wenteng.frontend_android.debug.DialogDebugHelper.checkDialogFragmentState(
+    //                             (com.wenteng.frontend_android.dialog.ImageProcessingDialogFragment) dialog, 
+    //                             "ImageProcessingDialog"
+    //                         );
+    //                     }
+    //                 } else {
+    //                     android.util.Log.e("PrescriptionFragment", "❌ 对话框显示失败，使用备用方案");
+    //                     android.util.Log.e("PrescriptionFragment", "失败原因分析:");
+    //                     android.util.Log.e("PrescriptionFragment", "  - dialog == null: " + (dialog == null));
+    //                     if (dialog != null) {
+    //                         android.util.Log.e("PrescriptionFragment", "  - dialog.isAdded(): " + dialog.isAdded());
+    //                     }
+    //                     showSimpleProcessingDialog();
+    //                 }
+    //             }
+    //         }, 500);
+            
+    //         // 显示提示信息
+    //         Toast.makeText(requireActivity(), "请选择处理方式", Toast.LENGTH_SHORT).show();
+            
+    //     } catch (Exception e) {
+    //         android.util.Log.e("PrescriptionFragment", "显示DialogFragment时发生异常: " + e.getMessage(), e);
+    //         e.printStackTrace();
+            
+    //         // 异常情况下使用简单对话框
+    //         android.util.Log.d("PrescriptionFragment", "异常情况下使用简单对话框作为备用方案");
+    //         showSimpleProcessingDialog();
+    //     }
+    // }
     
     /**
      * 显示简单的处理选项对话框（备用方案）
@@ -726,6 +1395,67 @@ public class PrescriptionFragment extends Fragment {
         } catch (Exception e) {
             android.util.Log.e("PrescriptionFragment", "显示简单对话框也失败: " + e.getMessage(), e);
             Toast.makeText(getContext(), "对话框显示异常，请重新选择图片", Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    /**
+     * 测试对话框显示的方法
+     * 用于调试对话框显示问题
+     */
+    public void testDialogDisplay() {
+        android.util.Log.d("PrescriptionFragment", "开始执行对话框显示测试");
+        
+        // 使用测试辅助类进行测试
+        com.wenteng.frontend_android.debug.DialogTestHelper.testDialogDisplay(
+            getParentFragmentManager(), 
+            requireContext()
+        );
+        
+        // 延迟后测试简单对话框
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                android.util.Log.d("PrescriptionFragment", "开始测试简单对话框");
+                com.wenteng.frontend_android.debug.DialogTestHelper.testSimpleDialog(
+                    getParentFragmentManager()
+                );
+            }
+        }, 3000);
+    }
+    
+    /**
+     * 测试简化对话框显示功能
+     */
+    public void testSimpleDialog() {
+        android.util.Log.d("PrescriptionFragment", "=== Testing Simple Dialog ===");
+        
+        if (getActivity() == null) {
+            android.util.Log.e("PrescriptionFragment", "Activity is null, cannot show simple dialog");
+            return;
+        }
+        
+        try {
+            com.wenteng.frontend_android.SimpleTestDialog simpleDialog = 
+                new com.wenteng.frontend_android.SimpleTestDialog(getActivity());
+            android.util.Log.d("PrescriptionFragment", "Simple dialog created successfully");
+            
+            simpleDialog.show();
+            android.util.Log.d("PrescriptionFragment", "Simple dialog show() called");
+            
+            // 检查对话框是否真的显示了
+            new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (simpleDialog.isShowing()) {
+                        android.util.Log.d("PrescriptionFragment", "✓ Simple dialog is showing successfully!");
+                    } else {
+                        android.util.Log.e("PrescriptionFragment", "✗ Simple dialog is NOT showing!");
+                    }
+                }
+            }, 500);
+            
+        } catch (Exception e) {
+            android.util.Log.e("PrescriptionFragment", "Error creating/showing simple dialog: " + e.getMessage(), e);
         }
     }
     
@@ -1302,5 +2032,311 @@ public class PrescriptionFragment extends Fragment {
                 .setTitle("缩略图预览")
                 .setPositiveButton("关闭", null)
                 .show();
+    }
+    
+    /**
+     * 诊断Fragment生命周期问题
+     * 用于调试Fragment状态和Activity状态相关的问题
+     */
+    private void diagnoseFragmentLifecycleIssues() {
+        Log.d("PrescriptionFragment", "=== Fragment生命周期诊断开始 ===");
+        
+        // Fragment状态检查
+        Log.d("PrescriptionFragment", "Fragment状态:");
+        Log.d("PrescriptionFragment", "  - isAdded(): " + isAdded());
+        Log.d("PrescriptionFragment", "  - isDetached(): " + isDetached());
+        Log.d("PrescriptionFragment", "  - isRemoving(): " + isRemoving());
+        Log.d("PrescriptionFragment", "  - isVisible(): " + isVisible());
+        Log.d("PrescriptionFragment", "  - isResumed(): " + isResumed());
+        Log.d("PrescriptionFragment", "  - isHidden(): " + isHidden());
+        
+        // Activity状态检查
+        Log.d("PrescriptionFragment", "Activity状态:");
+        if (getActivity() != null) {
+            Log.d("PrescriptionFragment", "  - getActivity(): 不为null");
+            Log.d("PrescriptionFragment", "  - isFinishing(): " + getActivity().isFinishing());
+            Log.d("PrescriptionFragment", "  - isDestroyed(): " + getActivity().isDestroyed());
+        } else {
+            Log.d("PrescriptionFragment", "  - getActivity(): 为null (Fragment已分离)");
+        }
+        
+        // Context状态检查
+        Log.d("PrescriptionFragment", "Context状态:");
+        if (getContext() != null) {
+            Log.d("PrescriptionFragment", "  - getContext(): 不为null");
+        } else {
+            Log.d("PrescriptionFragment", "  - getContext(): 为null");
+        }
+        
+        // FragmentManager状态检查
+        Log.d("PrescriptionFragment", "FragmentManager状态:");
+        try {
+            if (getParentFragmentManager() != null) {
+                Log.d("PrescriptionFragment", "  - getParentFragmentManager(): 不为null");
+                Log.d("PrescriptionFragment", "  - isStateSaved(): " + getParentFragmentManager().isStateSaved());
+            } else {
+                Log.d("PrescriptionFragment", "  - getParentFragmentManager(): 为null");
+            }
+        } catch (Exception e) {
+            Log.e("PrescriptionFragment", "  - FragmentManager检查异常: " + e.getMessage());
+        }
+        
+        // 修复建议
+        Log.d("PrescriptionFragment", "修复建议:");
+        if (!isAdded()) {
+            Log.d("PrescriptionFragment", "  - Fragment未添加到Activity，请检查Fragment事务");
+        }
+        if (getActivity() == null) {
+            Log.d("PrescriptionFragment", "  - Activity为null，Fragment可能已分离，避免UI操作");
+        }
+        if (getActivity() != null && getActivity().isFinishing()) {
+            Log.d("PrescriptionFragment", "  - Activity正在结束，避免启动新的Dialog或Fragment");
+        }
+        
+        Log.d("PrescriptionFragment", "=== Fragment生命周期诊断结束 ===");
+    }
+    
+    /**
+     * 运行Fragment生命周期诊断
+     * 公共方法，可以从外部调用进行诊断
+     */
+    public void runFragmentLifecycleDiagnostics() {
+        Log.d("PrescriptionFragment", "开始运行Fragment生命周期诊断...");
+        diagnoseFragmentLifecycleIssues();
+        
+        // 显示诊断结果Toast
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Fragment生命周期诊断完成，请查看Logcat", Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    /**
+     * 统一处理图片选择结果，解决8种null情况
+     * @param result ActivityResult结果
+     * @param source 来源："gallery" 或 "camera"
+     */
+    private void handleImageSelectionResult(androidx.activity.result.ActivityResult result, String source) {
+        Log.d("PrescriptionFragment", "=== handleImageSelectionResult 开始 ===");
+        Log.d("PrescriptionFragment", "来源: " + source);
+        
+        // 记录当前Fragment状态
+        logCurrentFragmentState();
+        
+        // 1. 验证Fragment和Activity状态（解决getActivity()为null的4种原因）
+        if (!validateFragmentAndActivityState()) {
+            return;
+        }
+        
+        // 2. 检查ResultCode
+        Log.d("PrescriptionFragment", "ResultCode: " + result.getResultCode());
+        Log.d("PrescriptionFragment", "RESULT_OK: " + android.app.Activity.RESULT_OK);
+        Log.d("PrescriptionFragment", "RESULT_CANCELED: " + android.app.Activity.RESULT_CANCELED);
+        
+        if (result.getResultCode() != android.app.Activity.RESULT_OK) {
+            Log.w("PrescriptionFragment", "操作未成功完成，ResultCode: " + result.getResultCode());
+            
+            if (result.getResultCode() == android.app.Activity.RESULT_CANCELED) {
+                Log.i("PrescriptionFragment", "用户主动取消了" + source + "操作");
+                // 不显示Toast，用户主动取消是正常行为
+            } else {
+                Log.e("PrescriptionFragment", "" + source + "操作失败，错误码: " + result.getResultCode());
+                showSafeToast(source.equals("gallery") ? "相册选择失败" : "拍照失败");
+            }
+            return;
+        }
+        
+        Log.d("PrescriptionFragment", "✅ ResultCode检查通过，操作成功");
+        
+        // 3. 验证结果数据（解决result.getData()为null的4种原因）
+        Uri imageUri = validateResultData(result, source);
+        if (imageUri == null) {
+            return;
+        }
+        
+        // 4. 处理有效的图片结果
+        processValidImageResult(imageUri, source);
+        
+        Log.d("PrescriptionFragment", "=== handleImageSelectionResult 结束 ===");
+    }
+    
+    /**
+     * 记录当前Fragment状态
+     */
+    private void logCurrentFragmentState() {
+        Log.d("PrescriptionFragment", "=== Fragment状态检查 ===");
+        Log.d("PrescriptionFragment", "isAdded(): " + isAdded());
+        Log.d("PrescriptionFragment", "isDetached(): " + isDetached());
+        Log.d("PrescriptionFragment", "isRemoving(): " + isRemoving());
+        Log.d("PrescriptionFragment", "getActivity() != null: " + (getActivity() != null));
+        Log.d("PrescriptionFragment", "getContext() != null: " + (getContext() != null));
+        
+        if (getActivity() != null) {
+            Log.d("PrescriptionFragment", "Activity.isFinishing(): " + getActivity().isFinishing());
+            Log.d("PrescriptionFragment", "Activity.isDestroyed(): " + getActivity().isDestroyed());
+        }
+    }
+    
+    /**
+     * 验证Fragment和Activity状态
+     * 解决getActivity()为null的4种原因：
+     * 1. Fragment分离（Detached）
+     * 2. Activity销毁（内存回收/用户操作）
+     * 3. Fragment移除（Removing状态）
+     * 4. 异步回调时机问题
+     */
+    private boolean validateFragmentAndActivityState() {
+        // 检查Fragment分离状态
+        if (isDetached()) {
+            Log.e("PrescriptionFragment", "❌ Fragment已分离，无法处理图片选择结果");
+            return false;
+        }
+        
+        // 检查Fragment是否已添加到Activity
+        if (!isAdded()) {
+            Log.e("PrescriptionFragment", "❌ Fragment未添加到Activity，无法处理图片选择结果");
+            return false;
+        }
+        
+        // 检查Fragment是否正在移除
+        if (isRemoving()) {
+            Log.e("PrescriptionFragment", "❌ Fragment正在移除，无法处理图片选择结果");
+            return false;
+        }
+        
+        // 检查Activity是否存在
+        if (getActivity() == null) {
+            Log.e("PrescriptionFragment", "❌ Activity为null，可能已被销毁");
+            return false;
+        }
+        
+        // 检查Activity是否正在结束或已销毁
+        if (getActivity().isFinishing() || getActivity().isDestroyed()) {
+            Log.e("PrescriptionFragment", "❌ Activity正在结束或已销毁");
+            return false;
+        }
+        
+        Log.d("PrescriptionFragment", "✅ Fragment和Activity状态验证通过");
+        return true;
+    }
+    
+    /**
+     * 验证结果数据
+     * 解决result.getData()为null的4种原因：
+     * 1. 用户取消操作
+     * 2. 系统内存不足
+     * 3. 存储权限问题
+     * 4. 图片选择器异常
+     */
+    private Uri validateResultData(androidx.activity.result.ActivityResult result, String source) {
+        Uri imageUri = null;
+        
+        if ("camera".equals(source)) {
+            // 拍照使用预设的photoUri
+            imageUri = photoUri;
+            Log.d("PrescriptionFragment", "拍照结果，使用photoUri: " + imageUri);
+            
+            if (imageUri == null) {
+                Log.e("PrescriptionFragment", "❌ 拍照失败：photoUri为null");
+                analyzeDataNullCauses("camera", null);
+                showSafeToast("拍照失败，请重试");
+                return null;
+            }
+        } else {
+            // 相册选择使用result.getData()
+            Intent data = result.getData();
+            if (data != null) {
+                imageUri = data.getData();
+            }
+            Log.d("PrescriptionFragment", "相册选择结果，getData(): " + imageUri);
+            
+            if (imageUri == null) {
+                Log.e("PrescriptionFragment", "❌ 相册选择失败：getData()为null");
+                analyzeDataNullCauses("gallery", result);
+                return null;
+            }
+        }
+        
+        Log.d("PrescriptionFragment", "✅ 结果数据验证通过，imageUri: " + imageUri);
+        return imageUri;
+    }
+    
+    /**
+     * 分析数据为null的原因
+     */
+    private void analyzeDataNullCauses(String source, androidx.activity.result.ActivityResult result) {
+        Log.d("PrescriptionFragment", "=== 分析数据为null的原因 ===");
+        
+        // 检查内存状态
+        Runtime runtime = Runtime.getRuntime();
+        long maxMemory = runtime.maxMemory();
+        long totalMemory = runtime.totalMemory();
+        long freeMemory = runtime.freeMemory();
+        long usedMemory = totalMemory - freeMemory;
+        double memoryUsagePercent = (double) usedMemory / maxMemory * 100;
+        
+        Log.d("PrescriptionFragment", "内存使用情况: " + String.format("%.1f%%", memoryUsagePercent));
+        Log.d("PrescriptionFragment", "最大内存: " + (maxMemory / 1024 / 1024) + "MB");
+        Log.d("PrescriptionFragment", "已用内存: " + (usedMemory / 1024 / 1024) + "MB");
+        
+        if (memoryUsagePercent > 80) {
+            Log.w("PrescriptionFragment", "⚠️ 内存使用率过高，可能导致图片选择失败");
+            showSafeToast("内存不足，请关闭其他应用后重试");
+            return;
+        }
+        
+        // 检查存储权限
+        if (getContext() != null) {
+            boolean hasReadPermission = ContextCompat.checkSelfPermission(getContext(), 
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+            Log.d("PrescriptionFragment", "读取存储权限: " + hasReadPermission);
+            
+            if (!hasReadPermission && "gallery".equals(source)) {
+                Log.w("PrescriptionFragment", "⚠️ 缺少存储读取权限，可能导致相册选择失败");
+                showSafeToast("需要存储权限才能访问相册");
+                return;
+            }
+        }
+        
+        // 根据来源分析具体原因
+        if ("gallery".equals(source)) {
+            Log.w("PrescriptionFragment", "相册选择失败可能原因：");
+            Log.w("PrescriptionFragment", "1. 用户取消了选择");
+            Log.w("PrescriptionFragment", "2. 图片文件损坏或不可访问");
+            Log.w("PrescriptionFragment", "3. 相册应用异常");
+            Log.w("PrescriptionFragment", "4. 系统内存不足");
+            showSafeToast("相册选择失败，请重试或选择其他图片");
+        } else {
+            Log.w("PrescriptionFragment", "拍照失败可能原因：");
+            Log.w("PrescriptionFragment", "1. 相机应用异常");
+            Log.w("PrescriptionFragment", "2. 存储空间不足");
+            Log.w("PrescriptionFragment", "3. 相机权限问题");
+            Log.w("PrescriptionFragment", "4. 文件创建失败");
+            showSafeToast("拍照失败，请检查存储空间和权限");
+        }
+    }
+    
+    /**
+     * 处理有效的图片结果
+     */
+    private void processValidImageResult(Uri imageUri, String source) {
+        Log.d("PrescriptionFragment", "处理有效图片结果: " + imageUri + ", 来源: " + source);
+        
+        // 设置选中的图片URI和来源
+        selectedImageUri = imageUri;
+        imageSource = source;
+        
+        // 调用原有的图片处理逻辑
+        handleSelectedImage(imageUri);
+    }
+    
+    /**
+     * 安全显示Toast，避免Fragment状态异常
+     */
+    private void showSafeToast(String message) {
+        if (getContext() != null && isAdded() && !isDetached() && !isRemoving()) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        } else {
+            Log.w("PrescriptionFragment", "无法显示Toast，Fragment状态异常: " + message);
+        }
     }
 }
