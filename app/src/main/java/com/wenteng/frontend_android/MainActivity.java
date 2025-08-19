@@ -70,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
             restoreLastFragment();
             android.util.Log.d("MainActivity", "Fragment restored");
             
+            // 设置底部导航点击事件
+            setupBottomNavigation();
+            
             logMemoryUsage("onCreate end");
         } catch (Exception e) {
             android.util.Log.e("MainActivity", "Error in onCreate", e);
@@ -101,6 +104,13 @@ public class MainActivity extends AppCompatActivity {
         // return false;
         // });
 
+
+    }
+    
+    /**
+     * 设置底部导航点击事件
+     */
+    private void setupBottomNavigation() {
         // 底部导航点击事件
         bottomNavigationView.setOnItemSelectedListener(item -> {
             Fragment fragment = null;
@@ -154,8 +164,9 @@ public class MainActivity extends AppCompatActivity {
             transaction.hide(profileFragment);
             android.util.Log.d("MainActivity", "All fragments hidden");
             
-            transaction.commit();
-            android.util.Log.d("MainActivity", "Fragment transaction committed");
+            // 使用commitNow()确保fragment立即被添加，然后再显示默认fragment
+            transaction.commitNow();
+            android.util.Log.d("MainActivity", "Fragment transaction committed immediately");
         } catch (Exception e) {
             android.util.Log.e("MainActivity", "Error initializing fragments", e);
             throw e; // 重新抛出异常，让调用者知道初始化失败
@@ -201,7 +212,10 @@ public class MainActivity extends AppCompatActivity {
             android.util.Log.d("MainActivity", "Showing target fragment: " + fragment.getClass().getSimpleName());
             transaction.show(fragment);
         } else {
-            android.util.Log.w("MainActivity", "Fragment not added: " + fragment.getClass().getSimpleName());
+            android.util.Log.w("MainActivity", "Fragment not added, adding and showing: " + fragment.getClass().getSimpleName());
+            // 如果fragment没有被添加，先添加再显示
+            transaction.add(R.id.frame_layout, fragment);
+            transaction.show(fragment);
         }
         
         // 使用commitAllowingStateLoss避免状态丢失异常

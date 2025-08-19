@@ -50,12 +50,26 @@ public class ProductFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_product, container, false);
-        initViews(view);
-        initData();
-        setupRecyclerView();
-        setupSearchFunction();
-        return view;
+        android.util.Log.d("ProductFragment", "onCreateView called");
+        
+        try {
+            View view = inflater.inflate(R.layout.fragment_product, container, false);
+            if (view == null) {
+                android.util.Log.e("ProductFragment", "Failed to inflate layout");
+                return null;
+            }
+            
+            android.util.Log.d("ProductFragment", "Layout inflated successfully");
+            initViews(view);
+            initData();
+            setupRecyclerView();
+            setupSearchFunction();
+            android.util.Log.d("ProductFragment", "Fragment initialization completed");
+            return view;
+        } catch (Exception e) {
+            android.util.Log.e("ProductFragment", "Error in onCreateView", e);
+            return null;
+        }
     }
 
     private void initViews(View view) {

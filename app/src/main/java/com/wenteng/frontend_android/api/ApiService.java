@@ -144,4 +144,45 @@ public interface ApiService {
      */
     @GET("api/v1/appointments/hospitals/{hospital_id}/departments")
     Call<List<Department>> getDepartmentsByHospital(@Path("hospital_id") int hospitalId);
+    
+    /**
+     * 用户密码注册
+     * @param username 用户名
+     * @param email 邮箱
+     * @param password 密码
+     * @return 注册结果响应
+     */
+    @FormUrlEncoded
+    @POST("api/v1/auth/register/password")
+    Call<ApiResponse<RegisterResponse>> registerWithPassword(
+        @Field("username") String username,
+        @Field("email") String email,
+        @Field("password") String password
+    );
+    
+    /**
+     * 用户短信验证码注册
+     * @param username 用户名
+     * @param phone 手机号
+     * @param verificationCode 验证码
+     * @param password 密码
+     * @return 注册结果响应
+     */
+    @FormUrlEncoded
+    @POST("api/v1/auth/register/sms")
+    Call<ApiResponse<RegisterResponse>> registerWithSms(
+        @Field("username") String username,
+        @Field("phone") String phone,
+        @Field("verification_code") String verificationCode,
+        @Field("password") String password
+    );
+    
+    /**
+     * 发送短信验证码
+     * @param phone 手机号
+     * @return 发送结果响应
+     */
+    @FormUrlEncoded
+    @POST("api/v1/auth/send-sms-code")
+    Call<ApiResponse<SmsCodeResponse>> sendSmsCode(@Field("phone") String phone);
 }

@@ -62,10 +62,24 @@ public class HealthFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_health, container, false);
-        initViews(view);
-        initData();
-        return view;
+        Log.d("HealthFragment", "onCreateView called");
+        
+        try {
+            View view = inflater.inflate(R.layout.fragment_health, container, false);
+            if (view == null) {
+                Log.e("HealthFragment", "Failed to inflate layout");
+                return null;
+            }
+            
+            Log.d("HealthFragment", "Layout inflated successfully");
+            initViews(view);
+            initData();
+            Log.d("HealthFragment", "Fragment initialization completed");
+            return view;
+        } catch (Exception e) {
+            Log.e("HealthFragment", "Error in onCreateView", e);
+            return null;
+        }
     }
     
     @Override

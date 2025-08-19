@@ -17,139 +17,370 @@ import android.text.TextWatcher;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputLayout;
 import com.wenteng.frontend_android.R;
+import android.widget.LinearLayout;
+import com.wenteng.frontend_android.api.ApiClient;
+import com.wenteng.frontend_android.api.ApiService;
+import com.wenteng.frontend_android.api.ApiResponse;
+import com.wenteng.frontend_android.api.RegisterResponse;
+import com.wenteng.frontend_android.api.SmsCodeResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class RegisterActivity extends AppCompatActivity {
+    private static final String TAG = "RegisterActivity";
 
-    private EditText etUsername, etEmail, etPhone, etVerificationCode, etPassword, etConfirmPassword;
-    private Button btnRegister, btnSendCode;
-    private TextView tvBackToLogin;
-    private CountDownTimer countDownTimer;
-    private boolean isCodeSent = false;
-    private int countdown = 60;
-    private TextInputLayout tilUsername, tilEmail, tilPhone, tilVerificationCode, tilPassword, tilConfirmPassword;
+    // 注册模式枚举
+    public enum RegisterMode {
+        PASSWORD,  // 账户密码注册
+        SMS        // 手机验证码注册
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
+    // 当前注册模式
+    private RegisterMode currentMode = RegisterMode.PASSWORD;
+
+    // UI组件 - 通用
+    private Button btnPasswordMode, btnSmsMode;
+    private LinearLayout layoutPasswordMode, layoutSmsMode;
+    private Button btnRegister, btnSendCode, btnBackToLogin;
     private ProgressBar pbRegisterLoading, pbSendCodeLoading;
+
+    // UI组件 - 密码注册模式
+    private TextInputLayout tilUsername, tilEmail, tilPassword, tilConfirmPassword;
+    private EditText etUsername, etEmail, etPassword, etConfirmPassword;
+
+    // UI组件 - 短信注册模式
+    private TextInputLayout tilUsernameSms, tilPhone, tilVerificationCode, tilPasswordSms, tilConfirmPasswordSms;
+    private EditText etUsernameSms, etPhone, etVerificationCode, etPasswordSms, etConfirmPasswordSms;
+
+    // 倒计时相关
+    private CountDownTimer countDownTimer;
+    private boolean isCountingDown = false;
+    private int countdown = 60;
+    private boolean isCodeSent = false;
+    
+    // API服务
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        android.util.Log.d(TAG, "RegisterActivity onCreate started");
         setContentView(R.layout.activity_register);
         
         try {
+            android.util.Log.d(TAG, "开始初始化视图组件");
             initViewsRobust();
+            
+            android.util.Log.d(TAG, "开始设置输入验证");
             setupInputValidation();
+            
+            android.util.Log.d(TAG, "开始设置点击监听器");
             setupClickListeners();
+            
+            android.util.Log.d(TAG, "开始设置动画");
             setupAnimations();
+            
+            // 初始化API服务
+            android.util.Log.d(TAG, "初始化API服务");
+            apiService = ApiClient.getApiService();
+            
+            // 初始化默认为密码注册模式
+            android.util.Log.d(TAG, "切换到默认密码注册模式");
+            switchToPasswordMode();
+            
+            android.util.Log.d(TAG, "RegisterActivity初始化完成");
         } catch (Exception e) {
-            android.util.Log.e("RegisterActivity", "初始化失败: " + e.getMessage(), e);
+            android.util.Log.e(TAG, "初始化失败: " + e.getMessage(), e);
             // 显示错误提示但不关闭Activity
             android.widget.Toast.makeText(this, "页面加载出现问题，请重试", android.widget.Toast.LENGTH_SHORT).show();
         }
     }
 
     private void initViewsRobust() {
-        // 安全的视图查找，避免空指针异常
         try {
-            etUsername = findViewById(R.id.et_username);
-            etEmail = findViewById(R.id.et_email);
-            etPhone = findViewById(R.id.et_phone);
-            etVerificationCode = findViewById(R.id.et_verification_code);
-            etPassword = findViewById(R.id.et_password);
-            etConfirmPassword = findViewById(R.id.et_confirm_password);
+            android.util.Log.d(TAG, "开始初始化视图组件");
             
-            btnRegister = findViewById(R.id.btn_register);
-            btnSendCode = findViewById(R.id.btn_send_code);
-            tvBackToLogin = findViewById(R.id.btn_back_to_login);
+            // 初始化模式切换按钮
+            btnPasswordMode = findViewById(R.id.btn_password_mode);
+            android.util.Log.d(TAG, "密码模式按钮初始化: " + (btnPasswordMode != null ? "成功" : "失败"));
             
+            btnSmsMode = findViewById(R.id.btn_sms_mode);
+            android.util.Log.d(TAG, "短信模式按钮初始化: " + (btnSmsMode != null ? "成功" : "失败"));
+            
+            // 初始化模式容器
+            layoutPasswordMode = findViewById(R.id.layout_password_mode);
+            android.util.Log.d(TAG, "密码注册布局初始化: " + (layoutPasswordMode != null ? "成功" : "失败"));
+            
+            layoutSmsMode = findViewById(R.id.layout_sms_mode);
+            android.util.Log.d(TAG, "短信注册布局初始化: " + (layoutSmsMode != null ? "成功" : "失败"));
+
+            // 初始化密码注册模式组件
             tilUsername = findViewById(R.id.til_username);
+            android.util.Log.d(TAG, "用户名输入布局初始化: " + (tilUsername != null ? "成功" : "失败"));
+            
             tilEmail = findViewById(R.id.til_email);
-            tilPhone = findViewById(R.id.til_phone);
-            tilVerificationCode = findViewById(R.id.til_verification_code);
+            android.util.Log.d(TAG, "邮箱输入布局初始化: " + (tilEmail != null ? "成功" : "失败"));
+            
             tilPassword = findViewById(R.id.til_password);
+            android.util.Log.d(TAG, "密码输入布局初始化: " + (tilPassword != null ? "成功" : "失败"));
+            
             tilConfirmPassword = findViewById(R.id.til_confirm_password);
+            android.util.Log.d(TAG, "确认密码输入布局初始化: " + (tilConfirmPassword != null ? "成功" : "失败"));
             
+            etUsername = findViewById(R.id.et_username);
+            android.util.Log.d(TAG, "用户名输入框初始化: " + (etUsername != null ? "成功" : "失败"));
+            
+            etEmail = findViewById(R.id.et_email);
+            android.util.Log.d(TAG, "邮箱输入框初始化: " + (etEmail != null ? "成功" : "失败"));
+            
+            etPassword = findViewById(R.id.et_password);
+            android.util.Log.d(TAG, "密码输入框初始化: " + (etPassword != null ? "成功" : "失败"));
+            
+            etConfirmPassword = findViewById(R.id.et_confirm_password);
+            android.util.Log.d(TAG, "确认密码输入框初始化: " + (etConfirmPassword != null ? "成功" : "失败"));
+
+            // 初始化短信注册模式组件
+            tilUsernameSms = findViewById(R.id.til_username_sms);
+            android.util.Log.d(TAG, "短信模式用户名输入布局初始化: " + (tilUsernameSms != null ? "成功" : "失败"));
+            
+            tilPhone = findViewById(R.id.til_phone);
+            android.util.Log.d(TAG, "手机号输入布局初始化: " + (tilPhone != null ? "成功" : "失败"));
+            
+            tilVerificationCode = findViewById(R.id.til_verification_code);
+            android.util.Log.d(TAG, "验证码输入布局初始化: " + (tilVerificationCode != null ? "成功" : "失败"));
+            
+            tilPasswordSms = findViewById(R.id.til_password_sms);
+            android.util.Log.d(TAG, "短信模式密码输入布局初始化: " + (tilPasswordSms != null ? "成功" : "失败"));
+            
+            tilConfirmPasswordSms = findViewById(R.id.til_confirm_password_sms);
+            android.util.Log.d(TAG, "短信模式确认密码输入布局初始化: " + (tilConfirmPasswordSms != null ? "成功" : "失败"));
+            
+            etUsernameSms = findViewById(R.id.et_username_sms);
+            android.util.Log.d(TAG, "短信模式用户名输入框初始化: " + (etUsernameSms != null ? "成功" : "失败"));
+            
+            etPhone = findViewById(R.id.et_phone);
+            android.util.Log.d(TAG, "手机号输入框初始化: " + (etPhone != null ? "成功" : "失败"));
+            
+            etVerificationCode = findViewById(R.id.et_verification_code);
+            android.util.Log.d(TAG, "验证码输入框初始化: " + (etVerificationCode != null ? "成功" : "失败"));
+            
+            etPasswordSms = findViewById(R.id.et_password_sms);
+            android.util.Log.d(TAG, "短信模式密码输入框初始化: " + (etPasswordSms != null ? "成功" : "失败"));
+            
+            etConfirmPasswordSms = findViewById(R.id.et_confirm_password_sms);
+            android.util.Log.d(TAG, "短信模式确认密码输入框初始化: " + (etConfirmPasswordSms != null ? "成功" : "失败"));
+
+            // 初始化通用按钮
+            btnRegister = findViewById(R.id.btn_register);
+            android.util.Log.d(TAG, "注册按钮初始化: " + (btnRegister != null ? "成功" : "失败"));
+            
+            btnSendCode = findViewById(R.id.btn_send_code);
+            android.util.Log.d(TAG, "发送验证码按钮初始化: " + (btnSendCode != null ? "成功" : "失败"));
+            
+            btnBackToLogin = findViewById(R.id.btn_back_to_login);
+            android.util.Log.d(TAG, "返回登录按钮初始化: " + (btnBackToLogin != null ? "成功" : "失败"));
+            
+
+            // 初始化进度条
             pbRegisterLoading = findViewById(R.id.pb_register_loading);
+            android.util.Log.d(TAG, "注册进度条初始化: " + (pbRegisterLoading != null ? "成功" : "失败"));
+            
             pbSendCodeLoading = findViewById(R.id.pb_send_code_loading);
-            
-            // 验证关键视图是否成功加载
-            if (etUsername == null || etPassword == null || btnRegister == null) {
-                throw new RuntimeException("关键视图加载失败");
+            android.util.Log.d(TAG, "发送验证码进度条初始化: " + (pbSendCodeLoading != null ? "成功" : "失败"));
+
+            // 检查关键组件是否成功初始化
+            if (btnPasswordMode == null || btnSmsMode == null || 
+                layoutPasswordMode == null || layoutSmsMode == null ||
+                btnRegister == null) {
+                android.util.Log.e(TAG, "关键UI组件初始化失败");
+                android.util.Log.e(TAG, "btnPasswordMode: " + (btnPasswordMode != null));
+                android.util.Log.e(TAG, "btnSmsMode: " + (btnSmsMode != null));
+                android.util.Log.e(TAG, "layoutPasswordMode: " + (layoutPasswordMode != null));
+                android.util.Log.e(TAG, "layoutSmsMode: " + (layoutSmsMode != null));
+                android.util.Log.e(TAG, "btnRegister: " + (btnRegister != null));
+                android.widget.Toast.makeText(this, "页面初始化失败，请重试", android.widget.Toast.LENGTH_SHORT).show();
+                return;
             }
-            
-            android.util.Log.d("RegisterActivity", "视图初始化成功");
+
+            android.util.Log.d(TAG, "所有视图组件初始化成功");
         } catch (Exception e) {
-            android.util.Log.e("RegisterActivity", "视图初始化失败: " + e.getMessage(), e);
-            throw e; // 重新抛出异常供上层处理
+            android.util.Log.e(TAG, "初始化视图时发生异常: " + e.getMessage(), e);
+            android.widget.Toast.makeText(this, "页面加载失败，请重试", android.widget.Toast.LENGTH_SHORT).show();
         }
     }
 
     private void setupInputValidation() {
-        etUsername.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validateUsername();
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        // 设置密码注册模式的输入验证监听器
+        setupPasswordModeListeners();
         
-        etEmail.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validateEmail();
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        // 设置短信注册模式的输入验证监听器
+        setupSmsModeListeners();
+    }
+
+    /**
+     * 设置密码注册模式的输入验证监听器
+     */
+    private void setupPasswordModeListeners() {
+        if (etUsername != null) {
+            etUsername.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validateUsername();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
         
-        etPhone.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validatePhone();
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        if (etEmail != null) {
+            etEmail.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validateEmail();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
         
-        etPassword.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validatePassword();
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        if (etPassword != null) {
+            etPassword.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validatePassword();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
         
-        etConfirmPassword.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                validateConfirmPassword();
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
+        if (etConfirmPassword != null) {
+            etConfirmPassword.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validateConfirmPassword();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
+    }
+
+    /**
+     * 设置短信注册模式的输入验证监听器
+     */
+    private void setupSmsModeListeners() {
+        if (etUsernameSms != null) {
+            etUsernameSms.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validateUsernameSms();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
+        
+        if (etPhone != null) {
+            etPhone.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validatePhone();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
+        
+        if (etVerificationCode != null) {
+            etVerificationCode.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validateVerificationCode();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
+        
+        if (etPasswordSms != null) {
+            etPasswordSms.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validatePasswordSms();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
+        
+        if (etConfirmPasswordSms != null) {
+            etConfirmPasswordSms.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    validateConfirmPasswordSms();
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {}
+            });
+        }
     }
 
     private void setupClickListeners() {
+        // 设置模式切换按钮监听器
+        if (btnPasswordMode != null) {
+            btnPasswordMode.setOnClickListener(v -> switchToPasswordMode());
+        }
+        
+        if (btnSmsMode != null) {
+            btnSmsMode.setOnClickListener(v -> switchToSmsMode());
+        }
+        
         // 安全的点击监听器设置，添加空指针检查
         if (btnRegister != null) {
             btnRegister.setOnClickListener(v -> performRegister());
@@ -159,12 +390,116 @@ public class RegisterActivity extends AppCompatActivity {
             btnSendCode.setOnClickListener(v -> sendVerificationCode());
         }
         
-        if (tvBackToLogin != null) {
-            tvBackToLogin.setOnClickListener(v -> {
+        if (btnBackToLogin != null) {
+                btnBackToLogin.setOnClickListener(v -> {
                 Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(intent);
                 finish();
             });
+        }
+    }
+
+    /**
+     * 切换到密码注册模式
+     */
+    private void switchToPasswordMode() {
+        try {
+            android.util.Log.d(TAG, "开始切换到密码注册模式");
+            currentMode = RegisterMode.PASSWORD;
+            
+            // 更新按钮状态
+            if (btnPasswordMode != null) {
+                btnPasswordMode.setSelected(true);
+                android.util.Log.d(TAG, "密码模式按钮设置为选中状态");
+            } else {
+                android.util.Log.e(TAG, "密码模式按钮为null");
+            }
+            
+            if (btnSmsMode != null) {
+                btnSmsMode.setSelected(false);
+                android.util.Log.d(TAG, "短信模式按钮设置为未选中状态");
+            } else {
+                android.util.Log.e(TAG, "短信模式按钮为null");
+            }
+            
+            // 显示/隐藏对应的布局
+            if (layoutPasswordMode != null) {
+                layoutPasswordMode.setVisibility(View.VISIBLE);
+                android.util.Log.d(TAG, "密码注册布局设置为可见");
+            } else {
+                android.util.Log.e(TAG, "密码注册布局为null");
+            }
+            
+            if (layoutSmsMode != null) {
+                layoutSmsMode.setVisibility(View.GONE);
+                android.util.Log.d(TAG, "短信注册布局设置为隐藏");
+            } else {
+                android.util.Log.e(TAG, "短信注册布局为null");
+            }
+            
+            // 隐藏发送验证码按钮
+            if (btnSendCode != null) {
+                btnSendCode.setVisibility(View.GONE);
+                android.util.Log.d(TAG, "发送验证码按钮设置为隐藏");
+            } else {
+                android.util.Log.e(TAG, "发送验证码按钮为null");
+            }
+            
+            android.util.Log.d(TAG, "成功切换到密码注册模式");
+        } catch (Exception e) {
+            android.util.Log.e(TAG, "切换到密码注册模式时发生异常: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 切换到短信验证码注册模式
+     */
+    private void switchToSmsMode() {
+        try {
+            android.util.Log.d(TAG, "开始切换到短信验证码注册模式");
+            currentMode = RegisterMode.SMS;
+            
+            // 更新按钮状态
+            if (btnPasswordMode != null) {
+                btnPasswordMode.setSelected(false);
+                android.util.Log.d(TAG, "密码模式按钮设置为未选中状态");
+            } else {
+                android.util.Log.e(TAG, "密码模式按钮为null");
+            }
+            
+            if (btnSmsMode != null) {
+                btnSmsMode.setSelected(true);
+                android.util.Log.d(TAG, "短信模式按钮设置为选中状态");
+            } else {
+                android.util.Log.e(TAG, "短信模式按钮为null");
+            }
+            
+            // 显示/隐藏对应的布局
+            if (layoutPasswordMode != null) {
+                layoutPasswordMode.setVisibility(View.GONE);
+                android.util.Log.d(TAG, "密码注册布局设置为隐藏");
+            } else {
+                android.util.Log.e(TAG, "密码注册布局为null");
+            }
+            
+            if (layoutSmsMode != null) {
+                layoutSmsMode.setVisibility(View.VISIBLE);
+                android.util.Log.d(TAG, "短信注册布局设置为可见");
+            } else {
+                android.util.Log.e(TAG, "短信注册布局为null");
+            }
+            
+            // 显示发送验证码按钮
+            if (btnSendCode != null) {
+                btnSendCode.setVisibility(View.VISIBLE);
+                android.util.Log.d(TAG, "发送验证码按钮设置为可见");
+            } else {
+                android.util.Log.e(TAG, "发送验证码按钮为null");
+            }
+            
+            android.util.Log.d(TAG, "成功切换到短信验证码注册模式");
+        } catch (Exception e) {
+            android.util.Log.e(TAG, "切换到短信验证码注册模式时发生异常: " + e.getMessage(), e);
         }
     }
 
@@ -188,34 +523,172 @@ public class RegisterActivity extends AppCompatActivity {
         
         showRegisterLoading(true);
         
-        // 模拟注册过程
-        new android.os.Handler().postDelayed(() -> {
-            showRegisterLoading(false);
-            Toast.makeText(this, "注册成功！", Toast.LENGTH_SHORT).show();
+        if (currentMode == RegisterMode.PASSWORD) {
+            performPasswordRegister();
+        } else {
+            performSmsRegister();
+        }
+    }
+    
+    /**
+     * 执行密码注册
+     */
+    private void performPasswordRegister() {
+        // 获取密码注册模式的输入数据
+        String username = etUsername.getText().toString().trim();
+        String email = etEmail.getText().toString().trim();
+        String password = etPassword.getText().toString();
+        
+        android.util.Log.d(TAG, "执行密码注册: " + username);
+        
+        // 调用密码注册API
+        Call<ApiResponse<RegisterResponse>> call = apiService.registerWithPassword(username, email, password);
+        call.enqueue(new Callback<ApiResponse<RegisterResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<RegisterResponse>> call, Response<ApiResponse<RegisterResponse>> response) {
+                showRegisterLoading(false);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<RegisterResponse> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        RegisterResponse registerData = apiResponse.getData();
+                        android.util.Log.d(TAG, "密码注册成功: " + registerData.toString());
+                        
+                        Toast.makeText(RegisterActivity.this, "注册成功！欢迎 " + registerData.getUsername(), Toast.LENGTH_SHORT).show();
+                        
+                        // 跳转到登录页面
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        intent.putExtra("username", registerData.getUsername());
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "注册失败: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(RegisterActivity.this, "注册失败，请检查网络连接", Toast.LENGTH_SHORT).show();
+                }
+            }
             
-            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }, 2000);
+            @Override
+            public void onFailure(Call<ApiResponse<RegisterResponse>> call, Throwable t) {
+                showRegisterLoading(false);
+                android.util.Log.e(TAG, "密码注册请求失败: " + t.getMessage(), t);
+                Toast.makeText(RegisterActivity.this, "网络错误，请稍后重试", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    
+    /**
+     * 执行短信验证码注册
+     */
+    private void performSmsRegister() {
+        // 获取短信注册模式的输入数据
+        String username = etUsernameSms.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+        String verificationCode = etVerificationCode.getText().toString().trim();
+        String password = etPasswordSms.getText().toString();
+        
+        android.util.Log.d(TAG, "执行短信验证码注册: " + username + ", 手机号: " + phone);
+        
+        // 调用短信注册API
+        Call<ApiResponse<RegisterResponse>> call = apiService.registerWithSms(username, phone, verificationCode, password);
+        call.enqueue(new Callback<ApiResponse<RegisterResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<RegisterResponse>> call, Response<ApiResponse<RegisterResponse>> response) {
+                showRegisterLoading(false);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<RegisterResponse> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        RegisterResponse registerData = apiResponse.getData();
+                        android.util.Log.d(TAG, "短信注册成功: " + registerData.toString());
+                        
+                        Toast.makeText(RegisterActivity.this, "注册成功！欢迎 " + registerData.getUsername(), Toast.LENGTH_SHORT).show();
+                        
+                        // 跳转到登录页面
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        intent.putExtra("username", registerData.getUsername());
+                        intent.putExtra("phone", registerData.getPhone());
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "注册失败: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(RegisterActivity.this, "注册失败，请检查网络连接", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<RegisterResponse>> call, Throwable t) {
+                showRegisterLoading(false);
+                android.util.Log.e(TAG, "短信注册请求失败: " + t.getMessage(), t);
+                Toast.makeText(RegisterActivity.this, "网络错误，请稍后重试", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void sendVerificationCode() {
         String phone = etPhone.getText().toString().trim();
-        if (!isValidPhoneNumber(phone)) {
-            tilPhone.setError("请输入正确的手机号码");
+        if (TextUtils.isEmpty(phone)) {
+            Toast.makeText(this, "请输入手机号", Toast.LENGTH_SHORT).show();
             return;
         }
         
-        showSendCodeLoading(true);
-        btnSendCode.setEnabled(false);
+        if (!validatePhone()) {
+            return;
+        }
         
-        // 模拟发送验证码
-        new android.os.Handler().postDelayed(() -> {
-            showSendCodeLoading(false);
-            isCodeSent = true;
-            startCountdown();
-            Toast.makeText(this, "验证码已发送", Toast.LENGTH_SHORT).show();
-        }, 1500);
+        // 防止重复发送
+        if (isCountingDown) {
+            Toast.makeText(this, "请等待倒计时结束后再发送", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 显示发送中状态
+        btnSendCode.setEnabled(false);
+        btnSendCode.setText("发送中...");
+        
+        // 调用发送验证码API
+        Call<ApiResponse<SmsCodeResponse>> call = apiService.sendSmsCode(phone);
+        call.enqueue(new Callback<ApiResponse<SmsCodeResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<SmsCodeResponse>> call, Response<ApiResponse<SmsCodeResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<SmsCodeResponse> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        SmsCodeResponse smsData = apiResponse.getData();
+                        android.util.Log.d(TAG, "验证码发送成功: " + smsData.toString());
+                        
+                        Toast.makeText(RegisterActivity.this, "验证码已发送到 " + phone, Toast.LENGTH_SHORT).show();
+                        isCodeSent = true;
+                        
+                        // 启动倒计时
+                        startCountdown();
+                    } else {
+                        // 发送失败，恢复按钮状态
+                        btnSendCode.setEnabled(true);
+                        btnSendCode.setText("发送验证码");
+                        Toast.makeText(RegisterActivity.this, "验证码发送失败: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // 网络错误，恢复按钮状态
+                    btnSendCode.setEnabled(true);
+                    btnSendCode.setText("发送验证码");
+                    Toast.makeText(RegisterActivity.this, "验证码发送失败，请检查网络连接", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<SmsCodeResponse>> call, Throwable t) {
+                android.util.Log.e(TAG, "验证码发送请求失败: " + t.getMessage(), t);
+                
+                // 网络错误，恢复按钮状态
+                btnSendCode.setEnabled(true);
+                btnSendCode.setText("发送验证码");
+                Toast.makeText(RegisterActivity.this, "网络错误，请稍后重试", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void showSendCodeLoading(boolean show) {
@@ -241,30 +714,89 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void startCountdown() {
+        isCountingDown = true;
         countdown = 60;
-        android.os.Handler handler = new android.os.Handler();
         
-        Runnable countdownRunnable = new Runnable() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+        
+        countDownTimer = new CountDownTimer(60000, 1000) {
             @Override
-            public void run() {
-                if (countdown > 0) {
+            public void onTick(long millisUntilFinished) {
+                countdown = (int) (millisUntilFinished / 1000);
+                if (btnSendCode != null) {
                     btnSendCode.setText(countdown + "s后重发");
-                    countdown--;
-                    handler.postDelayed(this, 1000);
-                } else {
+                    btnSendCode.setEnabled(false);
+                }
+            }
+            
+            @Override
+            public void onFinish() {
+                isCountingDown = false;
+                if (btnSendCode != null) {
                     btnSendCode.setText("发送验证码");
                     btnSendCode.setEnabled(true);
-                    isCodeSent = false;
                 }
+                isCodeSent = false;
+                android.util.Log.d(TAG, "验证码倒计时结束，可以重新发送");
             }
         };
         
-        handler.post(countdownRunnable);
+        countDownTimer.start();
+        android.util.Log.d(TAG, "开始验证码倒计时: 60秒");
     }
 
     private boolean validateAllInputs() {
-        return validateUsername() && validateEmail() && validatePhone() && 
-               validateVerificationCode() && validatePassword() && validateConfirmPassword();
+        if (currentMode == RegisterMode.PASSWORD) {
+            return validateUsername() && validateEmail() && validatePassword() && validateConfirmPassword();
+        } else {
+            return validateUsernameSms() && validatePhone() && validateVerificationCode() && 
+                   validatePasswordSms() && validateConfirmPasswordSms();
+        }
+    }
+
+    private boolean validateUsernameSms() {
+        String username = etUsernameSms.getText().toString().trim();
+        if (TextUtils.isEmpty(username)) {
+            tilUsernameSms.setError("用户名不能为空");
+            return false;
+        } else if (username.length() < 3) {
+            tilUsernameSms.setError("用户名至少3个字符");
+            return false;
+        } else {
+            tilUsernameSms.setError(null);
+            return true;
+        }
+    }
+
+    private boolean validatePasswordSms() {
+        String password = etPasswordSms.getText().toString();
+        if (TextUtils.isEmpty(password)) {
+            tilPasswordSms.setError("密码不能为空");
+            return false;
+        } else if (password.length() < 6) {
+            tilPasswordSms.setError("密码至少6个字符");
+            return false;
+        } else {
+            tilPasswordSms.setError(null);
+            return true;
+        }
+    }
+
+    private boolean validateConfirmPasswordSms() {
+        String password = etPasswordSms.getText().toString();
+        String confirmPassword = etConfirmPasswordSms.getText().toString();
+        if (TextUtils.isEmpty(confirmPassword)) {
+            tilConfirmPasswordSms.setError("确认密码不能为空");
+            return false;
+        } else if (!password.equals(confirmPassword)) {
+            tilConfirmPasswordSms.setError("两次输入的密码不一致");
+            return false;
+        } else {
+            tilConfirmPasswordSms.setError(null);
+            return true;
+        }
     }
 
     private boolean validateUsername() {
