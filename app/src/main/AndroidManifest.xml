@@ -22,6 +22,9 @@
     
     <!-- 悬浮窗权限 -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    
+    <!-- 支付宝SDK权限 -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <!-- 在AndroidManifest.xml中添加 -->
     <queries>
@@ -99,8 +102,6 @@
             android:name=".activity.RegisterActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
-            
-
             
         <!-- FileProvider for camera functionality -->
         <provider

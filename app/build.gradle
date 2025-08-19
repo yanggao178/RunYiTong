@@ -71,5 +71,7 @@ dependencies {
     // 可选：日志拦截器（调试用）
     implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
     
+    // 支付宝SDK
+    implementation 'com.alipay.sdk:alipaysdk-android:15.8.11'
 
 }

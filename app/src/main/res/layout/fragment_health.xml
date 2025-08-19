@@ -39,7 +39,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="医学书库"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/white" />
 
@@ -47,7 +47,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="经典医学典籍"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:textColor="@android:color/white"
                     android:alpha="0.8"
                     android:background="@drawable/badge_background"
@@ -96,7 +96,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="中医古籍"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/tradtional_chinese" />
 
@@ -104,7 +104,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="传统医学"
-                    android:textSize="10sp"
+                    android:textSize="8sp"
                     android:textColor="@android:color/white"
                     android:background="@drawable/badge_background"
                     android:backgroundTint="@color/tradtional_chinese"
@@ -143,7 +143,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="搜索中医古籍..."
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textColor="#2C3E50"
                     android:textColorHint="#95A5A6"
                     android:background="@android:color/transparent"
@@ -235,7 +235,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="西医经典"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/western_medicine" />
 
@@ -243,7 +243,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="现代医学"
-                    android:textSize="10sp"
+                    android:textSize="8sp"
                     android:textColor="@android:color/white"
                     android:background="@drawable/badge_background"
                     android:backgroundTint="@color/western_medicine"
@@ -282,7 +282,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:hint="搜索西医经典..."
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textColor="#2C3E50"
                     android:textColorHint="#95A5A6"
                     android:background="@android:color/transparent"

@@ -1,0 +1,38 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    
+    <!-- 微信绿色背景 -->
+    <path
+        android:fillColor="#07C160"
+        android:pathData="M12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2z" />
+    
+    <!-- 微信白色图标 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M8.5,7.5c-1.93,0 -3.5,1.57 -3.5,3.5 0,1.93 1.57,3.5 3.5,3.5h0.5v2l2,-2h1c1.93,0 3.5,-1.57 3.5,-3.5s-1.57,-3.5 -3.5,-3.5H8.5z" />
+    
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M15.5,12c-1.38,0 -2.5,1.12 -2.5,2.5s1.12,2.5 2.5,2.5h0.5v1.5l1.5,-1.5h0.5c1.38,0 2.5,-1.12 2.5,-2.5s-1.12,-2.5 -2.5,-2.5H15.5z" />
+    
+    <!-- 小圆点 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M7.5,10 C7.78,10 8,10.22 8,10.5 C8,10.78 7.78,11 7.5,11 C7.22,11 7,10.78 7,10.5 C7,10.22 7.22,10 7.5,10 Z" />
+    
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M9.5,10 C9.78,10 10,10.22 10,10.5 C10,10.78 9.78,11 9.5,11 C9.22,11 9,10.78 9,10.5 C9,10.22 9.22,10 9.5,10 Z" />
+    
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M16,13.7 C16.17,13.7 16.3,13.83 16.3,14 C16.3,14.17 16.17,14.3 16,14.3 C15.83,14.3 15.7,14.17 15.7,14 C15.7,13.83 15.83,13.7 16,13.7 Z" />
+    
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M17.5,13.7 C17.67,13.7 17.8,13.83 17.8,14 C17.8,14.17 17.67,14.3 17.5,14.3 C17.33,14.3 17.2,14.17 17.2,14 C17.2,13.83 17.33,13.7 17.5,13.7 Z" />
+    
+</vector>

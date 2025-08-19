@@ -63,7 +63,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="未登录"
-                        android:textSize="22sp"
+                        android:textSize="18sp"
                         android:textStyle="bold"
                         android:textColor="#2C3E50" />
 
@@ -72,7 +72,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="请登录以使用完整功能"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:textColor="#7F8C8D"
                         android:layout_marginTop="4dp" />
 
@@ -85,7 +85,7 @@
                  android:layout_width="wrap_content"
                  android:layout_height="36dp"
                  android:text="登录/注册"
-                 android:textSize="12sp"
+                 android:textSize="10sp"
                  android:background="@drawable/button_enhanced_primary"
                  android:textColor="@android:color/white"
                  android:paddingHorizontal="16dp"
@@ -97,7 +97,7 @@
                  android:layout_width="wrap_content"
                  android:layout_height="36dp"
                  android:text="退出登录"
-                 android:textSize="12sp"
+                 android:textSize="10sp"
                  android:background="@drawable/button_secondary"
                  android:textColor="@android:color/white"
                  android:paddingHorizontal="16dp"
@@ -120,7 +120,7 @@
                     android:background="@android:color/transparent"
                     android:text="快递订单"
                     android:textColor="@android:color/white"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:drawableLeft="@drawable/ic_delivery"
                     android:drawablePadding="8dp"
@@ -151,7 +151,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="我的服务"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#2C3E50"
                 android:layout_marginBottom="16dp"
@@ -203,16 +203,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="我的预约"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="#2C3E50" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="查看预约记录"
-                            android:textSize="12sp"
-                            android:textColor="#7F8C8D" />
+
 
                     </LinearLayout>
 
@@ -270,16 +265,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="我的处方"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="#2C3E50" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="查看处方详情"
-                            android:textSize="12sp"
-                            android:textColor="#7F8C8D" />
+
 
                     </LinearLayout>
 
@@ -337,16 +327,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="健康档案"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="#2C3E50" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="管理健康信息"
-                            android:textSize="12sp"
-                            android:textColor="#7F8C8D" />
+
 
                     </LinearLayout>
 
@@ -385,7 +370,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="设置"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#2C3E50"
                 android:layout_marginBottom="16dp"
@@ -437,16 +422,11 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="应用设置"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="#2C3E50" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="通知、主题和偏好设置"
-                            android:textSize="12sp"
-                            android:textColor="#7F8C8D" />
+
 
                     </LinearLayout>
 
