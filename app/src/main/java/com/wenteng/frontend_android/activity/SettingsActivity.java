@@ -107,11 +107,13 @@ public class SettingsActivity extends AppCompatActivity {
         
         // 认证与支付点击事件
         layoutIdentity.setOnClickListener(v -> {
-            android.widget.Toast.makeText(this, "实名认证功能开发中", android.widget.Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, IdentityVerificationActivity.class);
+            startActivity(intent);
         });
         
         layoutPayment.setOnClickListener(v -> {
-            android.widget.Toast.makeText(this, "支付设置功能开发中", android.widget.Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, PaymentSettingsActivity.class);
+            startActivity(intent);
         });
     }
     

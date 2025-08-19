@@ -1,0 +1,48 @@
+# Django CMS Backend Requirements
+Django>=4.2,<5.0
+django-cms>=3.11
+django-treebeard>=4.5
+django-classy-tags>=2.0
+django-sekizai>=2.0
+django-filer>=3.0
+easy-thumbnails>=2.7
+Pillow>=8.0.0
+
+# Database
+psycopg2-binary>=2.8.6  # PostgreSQL adapter
+# mysqlclient>=2.0.0    # MySQL adapter (uncomment if using MySQL)
+
+# Admin interface enhancements
+django-admin-interface>=0.19.0
+django-colorfield>=0.7.0
+
+# API and REST framework
+djangorestframework>=3.14.0
+django-cors-headers>=3.13.0
+
+# Authentication and permissions
+django-allauth>=0.51.0
+django-guardian>=2.4.0
+
+# Media and file handling
+django-storages>=1.13.0
+boto3>=1.26.0  # For AWS S3 storage
+
+# Caching
+django-redis>=5.2.0
+redis>=4.3.0
+
+# Development and debugging
+django-debug-toolbar>=3.2.0
+django-extensions>=3.2.0
+
+# Production server
+gunicorn>=20.1.0
+whitenoise>=6.2.0
+
+# Environment management
+python-dotenv>=0.19.0
+
+# Utilities
+requests>=2.28.0
+celery>=5.2.0  # For background tasks

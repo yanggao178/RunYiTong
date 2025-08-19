@@ -34,6 +34,9 @@ import java.net.SocketTimeoutException;
 import java.net.ConnectException;
 import javax.net.ssl.SSLHandshakeException;
 import java.io.IOException;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.content.Context;
 
 public class ProductFragment extends Fragment {
 
@@ -80,7 +83,30 @@ public class ProductFragment extends Fragment {
         loadProductsFromApi();
     }
     private void loadProductsFromApi() {
-        showError("开始加载商品数据...");
+        loadProductsFromApiWithRetry(0);
+    }
+    
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+    
+    private void loadProductsFromApiWithRetry(int retryCount) {
+        final int MAX_RETRIES = 3;
+        
+        // 检查网络连接
+        if (!isNetworkAvailable()) {
+            showError("网络连接不可用，请检查网络设置");
+            return;
+        }
+        
+        if (retryCount == 0) {
+            showError("正在加载商品数据...");
+        } else {
+            showError("重试加载商品数据... (" + (retryCount + 1) + "/" + (MAX_RETRIES + 1) + ")");
+        }
+        
         Call<ApiResponse<ProductListResponse>> call = ApiClient.getApiService().getProducts(0, 50, null, null);
 
         call.enqueue(new Callback<ApiResponse<ProductListResponse>>() {
@@ -142,17 +168,37 @@ public class ProductFragment extends Fragment {
 
             @Override
             public void onFailure(Call<ApiResponse<ProductListResponse>> call, Throwable t) {
-                // 6. 重点检查这里打印的异常
+                final int MAX_RETRIES = 3;
+                
+                // 打印详细错误信息
                 showError("网络请求失败: " + t.getClass().getSimpleName() + ": " + t.getMessage());
                 t.printStackTrace();
 
                 // 特殊处理常见异常
+                String errorMessage = "";
                 if (t instanceof SocketTimeoutException) {
-                    showError("连接超时，请检查网络");
+                    errorMessage = "连接超时";
                 } else if (t instanceof ConnectException) {
-                    showError("无法连接服务器，请检查API地址");
+                    errorMessage = "无法连接服务器";
                 } else if (t instanceof SSLHandshakeException) {
-                    showError("证书验证失败");
+                    errorMessage = "证书验证失败";
+                } else {
+                    errorMessage = "网络连接异常";
+                }
+                
+                // 实现重试逻辑
+                if (retryCount < MAX_RETRIES) {
+                    showError(errorMessage + "，正在重试...");
+                    // 延迟重试，避免频繁请求
+                    new android.os.Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            loadProductsFromApiWithRetry(retryCount + 1);
+                        }
+                    }, 2000); // 延迟2秒重试
+                } else {
+                    showError(errorMessage + "，请检查网络连接或稍后重试");
+                    // 可以在这里添加手动重试按钮或其他用户操作
                 }
             }
         });

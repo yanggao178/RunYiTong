@@ -41,12 +41,12 @@ public class ProductDetailActivity extends AppCompatActivity {
         productDetail = findViewById(R.id.product_detail);
 
         // 分享按钮点击事件
-        findViewById(R.id.share_button).setOnClickListener(v -> {
+        findViewById(R.id.btn_share).setOnClickListener(v -> {
             Toast.makeText(ProductDetailActivity.this, "分享功能开发中", Toast.LENGTH_SHORT).show();
         });
 
         // 购买按钮点击事件
-        findViewById(R.id.buy_button).setOnClickListener(v -> {
+        findViewById(R.id.btn_buy).setOnClickListener(v -> {
             Toast.makeText(ProductDetailActivity.this, "购买功能开发中", Toast.LENGTH_SHORT).show();
         });
     }

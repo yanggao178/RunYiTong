@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/button_ripple_color">
+    
+    <item android:id="@android:id/background">
+        <selector>
+            <!-- 按下状态 -->
+            <item android:state_pressed="true">
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="135"
+                        android:startColor="@color/button_primary_gradient_end"
+                        android:endColor="@color/button_primary_gradient_start"
+                        android:type="linear" />
+                    <corners android:radius="28dp" />
+                    <stroke android:width="0dp" />
+                </shape>
+            </item>
+            
+            <!-- 禁用状态 -->
+            <item android:state_enabled="false">
+                <shape android:shape="rectangle">
+                    <solid android:color="@color/button_disabled_background" />
+                    <corners android:radius="28dp" />
+                </shape>
+            </item>
+            
+            <!-- 默认状态 -->
+            <item>
+                <shape android:shape="rectangle">
+                    <gradient
+                        android:angle="135"
+                        android:startColor="@color/button_primary_gradient_start"
+                        android:endColor="@color/button_primary_gradient_end"
+                        android:type="linear" />
+                    <corners android:radius="28dp" />
+                    <stroke android:width="0dp" />
+                </shape>
+            </item>
+        </selector>
+    </item>
+    
+</ripple>

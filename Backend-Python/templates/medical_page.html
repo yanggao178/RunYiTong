@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load cms_tags static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Page Header -->
+            <div class="page-header mb-4">
+                <h1 class="display-4">{% page_attribute "page_title" %}</h1>
+                <p class="lead text-muted">{% page_attribute 'meta_description' %}</p>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="medical-content">
+                {% placeholder "main_content" %}
+            </div>
+            
+            <!-- Medical Features -->
+            <div class="medical-features mt-5">
+                <h3 class="mb-4">医疗服务特色</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {% placeholder "feature_1" %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {% placeholder "feature_2" %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Medical Gallery -->
+            <div class="medical-gallery mt-5">
+                <h3 class="mb-4">医疗设施</h3>
+                {% placeholder "gallery" %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar">
+                <!-- Quick Actions -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-stethoscope me-2"></i>
+                            快速操作
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% placeholder "quick_actions" %}
+                    </div>
+                </div>
+                
+                <!-- Medical Info -->
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            医疗信息
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% placeholder "medical_info" %}
+                    </div>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-phone me-2"></i>
+                            联系我们
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% placeholder "contact_info" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

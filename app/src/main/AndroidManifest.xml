@@ -16,7 +16,18 @@
     
     <!-- WiFi状态权限（用于网络定位辅助） -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    
+    <!-- 无障碍服务权限 -->
+    <uses-permission android:name="android.permission.BIND_ACCESSIBILITY_SERVICE" />
+    
+    <!-- 悬浮窗权限 -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
+    <!-- 在AndroidManifest.xml中添加 -->
+    <queries>
+        <package android:name="com.tencent.mm" />
+    </queries>
+    
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -59,6 +70,35 @@
             android:exported="false"
             android:screenOrientation="portrait" />
             
+        <activity
+            android:name=".activity.IdentityVerificationActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.PaymentSettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.ModifyPaymentPasswordActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SetPaymentPasswordActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.LoginActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.RegisterActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
         <!-- FileProvider for camera functionality -->
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -70,6 +110,19 @@
                 android:resource="@xml/file_paths" />
         </provider>
         
+        <!-- 无障碍服务声明 -->
+        <service
+            android:name=".service.WeChatAccessibilityService"
+            android:exported="false"
+            android:label="微信自动搜索服务"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_service_config" />
+        </service>
 
     </application>
 

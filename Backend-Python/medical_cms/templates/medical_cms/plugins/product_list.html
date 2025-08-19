@@ -1,0 +1,183 @@
+{% load i18n %}
+{% load cms_tags %}
+
+<div class="product-list-plugin">
+    {% if instance.title %}
+        <h3 class="product-list-title">{{ instance.title }}</h3>
+    {% endif %}
+    
+    {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+                <div class="product-card">
+                    {% if product.main_image %}
+                        <div class="product-image">
+                            <img src="{{ product.main_image.url }}" alt="{{ product.name }}" class="img-fluid">
+                        </div>
+                    {% endif %}
+                    
+                    <div class="product-info">
+                        <h4 class="product-name">{{ product.name }}</h4>
+                        
+                        {% if product.description %}
+                            <p class="product-description">{{ product.description|truncatewords:20 }}</p>
+                        {% endif %}
+                        
+                        <div class="product-meta">
+                            {% if product.category %}
+                                <span class="product-category">{{ product.category.name }}</span>
+                            {% endif %}
+                            
+                            {% if product.department %}
+                                <span class="product-department">{{ product.department.name }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-pricing">
+                            {% if product.discount_price %}
+                                <span class="original-price">¥{{ product.price }}</span>
+                                <span class="discount-price">¥{{ product.discount_price }}</span>
+                            {% else %}
+                                <span class="price">¥{{ product.price }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="product-stock">
+                            {% if product.stock > 0 %}
+                                <span class="in-stock">{% trans "库存" %}: {{ product.stock }}</span>
+                            {% else %}
+                                <span class="out-of-stock">{% trans "缺货" %}</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if product.sku %}
+                            <div class="product-sku">
+                                <small>{% trans "商品编号" %}: {{ product.sku }}</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="no-products">{% trans "暂无商品" %}</p>
+    {% endif %}
+</div>
+
+<style>
+.product-list-plugin {
+    margin: 20px 0;
+}
+
+.product-list-title {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.product-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.product-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.product-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #333;
+}
+
+.product-description {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 10px;
+    line-height: 1.4;
+}
+
+.product-meta {
+    margin-bottom: 10px;
+}
+
+.product-category, .product-department {
+    display: inline-block;
+    background: #f0f0f0;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    margin-right: 5px;
+    color: #666;
+}
+
+.product-pricing {
+    margin-bottom: 8px;
+}
+
+.price, .discount-price {
+    font-size: 18px;
+    font-weight: bold;
+    color: #e74c3c;
+}
+
+.original-price {
+    text-decoration: line-through;
+    color: #999;
+    margin-right: 8px;
+}
+
+.product-stock {
+    margin-bottom: 5px;
+}
+
+.in-stock {
+    color: #27ae60;
+    font-size: 14px;
+}
+
+.out-of-stock {
+    color: #e74c3c;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.product-sku {
+    color: #999;
+    font-size: 12px;
+}
+
+.no-products {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px;
+}
+
+@media (max-width: 768px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

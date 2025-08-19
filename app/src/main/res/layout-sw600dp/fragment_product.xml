@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F8F9FA"
+    android:padding="24dp">
+
+    <!-- 增强的标题栏 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:cardElevation="8dp"
+        android:backgroundTint="@color/primary_color"
+        app:cardCornerRadius="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="24dp">
+
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_shopping_cart"
+                android:layout_marginEnd="16dp"
+                android:tint="@android:color/white" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="商品中心"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@android:color/white" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="精选优质商品，专业医疗用品"
+                    android:textSize="16sp"
+                    android:textColor="@android:color/white"
+                    android:alpha="0.9"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+            <!-- 搜索按钮 -->
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fab_search"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_search"
+                app:backgroundTint="@android:color/white"
+                app:tint="@color/primary_color"
+                app:fabSize="mini"
+                app:elevation="4dp" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- 搜索栏 -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        app:cardElevation="4dp"
+        app:cardCornerRadius="12dp"
+        app:cardBackgroundColor="@android:color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:padding="16dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_search"
+                android:layout_marginEnd="12dp"
+                android:tint="@color/text_secondary" />
+
+            <EditText
+                android:id="@+id/et_search"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="搜索商品..."
+                android:textSize="16sp"
+                android:background="@android:color/transparent"
+                android:textColorHint="@color/text_secondary" />
+
+            <Button
+                android:id="@+id/btn_search"
+                style="@style/SmallButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="搜索"
+                android:textSize="14sp"
+                android:paddingHorizontal="16dp" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- 分类标签 -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp">
+
+            <Button
+                android:id="@+id/btn_category_all"
+                style="@style/SecondaryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="全部"
+                android:textSize="14sp"
+                android:layout_marginEnd="12dp"
+                android:paddingHorizontal="20dp" />
+
+            <Button
+                android:id="@+id/btn_category_medicine"
+                style="@style/SecondaryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="药品"
+                android:textSize="14sp"
+                android:layout_marginEnd="12dp"
+                android:paddingHorizontal="20dp" />
+
+            <Button
+                android:id="@+id/btn_category_equipment"
+                style="@style/SecondaryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="医疗器械"
+                android:textSize="14sp"
+                android:layout_marginEnd="12dp"
+                android:paddingHorizontal="20dp" />
+
+            <Button
+                android:id="@+id/btn_category_health"
+                style="@style/SecondaryButton"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="保健品"
+                android:textSize="14sp"
+                android:paddingHorizontal="20dp" />
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <!-- 商品网格 - 大屏幕使用3列布局 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_products"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        app:spanCount="3"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager" />
+
+    <!-- 加载更多按钮 -->
+    <Button
+        android:id="@+id/btn_load_more"
+        style="@style/SecondaryButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="加载更多"
+        android:textSize="16sp"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" />
+
+</LinearLayout>

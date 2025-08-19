@@ -13,12 +13,11 @@ class ProductBase(BaseModel):
     name: str
     price: float
     description: Optional[str] = None
-    image_url: Optional[str] = None
-    category: Optional[str] = None
-    stock: int = 0
-    specification: Optional[str] = None
+    featured_image_url: Optional[str] = None
+    category_id: Optional[int] = None
+    stock_quantity: int = 0
     manufacturer: Optional[str] = None
-    purchase_count: int = 0
+    sales_count: int = 0
 
 class ProductCreate(ProductBase):
     pass
@@ -27,17 +26,16 @@ class ProductUpdate(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
     description: Optional[str] = None
-    image_url: Optional[str] = None
-    category: Optional[str] = None
-    stock: Optional[int] = None
-    specification: Optional[str] = None
+    featured_image_url: Optional[str] = None
+    category_id: Optional[int] = None
+    stock_quantity: Optional[int] = None
     manufacturer: Optional[str] = None
-    purchase_count: Optional[int] = None
+    sales_count: Optional[int] = None
 
 class Product(ProductBase):
     id: int
-    created_time: datetime
-    updated_time: datetime
+    created_at: datetime
+    updated_at: datetime
     
     class Config:
         from_attributes = True

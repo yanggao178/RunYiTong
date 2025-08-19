@@ -3,24 +3,40 @@ from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
 
-# 商品模型
+# 商品模型 - 与ai_medical.db products表结构保持一致
 class Product(Base):
     __tablename__ = "products"
     
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(255), nullable=False, index=True)
-    price = Column(Float, nullable=False)
+    name = Column(String(200), nullable=False, index=True)
+    slug = Column(String(50))
     description = Column(Text)
-    image_url = Column(String(500))
-    category = Column(String(100), index=True)
-    stock = Column(Integer, default=0)
-    created_time = Column(DateTime, default=datetime.utcnow)
-    updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
-    # 商品详情扩展字段
-    specification = Column(String(255))  # 规格
-    manufacturer = Column(String(255))   # 厂商
-    purchase_count = Column(Integer, default=0)  # 购买人数
+    short_description = Column(String(500))
+    category_id = Column(Integer)
+    department_id = Column(Integer)
+    price = Column(Float, nullable=False)
+    original_price = Column(Float)
+    stock_quantity = Column(Integer, default=0)
+    min_stock_level = Column(Integer)
+    sku = Column(String(100))
+    barcode = Column(String(100))
+    weight = Column(Float)
+    dimensions = Column(String(100))
+    featured_image_url = Column(String(500))
+    gallery_images = Column(Text)
+    tags = Column(String(200))
+    status = Column(String(20))
+    is_featured = Column(Boolean, default=False)
+    is_prescription_required = Column(Boolean, default=False)
+    manufacturer = Column(String(200))
+    expiry_date = Column(DateTime)
+    usage_instructions = Column(Text)
+    side_effects = Column(Text)
+    contraindications = Column(Text)
+    views_count = Column(Integer, default=0)
+    sales_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 # 图书模型
 class Book(Base):

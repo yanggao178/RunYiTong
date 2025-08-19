@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load cms_tags static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Contact Header -->
+            <div class="contact-header mb-4">
+                <h1 class="display-4">{% page_attribute "page_title" %}</h1>
+                <p class="lead">{% page_attribute 'meta_description' %}</p>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="contact-form">
+                <h3 class="mb-4">联系表单</h3>
+                {% placeholder "contact_form" %}
+            </div>
+            
+            <!-- Additional Info -->
+            <div class="additional-info mt-5">
+                <h3 class="mb-4">其他信息</h3>
+                {% placeholder "additional_info" %}
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar">
+                <!-- Contact Information -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-address-book me-2"></i>
+                            联系信息
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="contact-item mb-3">
+                            <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                            <strong>地址：</strong>
+                            {% placeholder "address" %}
+                        </div>
+                        <div class="contact-item mb-3">
+                            <i class="fas fa-phone text-primary me-2"></i>
+                            <strong>电话：</strong>
+                            {% placeholder "phone" %}
+                        </div>
+                        <div class="contact-item mb-3">
+                            <i class="fas fa-envelope text-primary me-2"></i>
+                            <strong>邮箱：</strong>
+                            {% placeholder "email" %}
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-clock text-primary me-2"></i>
+                            <strong>营业时间：</strong>
+                            {% placeholder "business_hours" %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Map -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-map me-2"></i>
+                            位置地图
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        {% placeholder "map" %}
+                    </div>
+                </div>
+                
+                <!-- Emergency Contact -->
+                <div class="card">
+                    <div class="card-header bg-danger text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            紧急联系
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% placeholder "emergency_contact" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

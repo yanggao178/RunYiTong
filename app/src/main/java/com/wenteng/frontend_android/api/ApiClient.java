@@ -18,7 +18,11 @@ public class ApiClient {
     private static final String BASE_URL = getBaseUrl();
     
     private static String getBaseUrl() {
-        // 检查是否在模拟器中运行
+        // 优先使用localhost进行本地测试
+        //
+        
+        // 如果需要根据环境切换，可以使用以下代码：
+        
         String fingerprint = android.os.Build.FINGERPRINT;
         if (fingerprint != null && (fingerprint.startsWith("generic") 
                 || fingerprint.startsWith("unknown") 
@@ -27,8 +31,10 @@ public class ApiClient {
             return "http://10.0.2.15:8000/";
         } else {
             // 真实设备环境，使用局域网IP地址
-            return "http://192.168.0.6:8000/";
+           return "http://192.168.0.8:8000/";
+          ///  return "http://8.141.2.166:8000";
         }
+        
     }
     private static Retrofit retrofit = null;
     private static ApiService apiService = null;

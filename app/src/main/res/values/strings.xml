@@ -34,4 +34,7 @@
     <string name="analysis_icon">智能分析</string>
     <string name="upload_icon">上传</string>
     <string name="preview_icon">预览</string>
+    
+    <!-- Accessibility service strings -->
+    <string name="accessibility_service_description">AI医疗助手无障碍服务，用于自动化微信搜索医院公众号功能。启用后可以自动打开微信并搜索指定的医院公众号。</string>
 </resources>

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load cms_tags static %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- News Header -->
+            <div class="news-header mb-4">
+                <h1 class="display-4">{% page_attribute "page_title" %}</h1>
+                <div class="news-meta text-muted mb-3">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    <span>发布时间：{% now "Y年m月d日" %}</span>
+                    <i class="fas fa-user ms-3 me-2"></i>
+                    <span>作者：管理员</span>
+                </div>
+                <p class="lead">{% page_attribute 'meta_description' %}</p>
+            </div>
+            
+            <!-- News Content -->
+            <div class="news-content">
+                {% placeholder "news_content" %}
+            </div>
+            
+            <!-- News Images -->
+            <div class="news-images mt-4">
+                {% placeholder "news_images" %}
+            </div>
+            
+            <!-- Related News -->
+            <div class="related-news mt-5">
+                <h3 class="mb-4">相关新闻</h3>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {% placeholder "related_news_1" %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {% placeholder "related_news_2" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sidebar">
+                <!-- Latest News -->
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-newspaper me-2"></i>
+                            最新新闻
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% placeholder "latest_news" %}
+                    </div>
+                </div>
+                
+                <!-- News Categories -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-tags me-2"></i>
+                            新闻分类
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% placeholder "news_categories" %}
+                    </div>
+                </div>
+                
+                <!-- News Archive -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-archive me-2"></i>
+                            新闻归档
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% placeholder "news_archive" %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

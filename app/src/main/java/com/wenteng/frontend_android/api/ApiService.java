@@ -42,7 +42,7 @@ public interface ApiService {
      * @param productId 商品ID
      * @return 商品详情响应
      */
-    @GET("api/v1/products/{id}")
+    @GET("api/v1/products/{id}/")
     Call<ApiResponse<Product>> getProduct(@Path("id") int productId);
     
     /**

@@ -1,0 +1,126 @@
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /@vite/client
+Not Found: /zh-hans/favicon.ico/
+Invalid HTTP_HOST header: '0.0.0.0:8000'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '0.0.0.0:8000'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '0.0.0.0:8000'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '0.0.0.0:8000'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+Watching for file changes with StatReloader
+Not Found: /zh-hans/favicon.ico/
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /@vite/client
+Not Found: /zh-hans/favicon.ico/
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /@vite/client
+Watching for file changes with StatReloader
+Not Found: /zh-hans/-copy-6/
+Not Found: /zh-hans/-copy-6/
+Invalid HTTP_HOST header: '0.0.0.0:8080'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '0.0.0.0:8080'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+Watching for file changes with StatReloader
+Invalid HTTP_HOST header: '0.0.0.0:8080'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\.venv\Lib\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '0.0.0.0:8080'. You may need to add '0.0.0.0' to ALLOWED_HOSTS.
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /@vite/client
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\cms_project\urls.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /zh-hans/api/ai-products/
+Not Found: /zh-hans/api/ai-products/
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /@vite/client
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /@vite/client
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\api_views.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\api_views.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\models.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\api_views.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\medical_cms\api_views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /@vite/client
+Invalid HTTP_HOST header: '192.168.0.6:8080'. You may need to add '192.168.0.6' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.6:8080'. You may need to add '192.168.0.6' to ALLOWED_HOSTS.
+D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader

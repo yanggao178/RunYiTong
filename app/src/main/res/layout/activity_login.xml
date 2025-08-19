@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background_enhanced"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center">
+
+        <!-- Logo区域 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/logo_area"
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            app:cardCornerRadius="80dp"
+            app:cardElevation="20dp"
+            android:layout_marginBottom="32dp"
+            android:backgroundTint="@color/card_background"
+            app:cardUseCompatPadding="true">
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_profile"
+                android:tint="@color/gradient_start"
+                android:contentDescription="应用Logo" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- 标题 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="AI医疗助手"
+            android:textSize="36sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="8dp"
+            android:letterSpacing="0.08"
+            android:shadowColor="#40000000"
+            android:shadowDx="0"
+            android:shadowDy="2"
+            android:shadowRadius="4" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="欢迎回来，请登录您的账户"
+            android:textSize="16sp"
+            android:textColor="@android:color/white"
+            android:alpha="0.85"
+            android:layout_marginBottom="40dp"
+            android:letterSpacing="0.02"
+            android:gravity="center" />
+
+        <!-- 登录表单 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/form_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="16dp"
+            android:backgroundTint="@color/card_background"
+            android:layout_marginHorizontal="20dp"
+            app:cardUseCompatPadding="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="28dp">
+
+                <!-- 用户名输入 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:boxBackgroundMode="filled"
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxCornerRadiusTopStart="20dp"
+                    app:boxCornerRadiusTopEnd="20dp"
+                    app:boxCornerRadiusBottomStart="20dp"
+                    app:boxCornerRadiusBottomEnd="20dp"
+                    app:boxStrokeColor="@color/input_border_focused"
+                    app:boxStrokeWidth="2dp"
+                    app:boxStrokeWidthFocused="3dp"
+                    app:startIconDrawable="@drawable/ic_profile"
+                    app:startIconTint="@color/gradient_start"
+                    app:hintTextColor="@color/text_hint"
+                    app:hintAnimationEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_username"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:hint="用户名"
+                        android:inputType="text"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary"
+                        android:paddingVertical="16dp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 手机号输入框 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:boxBackgroundMode="filled"
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxCornerRadiusTopStart="20dp"
+                    app:boxCornerRadiusTopEnd="20dp"
+                    app:boxCornerRadiusBottomStart="20dp"
+                    app:boxCornerRadiusBottomEnd="20dp"
+                    app:startIconDrawable="@drawable/ic_phone"
+                    app:startIconTint="@color/gradient_start"
+                    app:hintTextColor="@color/text_hint"
+                    app:boxStrokeColor="@color/gradient_start"
+                    app:boxStrokeWidth="2dp"
+                    app:boxStrokeWidthFocused="3dp"
+                    app:hintAnimationEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_phone"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:hint="手机号"
+                        android:inputType="phone"
+                        android:maxLength="11"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary"
+                        android:paddingVertical="16dp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 验证码区域 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="24dp"
+                    android:gravity="center_vertical">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/til_verification_code"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="16dp"
+                        app:boxBackgroundMode="filled"
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxCornerRadiusTopStart="20dp"
+                        app:boxCornerRadiusTopEnd="20dp"
+                        app:boxCornerRadiusBottomStart="20dp"
+                        app:boxCornerRadiusBottomEnd="20dp"
+                        app:startIconDrawable="@drawable/ic_lock_open"
+                        app:startIconTint="@color/gradient_start"
+                        app:hintTextColor="@color/text_hint"
+                        app:boxStrokeColor="@color/gradient_start"
+                        app:boxStrokeWidth="2dp"
+                        app:boxStrokeWidthFocused="3dp"
+                        app:hintAnimationEnabled="true">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/et_verification_code"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:hint="验证码"
+                            android:inputType="number"
+                            android:maxLength="6"
+                            android:textSize="16sp"
+                            android:textColor="@color/text_primary"
+                            android:paddingVertical="16dp" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="wrap_content"
+                            android:layout_height="56dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="8dp"
+                            android:backgroundTint="@color/gradient_start"
+                            app:cardUseCompatPadding="true">
+
+                            <Button
+                                android:id="@+id/btn_send_code"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:text="发送验证码"
+                                android:textColor="@color/white"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:background="@android:color/transparent"
+                                android:paddingHorizontal="20dp"
+                                android:minWidth="120dp"
+                                android:minHeight="0dp"
+                                android:letterSpacing="0.05" />
+
+                        </androidx.cardview.widget.CardView>
+
+                        <!-- 发送验证码加载指示器 -->
+                        <ProgressBar
+                            android:id="@+id/pb_send_code_loading"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_centerInParent="true"
+                            android:visibility="gone"
+                            android:indeterminateTint="@color/gradient_start" />
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+
+                <!-- 密码输入 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="32dp"
+                    app:boxBackgroundMode="filled"
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxCornerRadiusTopStart="20dp"
+                    app:boxCornerRadiusTopEnd="20dp"
+                    app:boxCornerRadiusBottomStart="20dp"
+                    app:boxCornerRadiusBottomEnd="20dp"
+                    app:boxStrokeColor="@color/gradient_start"
+                    app:boxStrokeWidth="2dp"
+                    app:boxStrokeWidthFocused="3dp"
+                    app:startIconDrawable="@drawable/ic_lock"
+                    app:startIconTint="@color/gradient_start"
+                    app:endIconMode="password_toggle"
+                    app:endIconTint="@color/gradient_start"
+                    app:hintTextColor="@color/text_hint"
+                    app:hintAnimationEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="56dp"
+                        android:hint="密码"
+                        android:inputType="textPassword"
+                        android:textSize="16sp"
+                        android:textColor="@color/text_primary"
+                        android:paddingVertical="16dp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 登录按钮区域 -->
+                <RelativeLayout
+                    android:id="@+id/button_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="20dp">
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="32dp"
+                        app:cardElevation="12dp"
+                        android:backgroundTint="@color/gradient_start"
+                        app:cardUseCompatPadding="true">
+
+                        <Button
+                            android:id="@+id/btn_login"
+                            android:layout_width="match_parent"
+                            android:layout_height="64dp"
+                            android:text="登录"
+                            android:textColor="@color/white"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:background="@android:color/transparent"
+                            android:letterSpacing="0.15"
+                            android:elevation="0dp" />
+
+                    </androidx.cardview.widget.CardView>
+
+                    <ProgressBar
+                        android:id="@+id/pb_login_loading"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_centerInParent="true"
+                        android:visibility="gone"
+                        android:indeterminateTint="@color/white" />
+
+                </RelativeLayout>
+
+                <!-- 注册按钮 -->
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="32dp"
+                    app:cardElevation="6dp"
+                    android:layout_marginBottom="20dp"
+                    android:backgroundTint="@android:color/transparent"
+                    app:cardBackgroundColor="@android:color/transparent"
+                    app:cardUseCompatPadding="true">
+
+                    <Button
+                        android:id="@+id/btn_register"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:text="注册新账户"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/button_outline_white"
+                        android:letterSpacing="0.08"
+                        android:elevation="0dp" />
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- 忘记密码 -->
+                <TextView
+                    android:id="@+id/tv_forgot_password"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="32dp"
+                    android:text="忘记密码？"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:background="?android:attr/selectableItemBackgroundBorderless"
+                    android:padding="16dp"
+                    android:letterSpacing="0.08"
+                    android:alpha="0.9" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- 底部提示 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:layout_marginBottom="40dp"
+            android:text="演示账户：admin / 123456"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
+            android:alpha="0.75"
+            android:gravity="center"
+            android:letterSpacing="0.05"
+            android:background="@drawable/rounded_background_transparent"
+            android:padding="12dp" />
+
+    </LinearLayout>
+
+</ScrollView>

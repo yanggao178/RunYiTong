@@ -1,0 +1,96 @@
+from rest_framework import serializers
+from .models import Product, ProductCategory, MedicalDepartment
+
+
+class ProductCategorySerializer(serializers.ModelSerializer):
+    """商品分类序列化器"""
+    
+    class Meta:
+        model = ProductCategory
+        fields = ['id', 'name', 'description', 'image', 'parent', 'is_active', 'sort_order']
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # 处理图片字段
+        if instance.image:
+            data['image'] = instance.image.url
+        else:
+            data['image'] = None
+        return data
+
+
+class MedicalDepartmentSerializer(serializers.ModelSerializer):
+    """医疗科室序列化器"""
+    
+    class Meta:
+        model = MedicalDepartment
+        fields = ['id', 'name', 'description', 'image', 'is_active']
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # 处理图片字段
+        if instance.image:
+            data['image'] = instance.image.url
+        else:
+            data['image'] = None
+        return data
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    """商品序列化器"""
+    category = ProductCategorySerializer(read_only=True)
+    department = MedicalDepartmentSerializer(read_only=True)
+    
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'name', 'slug', 'description', 'short_description',
+            'category', 'department', 'price', 'original_price',
+            'stock_quantity', 'min_stock_level', 'sku', 'barcode',
+            'weight', 'dimensions', 'featured_image', 'gallery_images',
+            'tags', 'status', 'is_featured', 'is_prescription_required',
+            'manufacturer', 'expiry_date', 'usage_instructions',
+            'side_effects', 'contraindications', 'views_count',
+            'sales_count', 'created_at', 'updated_at', 'is_in_stock',
+            'is_low_stock', 'discount_percentage'
+        ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # 处理主图片字段
+        if instance.featured_image:
+            data['featured_image'] = instance.featured_image.url
+        else:
+            data['featured_image'] = None
+            
+        # 处理图库图片
+        gallery_urls = []
+        for image in instance.gallery_images.all():
+            gallery_urls.append(image.url)
+        data['gallery_images'] = gallery_urls
+        
+        return data
+
+
+class ProductListSerializer(serializers.ModelSerializer):
+    """商品列表序列化器（简化版）"""
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    department_name = serializers.CharField(source='department.name', read_only=True)
+    
+    class Meta:
+        model = Product
+        fields = [
+            'id', 'name', 'slug', 'short_description', 'category_name',
+            'department_name', 'price', 'original_price', 'stock_quantity',
+            'featured_image', 'status', 'is_featured', 'is_in_stock',
+            'discount_percentage', 'created_at'
+        ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # 处理主图片字段
+        if instance.featured_image:
+            data['featured_image'] = instance.featured_image.url
+        else:
+            data['featured_image'] = None
+        return data

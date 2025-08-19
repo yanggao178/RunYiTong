@@ -44,22 +44,53 @@
 
             </androidx.cardview.widget.CardView>
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="用户名"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="#2C3E50"
-                android:layout_marginBottom="8dp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="8dp">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="欢迎使用AI医疗助手"
-                android:textSize="14sp"
-                android:textColor="#7F8C8D"
-                android:layout_marginBottom="20dp" />
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:id="@+id/tv_username"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="未登录"
+                        android:textSize="22sp"
+                        android:textStyle="bold"
+                        android:textColor="#2C3E50" />
+
+                    <TextView
+                        android:id="@+id/tv_welcome"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="请登录以使用完整功能"
+                        android:textSize="14sp"
+                        android:textColor="#7F8C8D"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <Button
+                 android:id="@+id/btn_login"
+                 android:layout_width="wrap_content"
+                 android:layout_height="36dp"
+                 android:text="登录/注册"
+                 android:textSize="12sp"
+                 android:background="@drawable/button_enhanced_primary"
+                 android:textColor="@android:color/white"
+                 android:paddingHorizontal="16dp"
+                 android:layout_gravity="center"
+                 android:layout_marginBottom="20dp" />
 
             <!-- 快递订单按钮 -->
             <androidx.cardview.widget.CardView

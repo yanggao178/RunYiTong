@@ -12,8 +12,19 @@ import com.wenteng.frontend_android.fragment.ProfileFragment;
 import com.wenteng.frontend_android.fragment.RegistrationFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.wenteng.frontend_android.R;
+import com.wenteng.frontend_android.utils.OverlayPermissionManager;
+import android.content.Intent;
 
 public class MainActivity extends AppCompatActivity {
+
+    // SharedPreferences相关常量
+    private static final String PREFS_NAME = "app_state";
+    private static final String KEY_LAST_FRAGMENT = "last_fragment";
+    private static final String FRAGMENT_PRODUCT = "product";
+    private static final String FRAGMENT_REGISTRATION = "registration";
+    private static final String FRAGMENT_PRESCRIPTION = "prescription";
+    private static final String FRAGMENT_HEALTH = "health";
+    private static final String FRAGMENT_PROFILE = "profile";
 
     private BottomNavigationView bottomNavigationView;
     private ProductFragment productFragment;
@@ -52,9 +63,9 @@ public class MainActivity extends AppCompatActivity {
             initFragments();
             android.util.Log.d("MainActivity", "Fragments initialized");
             
-            // 设置默认显示商品Fragment
-            showFragment(productFragment);
-            android.util.Log.d("MainActivity", "Default fragment shown");
+            // 恢复上次选中的Fragment，如果没有则显示商品Fragment
+            restoreLastFragment();
+            android.util.Log.d("MainActivity", "Fragment restored");
         } catch (Exception e) {
             android.util.Log.e("MainActivity", "Error in onCreate", e);
             // 可以在这里添加崩溃报告或用户友好的错误提示
@@ -170,6 +181,135 @@ public class MainActivity extends AppCompatActivity {
         transaction.commit();
         
         currentFragment = fragment;
+        
+        // 保存当前Fragment状态
+        saveCurrentFragment(fragment);
+        
+        // 更新底部导航栏选中状态
+        updateBottomNavigationSelection(fragment);
+        
         android.util.Log.d("MainActivity", "Fragment switch completed");
+    }
+    
+    /**
+     * 保存当前Fragment状态到SharedPreferences
+     */
+    private void saveCurrentFragment(Fragment fragment) {
+        String fragmentName = getFragmentName(fragment);
+        if (fragmentName != null) {
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .edit()
+                .putString(KEY_LAST_FRAGMENT, fragmentName)
+                .apply();
+            android.util.Log.d("MainActivity", "Saved fragment state: " + fragmentName);
+        }
+    }
+    
+    /**
+     * 恢复上次选中的Fragment
+     */
+    private void restoreLastFragment() {
+        String lastFragmentName = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+            .getString(KEY_LAST_FRAGMENT, FRAGMENT_PRODUCT);
+        
+        Fragment fragmentToShow = getFragmentByName(lastFragmentName);
+        if (fragmentToShow != null) {
+            showFragment(fragmentToShow);
+            android.util.Log.d("MainActivity", "Restored last fragment: " + lastFragmentName);
+        } else {
+            // 如果找不到对应Fragment，显示默认的商品Fragment
+            showFragment(productFragment);
+            android.util.Log.d("MainActivity", "Fallback to default fragment");
+        }
+    }
+    
+    /**
+     * 根据Fragment获取对应的名称
+     */
+    private String getFragmentName(Fragment fragment) {
+        if (fragment == productFragment) {
+            return FRAGMENT_PRODUCT;
+        } else if (fragment == registrationFragment) {
+            return FRAGMENT_REGISTRATION;
+        } else if (fragment == prescriptionFragment) {
+            return FRAGMENT_PRESCRIPTION;
+        } else if (fragment == healthFragment) {
+            return FRAGMENT_HEALTH;
+        } else if (fragment == profileFragment) {
+            return FRAGMENT_PROFILE;
+        }
+        return null;
+    }
+    
+    /**
+     * 根据名称获取对应的Fragment
+     */
+    private Fragment getFragmentByName(String fragmentName) {
+        switch (fragmentName) {
+            case FRAGMENT_PRODUCT:
+                return productFragment;
+            case FRAGMENT_REGISTRATION:
+                return registrationFragment;
+            case FRAGMENT_PRESCRIPTION:
+                return prescriptionFragment;
+            case FRAGMENT_HEALTH:
+                return healthFragment;
+            case FRAGMENT_PROFILE:
+                return profileFragment;
+            default:
+                return null;
+        }
+    }
+    
+    /**
+     * 更新底部导航栏选中状态
+     */
+    private void updateBottomNavigationSelection(Fragment fragment) {
+        if (bottomNavigationView == null) return;
+        
+        int menuItemId = R.id.nav_product; // 默认值
+        
+        if (fragment == productFragment) {
+            menuItemId = R.id.nav_product;
+        } else if (fragment == registrationFragment) {
+            menuItemId = R.id.nav_registration;
+        } else if (fragment == prescriptionFragment) {
+            menuItemId = R.id.nav_prescription;
+        } else if (fragment == healthFragment) {
+            menuItemId = R.id.nav_health;
+        } else if (fragment == profileFragment) {
+            menuItemId = R.id.nav_profile;
+        }
+        
+        bottomNavigationView.setSelectedItemId(menuItemId);
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        android.util.Log.d("MainActivity", "onResume called - 应用回到前台");
+        
+        // 延迟重置对话框状态，防止从微信返回时立即重复显示对话框
+        // 但允许用户在一段时间后重新触发
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            // 通过反射调用HospitalAdapter的resetDialogState方法
+            try {
+                Class<?> adapterClass = Class.forName("com.wenteng.frontend_android.adapter.HospitalAdapter");
+                java.lang.reflect.Method resetMethod = adapterClass.getDeclaredMethod("resetDialogState");
+                resetMethod.setAccessible(true);
+                resetMethod.invoke(null);
+                android.util.Log.d("MainActivity", "对话框状态已延迟重置");
+            } catch (Exception e) {
+                android.util.Log.w("MainActivity", "重置对话框状态失败: " + e.getMessage());
+            }
+        }, 5000); // 5秒后重置状态
+    }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        // 处理悬浮窗权限返回结果
+        OverlayPermissionManager.handlePermissionResult(this, requestCode);
     }
 }

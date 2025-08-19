@@ -1,0 +1,269 @@
+from rest_framework import generics, filters, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
+from .models import Product, ProductCategory, MedicalDepartment
+from .serializers import (
+    ProductSerializer, 
+    ProductListSerializer, 
+    ProductCategorySerializer,
+    MedicalDepartmentSerializer
+)
+
+# 导入SQLAlchemy相关模块用于连接ai_medical.db
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from database import SessionLocal
+from models import Product as AIProduct
+
+
+class ProductListAPIView(generics.ListAPIView):
+    """商品列表API"""
+    queryset = Product.objects.filter(status='active')
+    serializer_class = ProductListSerializer
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category', 'department', 'is_featured', 'is_prescription_required']
+    search_fields = ['name', 'description', 'short_description', 'tags']
+    ordering_fields = ['created_at', 'price', 'sales_count', 'views_count']
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # 按分类筛选
+        category_id = self.request.query_params.get('category_id')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+            
+        # 按科室筛选
+        department_id = self.request.query_params.get('department_id')
+        if department_id:
+            queryset = queryset.filter(department_id=department_id)
+            
+        # 价格范围筛选
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        if min_price:
+            queryset = queryset.filter(price__gte=min_price)
+        if max_price:
+            queryset = queryset.filter(price__lte=max_price)
+            
+        # 库存筛选
+        in_stock_only = self.request.query_params.get('in_stock_only')
+        if in_stock_only and in_stock_only.lower() == 'true':
+            queryset = queryset.filter(stock_quantity__gt=0)
+            
+        return queryset.select_related('category', 'department')
+
+
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    """商品详情API"""
+    queryset = Product.objects.filter(status='active')
+    serializer_class = ProductSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'slug'
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        # 增加浏览次数
+        instance.views_count += 1
+        instance.save(update_fields=['views_count'])
+        
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class ProductCategoryListAPIView(generics.ListAPIView):
+    """商品分类列表API"""
+    queryset = ProductCategory.objects.filter(is_active=True)
+    serializer_class = ProductCategorySerializer
+    permission_classes = [AllowAny]
+    ordering = ['sort_order', 'name']
+
+
+class MedicalDepartmentListAPIView(generics.ListAPIView):
+    """医疗科室列表API"""
+    queryset = MedicalDepartment.objects.filter(is_active=True)
+    serializer_class = MedicalDepartmentSerializer
+    permission_classes = [AllowAny]
+    ordering = ['name']
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def featured_products(request):
+    """获取推荐商品"""
+    limit = int(request.GET.get('limit', 10))
+    products = Product.objects.filter(
+        status='active', 
+        is_featured=True
+    ).select_related('category', 'department')[:limit]
+    
+    serializer = ProductListSerializer(products, many=True)
+    return Response({
+        'count': len(products),
+        'results': serializer.data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def search_products(request):
+    """商品搜索API"""
+    query = request.GET.get('q', '')
+    if not query:
+        return Response({'error': '搜索关键词不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    products = Product.objects.filter(
+        Q(name__icontains=query) |
+        Q(description__icontains=query) |
+        Q(short_description__icontains=query) |
+        Q(tags__icontains=query),
+        status='active'
+    ).select_related('category', 'department')
+    
+    serializer = ProductListSerializer(products, many=True)
+    return Response({
+        'query': query,
+        'count': len(products),
+        'results': serializer.data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def product_stats(request):
+    """商品统计信息API"""
+    total_products = Product.objects.filter(status='active').count()
+    featured_products_count = Product.objects.filter(status='active', is_featured=True).count()
+    categories_count = ProductCategory.objects.filter(is_active=True).count()
+    departments_count = MedicalDepartment.objects.filter(is_active=True).count()
+    
+    return Response({
+        'total_products': total_products,
+        'featured_products': featured_products_count,
+        'categories': categories_count,
+        'departments': departments_count
+    })
+
+
+# ===== 从ai_medical.db数据库获取商品数据的API =====
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def ai_products_list(request):
+    """从ai_medical.db获取商品列表"""
+    db = SessionLocal()
+    try:
+        # 获取查询参数
+        category = request.GET.get('category')
+        search = request.GET.get('search')
+        limit = int(request.GET.get('limit', 20))
+        skip = int(request.GET.get('skip', 0))  # Android前端使用skip参数
+        offset = skip  # 将skip转换为offset
+        
+        # 构建查询
+        query = db.query(AIProduct)
+        
+        # 按分类筛选
+        if category:
+            query = query.filter(AIProduct.category == category)
+            
+        # 搜索功能
+        if search:
+            query = query.filter(
+                AIProduct.name.contains(search) |
+                AIProduct.description.contains(search)
+            )
+            
+        # 分页
+        products = query.offset(offset).limit(limit).all()
+        total_count = query.count()
+        
+        # 转换为字典格式，字段映射与ai_medical.db保持一致
+        products_data = []
+        for product in products:
+            products_data.append({
+                'id': product.id,
+                'name': product.name,
+                'price': float(product.price) if product.price else 0.0,
+                'description': product.description,
+                'image_url': product.featured_image_url,  # 映射到featured_image_url
+                'category': product.category_id,  # 暂时返回category_id，后续可关联查询分类名称
+                'stock': product.stock_quantity,  # 映射到stock_quantity
+                'specification': product.usage_instructions,  # 映射到usage_instructions
+                'manufacturer': product.manufacturer,
+                'purchase_count': product.sales_count,  # 映射到sales_count
+                'created_time': product.created_at.isoformat() if product.created_at else None,  # 映射到created_at
+                'updated_time': product.updated_at.isoformat() if product.updated_at else None  # 映射到updated_at
+            })
+            
+        # 返回符合Android前端期望的ApiResponse<ProductListResponse>格式
+        return Response({
+            'success': True,
+            'message': '获取商品列表成功',
+            'data': {
+                'items': products_data,
+                'total': total_count,
+                'skip': skip,
+                'limit': limit
+            }
+        })
+        
+    except Exception as e:
+        return Response(
+            {'error': f'获取商品列表失败: {str(e)}'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    finally:
+        db.close()
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def ai_product_detail(request, product_id):
+    """从ai_medical.db获取商品详情"""
+    db = SessionLocal()
+    try:
+        product = db.query(AIProduct).filter(AIProduct.id == product_id).first()
+        
+        if not product:
+            return Response(
+                {'error': '商品不存在'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        # 转换为字典格式，字段映射与ai_medical.db保持一致
+        product_data = {
+            'id': product.id,
+            'name': product.name,
+            'price': float(product.price) if product.price else 0.0,
+            'description': product.description,
+            'image_url': product.featured_image_url,  # 映射到featured_image_url
+            'category': product.category_id,  # 暂时返回category_id，后续可关联查询分类名称
+            'stock': product.stock_quantity,  # 映射到stock_quantity
+            'specification': product.usage_instructions,  # 映射到usage_instructions
+            'manufacturer': product.manufacturer,
+            'purchase_count': product.sales_count,  # 映射到sales_count
+            'created_time': product.created_at.isoformat() if product.created_at else None,  # 映射到created_at
+            'updated_time': product.updated_at.isoformat() if product.updated_at else None  # 映射到updated_at
+        }
+        
+        # 返回符合Android前端期望的ApiResponse<Product>格式
+        return Response({
+            'success': True,
+            'message': '获取商品详情成功',
+            'data': product_data
+        })
+        
+    except Exception as e:
+        return Response(
+            {'error': f'获取商品详情失败: {str(e)}'}, 
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+    finally:
+        db.close()

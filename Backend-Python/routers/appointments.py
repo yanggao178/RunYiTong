@@ -358,6 +358,41 @@ async def get_departments():
     ]
     return {"departments": departments}
 
+# 获取指定医院的科室列表
+@router.get("/hospitals/{hospital_id}/departments")
+async def get_hospital_departments(hospital_id: int):
+    """获取指定医院的科室列表"""
+    # 医院科室映射
+    hospital_departments = {
+        1: [1, 2, 3, 4],  # 北京协和医院
+        2: [1, 2, 4],     # 北京大学第一医院
+        3: [1, 3, 4],     # 广安门医院
+        4: [4]            # 儿童医院
+    }
+    
+    all_departments = [
+        {"id": 1, "name": "内科", "description": "内科疾病诊治"},
+        {"id": 2, "name": "外科", "description": "外科手术治疗"},
+        {"id": 3, "name": "中医科", "description": "中医诊疗"},
+        {"id": 4, "name": "儿科", "description": "儿童疾病诊治"},
+        {"id": 5, "name": "眼科", "description": "眼科疾病诊治"},
+        {"id": 6, "name": "耳鼻喉科", "description": "耳鼻喉疾病诊治"},
+        {"id": 7, "name": "皮肤科", "description": "皮肤疾病诊治"},
+        {"id": 8, "name": "神经科", "description": "神经系统疾病诊治"}
+    ]
+    
+    if hospital_id not in hospital_departments:
+        raise HTTPException(status_code=404, detail="医院不存在")
+    
+    available_dept_ids = hospital_departments[hospital_id]
+    available_departments = [d for d in all_departments if d["id"] in available_dept_ids]
+    
+    return {
+        "success": True,
+        "message": "获取医院科室列表成功",
+        "data": {"items": available_departments}
+    }
+
 # 获取用户的预约历史
 @router.get("/user/{user_id}/history", response_model=List[Appointment])
 async def get_user_appointment_history(

@@ -1,0 +1,109 @@
+{% load i18n %}
+{% load cms_tags %}
+
+<div class="contact-form-plugin">
+    {% if instance.title %}
+        <h3 class="contact-form-title">{{ instance.title }}</h3>
+    {% endif %}
+    
+    <form method="post" class="contact-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="name">{% trans "姓名" %}</label>
+            <input type="text" id="name" name="name" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="phone">{% trans "电话" %}</label>
+            <input type="tel" id="phone" name="phone" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="email">{% trans "邮箱" %}</label>
+            <input type="email" id="email" name="email" class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <label for="subject">{% trans "主题" %}</label>
+            <input type="text" id="subject" name="subject" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="message">{% trans "留言内容" %}</label>
+            <textarea id="message" name="message" class="form-control" rows="5" required></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">{% trans "提交" %}</button>
+    </form>
+</div>
+
+<style>
+.contact-form-plugin {
+    max-width: 600px;
+    margin: 20px 0;
+}
+
+.contact-form-title {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.contact-form {
+    background: #f9f9f9;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.btn {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+    .contact-form {
+        padding: 20px;
+    }
+}
+</style>

@@ -245,7 +245,7 @@ public class RegistrationFragment extends Fragment {
     
     private void setupHospitalAdapter() {
         android.util.Log.d("RegistrationFragment", "设置医院适配器，医院列表大小: " + (hospitalList != null ? hospitalList.size() : 0));
-        hospitalAdapter = new HospitalAdapter(hospitalList, hospital -> {
+        hospitalAdapter = new HospitalAdapter(getContext(), hospitalList, hospital -> {
             selectedHospital = hospital;
             updateSelectedInfo();
             loadDepartmentsByHospital(hospital.getId());

@@ -135,6 +135,7 @@ async def health_check():
 
 # 商品相关API
 @app.get("/api/products/", response_model=BaseResponse)
+@app.get("/api/v1/products/", response_model=BaseResponse)
 async def get_products(skip: int = 0, limit: int = 10, search: str = None, category: str = None):
     """获取商品列表"""
     filtered_products = products_data
@@ -161,6 +162,7 @@ async def get_products(skip: int = 0, limit: int = 10, search: str = None, categ
     )
 
 @app.get("/api/products/{product_id}", response_model=BaseResponse)
+@app.get("/api/v1/products/{product_id}", response_model=BaseResponse)
 async def get_product(product_id: int):
     """获取单个商品详情"""
     product = next((p for p in products_data if p["id"] == product_id), None)
@@ -196,12 +198,14 @@ async def get_books(skip: int = 0, limit: int = 10, search: str = None, category
     )
 
 @app.get("/api/books/chinese", response_model=BaseResponse)
+@app.get("/api/v1/books/chinese-medicine", response_model=BaseResponse)
 async def get_chinese_books():
     """获取中医图书"""
     chinese_books = [b for b in books_data if "中医" in b["category"] or "中药" in b["category"]]
     return BaseResponse(data={"items": chinese_books})
 
 @app.get("/api/books/western", response_model=BaseResponse)
+@app.get("/api/v1/books/western-medicine", response_model=BaseResponse)
 async def get_western_books():
     """获取西医图书"""
     western_books = [b for b in books_data if "医学理论" in b["category"] or b["author"] in ["希波克拉底", "维萨里", "奥斯勒"]]
@@ -428,6 +432,6 @@ if __name__ == "__main__":
         app,
         host="0.0.0.0",
         port=8000,
-        reload=True,
+        reload=False,
         log_level="info"
     )

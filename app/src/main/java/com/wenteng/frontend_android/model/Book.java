@@ -1,16 +1,36 @@
 package com.wenteng.frontend_android.model;
 
+import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.Date;
 
 public class Book implements Serializable {
+    @SerializedName("id")
     private int id;
+    
+    @SerializedName("name")
     private String name;
+    
+    @SerializedName("author")
     private String author;
+    
+    @SerializedName("category")
     private String category;
+    
+    @SerializedName("description")
     private String description;
+    
+    @SerializedName("cover_url")
     private String coverUrl;
+    
+    @SerializedName("publish_date")
     private Date publishDate;
+    
+    @SerializedName("created_time")
+    private Date createdTime;
+    
+    @SerializedName("updated_time")
+    private Date updatedTime;
 
     // 无参构造函数
     public Book() {
@@ -84,6 +104,22 @@ public class Book implements Serializable {
         this.publishDate = publishDate;
     }
 
+    public Date getCreatedTime() {
+        return createdTime;
+    }
+
+    public void setCreatedTime(Date createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    public Date getUpdatedTime() {
+        return updatedTime;
+    }
+
+    public void setUpdatedTime(Date updatedTime) {
+        this.updatedTime = updatedTime;
+    }
+
     @Override
     public String toString() {
         return "Book{" +
@@ -91,6 +127,11 @@ public class Book implements Serializable {
                 ", name='" + name + '\'' +
                 ", author='" + author + '\'' +
                 ", category='" + category + '\'' +
+                ", description='" + description + '\'' +
+                ", coverUrl='" + coverUrl + '\'' +
+                ", publishDate=" + publishDate +
+                ", createdTime=" + createdTime +
+                ", updatedTime=" + updatedTime +
                 '}';
     }
 }
