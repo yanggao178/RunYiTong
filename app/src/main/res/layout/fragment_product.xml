@@ -39,7 +39,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="商品中心"
-                    android:textSize="20sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@android:color/white" />
 
@@ -47,7 +47,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="精选优质商品"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:textColor="@android:color/white"
                     android:alpha="0.8"
                     android:background="@drawable/badge_background"
@@ -94,7 +94,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="商品搜索"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="@color/primary_color"
                     android:textStyle="bold" />
 
@@ -116,13 +116,13 @@
                 android:drawableLeft="@drawable/ic_search"
                 android:drawablePadding="8dp"
                 android:inputType="text"
-                android:textSize="14sp" />
+                android:textSize="12sp" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="💡 支持按商品名称、功效、厂商等关键词搜索"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:textColor="#666666"
                 android:layout_marginTop="8dp" />
 

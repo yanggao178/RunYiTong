@@ -15,7 +15,7 @@ import com.wenteng.frontend_android.ProductDetailActivity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.wenteng.frontend_android.R;
@@ -272,7 +272,7 @@ public class ProductFragment extends Fragment {
             }
             
             productAdapter = new ProductAdapter(getContext(), filteredProductList);
-            productRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            productRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
             productRecyclerView.setAdapter(productAdapter);
 
             // 设置商品点击事件

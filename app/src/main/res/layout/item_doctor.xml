@@ -50,7 +50,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="医生姓名"
-                        android:textSize="18sp"
+                        android:textSize="16sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_primary" />
 
@@ -80,7 +80,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="所属医院"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:textColor="@color/text_secondary"
                         android:maxLines="1"
                         android:ellipsize="end" />
@@ -119,7 +119,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="科室名称"
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textColor="@color/text_secondary" />
 
         </LinearLayout>
@@ -129,7 +129,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="专长：心血管疾病、高血压"
-            android:textSize="13sp"
+            android:textSize="11sp"
             android:textColor="@color/text_secondary"
             android:layout_marginTop="6dp"
             android:maxLines="2"
