@@ -29,6 +29,7 @@
     </queries>
     
     <application
+        android:name=".MyApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -98,6 +99,8 @@
             android:name=".activity.RegisterActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+            
+
             
         <!-- FileProvider for camera functionality -->
         <provider

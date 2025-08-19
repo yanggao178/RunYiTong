@@ -34,33 +34,52 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         
-        initViews();
-        setupInputValidation();
-        setupClickListeners();
-        setupAnimations();
+        try {
+            initViewsRobust();
+            setupInputValidation();
+            setupClickListeners();
+            setupAnimations();
+        } catch (Exception e) {
+            android.util.Log.e("RegisterActivity", "初始化失败: " + e.getMessage(), e);
+            // 显示错误提示但不关闭Activity
+            android.widget.Toast.makeText(this, "页面加载出现问题，请重试", android.widget.Toast.LENGTH_SHORT).show();
+        }
     }
 
-    private void initViews() {
-        etUsername = findViewById(R.id.et_username);
-        etEmail = findViewById(R.id.et_email);
-        etPhone = findViewById(R.id.et_phone);
-        etVerificationCode = findViewById(R.id.et_verification_code);
-        etPassword = findViewById(R.id.et_password);
-        etConfirmPassword = findViewById(R.id.et_confirm_password);
-        
-        btnRegister = findViewById(R.id.btn_register);
-        btnSendCode = findViewById(R.id.btn_send_code);
-        tvBackToLogin = findViewById(R.id.btn_back_to_login);
-        
-        tilUsername = findViewById(R.id.til_username);
-        tilEmail = findViewById(R.id.til_email);
-        tilPhone = findViewById(R.id.til_phone);
-        tilVerificationCode = findViewById(R.id.til_verification_code);
-        tilPassword = findViewById(R.id.til_password);
-        tilConfirmPassword = findViewById(R.id.til_confirm_password);
-        
-        pbRegisterLoading = findViewById(R.id.pb_register_loading);
-        pbSendCodeLoading = findViewById(R.id.pb_send_code_loading);
+    private void initViewsRobust() {
+        // 安全的视图查找，避免空指针异常
+        try {
+            etUsername = findViewById(R.id.et_username);
+            etEmail = findViewById(R.id.et_email);
+            etPhone = findViewById(R.id.et_phone);
+            etVerificationCode = findViewById(R.id.et_verification_code);
+            etPassword = findViewById(R.id.et_password);
+            etConfirmPassword = findViewById(R.id.et_confirm_password);
+            
+            btnRegister = findViewById(R.id.btn_register);
+            btnSendCode = findViewById(R.id.btn_send_code);
+            tvBackToLogin = findViewById(R.id.btn_back_to_login);
+            
+            tilUsername = findViewById(R.id.til_username);
+            tilEmail = findViewById(R.id.til_email);
+            tilPhone = findViewById(R.id.til_phone);
+            tilVerificationCode = findViewById(R.id.til_verification_code);
+            tilPassword = findViewById(R.id.til_password);
+            tilConfirmPassword = findViewById(R.id.til_confirm_password);
+            
+            pbRegisterLoading = findViewById(R.id.pb_register_loading);
+            pbSendCodeLoading = findViewById(R.id.pb_send_code_loading);
+            
+            // 验证关键视图是否成功加载
+            if (etUsername == null || etPassword == null || btnRegister == null) {
+                throw new RuntimeException("关键视图加载失败");
+            }
+            
+            android.util.Log.d("RegisterActivity", "视图初始化成功");
+        } catch (Exception e) {
+            android.util.Log.e("RegisterActivity", "视图初始化失败: " + e.getMessage(), e);
+            throw e; // 重新抛出异常供上层处理
+        }
     }
 
     private void setupInputValidation() {
@@ -131,18 +150,35 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        btnRegister.setOnClickListener(v -> performRegister());
-        btnSendCode.setOnClickListener(v -> sendVerificationCode());
-        tvBackToLogin.setOnClickListener(v -> {
-            Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        // 安全的点击监听器设置，添加空指针检查
+        if (btnRegister != null) {
+            btnRegister.setOnClickListener(v -> performRegister());
+        }
+        
+        if (btnSendCode != null) {
+            btnSendCode.setOnClickListener(v -> sendVerificationCode());
+        }
+        
+        if (tvBackToLogin != null) {
+            tvBackToLogin.setOnClickListener(v -> {
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            });
+        }
     }
 
     private void setupAnimations() {
-        Animation slideInAnimation = AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom);
-        findViewById(R.id.form_container).startAnimation(slideInAnimation);
+        try {
+            Animation slideInAnimation = AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom);
+            android.view.View formContainer = findViewById(R.id.form_container);
+            if (formContainer != null && slideInAnimation != null) {
+                formContainer.startAnimation(slideInAnimation);
+            }
+        } catch (Exception e) {
+            android.util.Log.w("RegisterActivity", "动画设置失败: " + e.getMessage());
+            // 动画失败不影响核心功能，继续执行
+        }
     }
 
     private void performRegister() {
@@ -183,12 +219,24 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void showSendCodeLoading(boolean show) {
-        if (show) {
-            pbSendCodeLoading.setVisibility(View.VISIBLE);
-            btnSendCode.setText("");
-        } else {
-            pbSendCodeLoading.setVisibility(View.GONE);
-            btnSendCode.setText("发送验证码");
+        try {
+            if (show) {
+                if (pbSendCodeLoading != null) {
+                    pbSendCodeLoading.setVisibility(View.VISIBLE);
+                }
+                if (btnSendCode != null) {
+                    btnSendCode.setText("");
+                }
+            } else {
+                if (pbSendCodeLoading != null) {
+                    pbSendCodeLoading.setVisibility(View.GONE);
+                }
+                if (btnSendCode != null) {
+                    btnSendCode.setText("发送验证码");
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.w("RegisterActivity", "显示发送验证码加载状态失败: " + e.getMessage());
         }
     }
 
@@ -313,14 +361,26 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void showRegisterLoading(boolean show) {
-        if (show) {
-            pbRegisterLoading.setVisibility(View.VISIBLE);
-            btnRegister.setEnabled(false);
-            btnRegister.setText("注册中...");
-        } else {
-            pbRegisterLoading.setVisibility(View.GONE);
-            btnRegister.setEnabled(true);
-            btnRegister.setText("注册");
+        try {
+            if (show) {
+                if (pbRegisterLoading != null) {
+                    pbRegisterLoading.setVisibility(View.VISIBLE);
+                }
+                if (btnRegister != null) {
+                    btnRegister.setEnabled(false);
+                    btnRegister.setText("注册中...");
+                }
+            } else {
+                if (pbRegisterLoading != null) {
+                    pbRegisterLoading.setVisibility(View.GONE);
+                }
+                if (btnRegister != null) {
+                    btnRegister.setEnabled(true);
+                    btnRegister.setText("注册");
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.w("RegisterActivity", "显示加载状态失败: " + e.getMessage());
         }
     }
 }

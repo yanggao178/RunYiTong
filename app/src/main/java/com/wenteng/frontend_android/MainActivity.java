@@ -39,6 +39,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         
         try {
+            // 监控内存使用情况
+            logMemoryUsage("onCreate start");
+            
             android.util.Log.d("MainActivity", "onCreate started");
             
             // 确保应用始终以纵向模式显示
@@ -66,6 +69,8 @@ public class MainActivity extends AppCompatActivity {
             // 恢复上次选中的Fragment，如果没有则显示商品Fragment
             restoreLastFragment();
             android.util.Log.d("MainActivity", "Fragment restored");
+            
+            logMemoryUsage("onCreate end");
         } catch (Exception e) {
             android.util.Log.e("MainActivity", "Error in onCreate", e);
             // 可以在这里添加崩溃报告或用户友好的错误提示
@@ -162,23 +167,45 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showFragment(Fragment fragment) {
         android.util.Log.d("MainActivity", "showFragment called, target: " + fragment.getClass().getSimpleName());
+        
+        // 检查Activity状态
+        if (isFinishing() || isDestroyed()) {
+            android.util.Log.w("MainActivity", "Activity is finishing or destroyed, cannot show fragment");
+            return;
+        }
+        
+        // 检查Fragment状态
+        if (fragment == null) {
+            android.util.Log.e("MainActivity", "Target fragment is null");
+            return;
+        }
+        
         if (currentFragment == fragment) {
             android.util.Log.d("MainActivity", "Same fragment, no switch needed");
             return; // 如果是当前Fragment，不需要切换
         }
         
+        // 检查内存状态
+        logMemoryUsage("before fragment switch");
+        
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         
         // 隐藏当前Fragment
-        if (currentFragment != null) {
+        if (currentFragment != null && currentFragment.isAdded()) {
             android.util.Log.d("MainActivity", "Hiding current fragment: " + currentFragment.getClass().getSimpleName());
             transaction.hide(currentFragment);
         }
         
         // 显示目标Fragment
-        android.util.Log.d("MainActivity", "Showing target fragment: " + fragment.getClass().getSimpleName());
-        transaction.show(fragment);
-        transaction.commit();
+        if (fragment.isAdded()) {
+            android.util.Log.d("MainActivity", "Showing target fragment: " + fragment.getClass().getSimpleName());
+            transaction.show(fragment);
+        } else {
+            android.util.Log.w("MainActivity", "Fragment not added: " + fragment.getClass().getSimpleName());
+        }
+        
+        // 使用commitAllowingStateLoss避免状态丢失异常
+        transaction.commitAllowingStateLoss();
         
         currentFragment = fragment;
         
@@ -187,6 +214,9 @@ public class MainActivity extends AppCompatActivity {
         
         // 更新底部导航栏选中状态
         updateBottomNavigationSelection(fragment);
+        
+        // 监控内存使用
+        logMemoryUsage("after showing " + fragment.getClass().getSimpleName());
         
         android.util.Log.d("MainActivity", "Fragment switch completed");
     }
@@ -288,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         android.util.Log.d("MainActivity", "onResume called - 应用回到前台");
+        logMemoryUsage("onResume");
         
         // 延迟重置对话框状态，防止从微信返回时立即重复显示对话框
         // 但允许用户在一段时间后重新触发
@@ -303,6 +334,61 @@ public class MainActivity extends AppCompatActivity {
                 android.util.Log.w("MainActivity", "重置对话框状态失败: " + e.getMessage());
             }
         }, 5000); // 5秒后重置状态
+    }
+    
+    @Override
+    protected void onPause() {
+        super.onPause();
+        logMemoryUsage("onPause");
+    }
+    
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        android.util.Log.w("MainActivity", "Low memory warning received");
+        logMemoryUsage("onLowMemory");
+        // 强制垃圾回收
+        System.gc();
+    }
+    
+    @Override
+    public void onTrimMemory(int level) {
+        super.onTrimMemory(level);
+        android.util.Log.w("MainActivity", "Memory trim requested, level: " + level);
+        logMemoryUsage("onTrimMemory level " + level);
+        
+        // 根据不同级别采取不同的内存清理策略
+        if (level >= TRIM_MEMORY_MODERATE) {
+            // 清理一些缓存
+            System.gc();
+        }
+    }
+    
+    private void logMemoryUsage(String context) {
+        try {
+            Runtime runtime = Runtime.getRuntime();
+            long totalMemory = runtime.totalMemory();
+            long freeMemory = runtime.freeMemory();
+            long usedMemory = totalMemory - freeMemory;
+            long maxMemory = runtime.maxMemory();
+            
+            android.util.Log.d("MainActivity", String.format(
+                "Memory [%s]: Used=%dMB, Free=%dMB, Total=%dMB, Max=%dMB, Usage=%.1f%%",
+                context,
+                usedMemory / (1024 * 1024),
+                freeMemory / (1024 * 1024),
+                totalMemory / (1024 * 1024),
+                maxMemory / (1024 * 1024),
+                (usedMemory * 100.0 / maxMemory)
+            ));
+            
+            // 如果内存使用超过75%，发出警告
+            if (usedMemory * 100 / maxMemory > 75) {
+                android.util.Log.w("MainActivity", "High memory usage detected: " + (usedMemory * 100 / maxMemory) + "%");
+            }
+        } catch (Exception e) {
+            android.util.Log.e("MainActivity", "Error logging memory usage", e);
+        }
     }
     
     @Override

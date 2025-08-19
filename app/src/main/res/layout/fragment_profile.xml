@@ -90,7 +90,20 @@
                  android:textColor="@android:color/white"
                  android:paddingHorizontal="16dp"
                  android:layout_gravity="center"
-                 android:layout_marginBottom="20dp" />
+                 android:layout_marginBottom="8dp" />
+
+            <Button
+                 android:id="@+id/btn_logout"
+                 android:layout_width="wrap_content"
+                 android:layout_height="36dp"
+                 android:text="退出登录"
+                 android:textSize="12sp"
+                 android:background="@drawable/button_secondary"
+                 android:textColor="@android:color/white"
+                 android:paddingHorizontal="16dp"
+                 android:layout_gravity="center"
+                 android:layout_marginBottom="20dp"
+                 android:visibility="gone" />
 
             <!-- 快递订单按钮 -->
             <androidx.cardview.widget.CardView

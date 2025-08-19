@@ -3,23 +3,25 @@ package com.wenteng.frontend_android.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.TextWatcher;
 import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.textfield.TextInputLayout;
-import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.MainActivity;
+import com.wenteng.frontend_android.R;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -36,35 +38,313 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
         
-        initViews();
-        setupClickListeners();
-        setupAnimations();
+        Log.d("LoginActivity", "onCreate started");
+        
+        // 检查Activity状态
+        if (isFinishing() || isDestroyed()) {
+            Log.w("LoginActivity", "Activity is finishing or destroyed, aborting onCreate");
+            return;
+        }
+        
+        setContentView(R.layout.activity_login);
+        Log.d("LoginActivity", "Layout set successfully");
+        
+        // 直接初始化视图，不使用try-catch包装
+        initViewsRobust();
+        
+        Log.d("LoginActivity", "onCreate completed successfully");
     }
     
-    private void initViews() {
-        etUsername = findViewById(R.id.et_username);
-        etPassword = findViewById(R.id.et_password);
-        etPhone = findViewById(R.id.et_phone);
-        etVerificationCode = findViewById(R.id.et_verification_code);
+    private void initViewsRobust() {
+        Log.d("LoginActivity", "Starting robust view initialization...");
         
+        // 初始化TextInputLayout - 使用安全的方式
         tilUsername = findViewById(R.id.til_username);
         tilPassword = findViewById(R.id.til_password);
         tilPhone = findViewById(R.id.til_phone);
         tilVerificationCode = findViewById(R.id.til_verification_code);
         
+        // 初始化EditText
+        etUsername = findViewById(R.id.et_username);
+        etPassword = findViewById(R.id.et_password);
+        etPhone = findViewById(R.id.et_phone);
+        etVerificationCode = findViewById(R.id.et_verification_code);
+        
+        // 初始化按钮
         btnLogin = findViewById(R.id.btn_login);
         btnRegister = findViewById(R.id.btn_register);
         btnSendCode = findViewById(R.id.btn_send_code);
         tvForgotPassword = findViewById(R.id.tv_forgot_password);
         
-        // Initialize loading indicators
+        // 初始化加载指示器
         pbLoginLoading = findViewById(R.id.pb_login_loading);
         pbSendCodeLoading = findViewById(R.id.pb_send_code_loading);
         
-        setupInputValidation();
-        setupInputFocusAnimations();
+        // 记录视图初始化状态，但不抛出异常
+        if (tilUsername == null) Log.w("LoginActivity", "til_username not found");
+        if (tilPassword == null) Log.w("LoginActivity", "til_password not found");
+        if (etUsername == null) Log.w("LoginActivity", "et_username not found");
+        if (etPassword == null) Log.w("LoginActivity", "et_password not found");
+        if (btnLogin == null) Log.w("LoginActivity", "btn_login not found");
+        
+        // 设置监听器 - 只有在视图存在时才设置
+        if (btnLogin != null && btnRegister != null) {
+            setupClickListeners();
+        }
+        
+        if (etUsername != null && etPassword != null && etPhone != null && etVerificationCode != null) {
+            setupInputValidation();
+        }
+        
+        // 设置焦点动画 - 可选功能
+        try {
+            setupInputFocusAnimations();
+        } catch (Exception e) {
+            Log.w("LoginActivity", "Failed to setup focus animations, continuing without them", e);
+        }
+        
+        Log.d("LoginActivity", "Robust view initialization completed");
+    }
+    
+    private void logInitializationError(Exception e) {
+        Log.e("LoginActivity", "Initialization error occurred, but continuing with available views", e);
+        // 不再显示错误对话框或简化界面，让Activity正常运行
+    }
+    
+    // 已移除简化登录功能 - 不再需要
+    /*
+    private void showSimplifiedLogin() {
+        try {
+            Log.d("LoginActivity", "Showing simplified login interface");
+            
+            // 隐藏所有可能有问题的视图
+            hideProblematicViews();
+            
+            // 创建简化的登录界面
+            createSimplifiedLoginInterface();
+            
+            Toast.makeText(this, "已切换到简化登录模式", Toast.LENGTH_LONG).show();
+            
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Failed to show simplified login", e);
+            Toast.makeText(this, "无法显示登录界面，请重启应用", Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+    */
+    
+    /*
+    private void hideProblematicViews() {
+        // 隐藏可能有问题的复杂视图
+        try {
+            View formContainer = findViewById(R.id.form_container);
+            if (formContainer != null) {
+                formContainer.setVisibility(View.GONE);
+            }
+        } catch (Exception e) {
+            Log.w("LoginActivity", "Could not hide form container", e);
+        }
+    }
+    */
+    
+    /*
+    // 已移除简化登录界面相关方法 - 不再需要
+    private void createSimplifiedLoginInterface() {
+        // 创建一个简化的登录界面
+        try {
+            // 查找根布局
+            View rootView = findViewById(android.R.id.content);
+            if (rootView instanceof ViewGroup) {
+                ViewGroup rootGroup = (ViewGroup) rootView;
+                
+                // 创建简化的登录表单
+                LinearLayout simplifiedForm = new LinearLayout(this);
+                simplifiedForm.setOrientation(LinearLayout.VERTICAL);
+                simplifiedForm.setPadding(48, 48, 48, 48);
+                simplifiedForm.setGravity(android.view.Gravity.CENTER);
+                
+                // 添加标题
+                TextView title = new TextView(this);
+                title.setText("AI医疗助手 - 登录");
+                title.setTextSize(24);
+                title.setTextColor(getResources().getColor(android.R.color.white));
+                title.setGravity(android.view.Gravity.CENTER);
+                title.setPadding(0, 0, 0, 32);
+                simplifiedForm.addView(title);
+                
+                // 添加用户名输入框
+                EditText simpleUsername = new EditText(this);
+                simpleUsername.setHint("用户名");
+                simpleUsername.setTextColor(getResources().getColor(android.R.color.black));
+                simpleUsername.setBackgroundColor(getResources().getColor(android.R.color.white));
+                simpleUsername.setPadding(16, 16, 16, 16);
+                LinearLayout.LayoutParams usernameParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                usernameParams.setMargins(0, 0, 0, 16);
+                simpleUsername.setLayoutParams(usernameParams);
+                simplifiedForm.addView(simpleUsername);
+                
+                // 添加密码输入框
+                EditText simplePassword = new EditText(this);
+                simplePassword.setHint("密码");
+                simplePassword.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                simplePassword.setTextColor(getResources().getColor(android.R.color.black));
+                simplePassword.setBackgroundColor(getResources().getColor(android.R.color.white));
+                simplePassword.setPadding(16, 16, 16, 16);
+                LinearLayout.LayoutParams passwordParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                passwordParams.setMargins(0, 0, 0, 24);
+                simplePassword.setLayoutParams(passwordParams);
+                simplifiedForm.addView(simplePassword);
+                
+                // 添加登录按钮
+                Button simpleLoginBtn = new Button(this);
+                simpleLoginBtn.setText("登录");
+                simpleLoginBtn.setTextColor(getResources().getColor(android.R.color.white));
+                simpleLoginBtn.setBackgroundColor(getResources().getColor(android.R.color.holo_blue_dark));
+                LinearLayout.LayoutParams loginBtnParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                loginBtnParams.setMargins(0, 0, 0, 16);
+                simpleLoginBtn.setLayoutParams(loginBtnParams);
+                simpleLoginBtn.setOnClickListener(v -> {
+                    String username = simpleUsername.getText().toString().trim();
+                    String password = simplePassword.getText().toString().trim();
+                    performSimpleLogin(username, password);
+                });
+                simplifiedForm.addView(simpleLoginBtn);
+                
+                // 添加返回按钮
+                Button backBtn = new Button(this);
+                backBtn.setText("返回");
+                backBtn.setTextColor(getResources().getColor(android.R.color.white));
+                backBtn.setBackgroundColor(getResources().getColor(android.R.color.darker_gray));
+                backBtn.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ));
+                backBtn.setOnClickListener(v -> finish());
+                simplifiedForm.addView(backBtn);
+                
+                // 添加到根布局
+                rootGroup.addView(simplifiedForm);
+                
+                Log.d("LoginActivity", "Simplified login interface created successfully");
+            }
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Failed to create simplified interface", e);
+            throw e;
+        }
+    }
+    
+    private void performSimpleLogin(String username, String password) {
+        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
+            Toast.makeText(this, "请输入用户名和密码", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 简化的登录逻辑
+        Toast.makeText(this, "登录功能开发中...", Toast.LENGTH_SHORT).show();
+        
+        // 模拟登录成功，返回主界面
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            Toast.makeText(this, "登录成功", Toast.LENGTH_SHORT).show();
+            finish();
+        }, 1000);
+    }
+    */
+    
+    private void initViews() {
+        try {
+            Log.d("LoginActivity", "Starting view initialization...");
+            
+            // 验证布局是否正确加载
+            View rootView = findViewById(android.R.id.content);
+            if (rootView == null) {
+                throw new RuntimeException("Root view not found - layout may not be loaded");
+            }
+            Log.d("LoginActivity", "Root view found successfully");
+            
+            // 尝试查找一个简单的视图来验证布局加载
+            View logoArea = findViewById(R.id.logo_area);
+            if (logoArea == null) {
+                Log.e("LoginActivity", "Logo area not found - layout loading failed");
+                throw new RuntimeException("Layout loading failed - logo_area not found");
+            }
+            Log.d("LoginActivity", "Logo area found - layout loaded successfully");
+            
+            // 初始化输入框容器（先初始化容器）
+            Log.d("LoginActivity", "Initializing TextInputLayouts...");
+            tilUsername = findViewById(R.id.til_username);
+            tilPassword = findViewById(R.id.til_password);
+            tilPhone = findViewById(R.id.til_phone);
+            tilVerificationCode = findViewById(R.id.til_verification_code);
+            
+            // 详细检查每个TextInputLayout
+            if (tilUsername == null) {
+                Log.e("LoginActivity", "til_username not found in layout");
+                // 尝试列出所有可用的视图ID进行调试
+                logAvailableViewIds();
+                throw new RuntimeException("Username TextInputLayout not found - ID: til_username");
+            }
+            Log.d("LoginActivity", "til_username found successfully");
+            
+            if (tilPassword == null) {
+                Log.e("LoginActivity", "til_password not found in layout");
+                throw new RuntimeException("Password TextInputLayout not found - ID: til_password");
+            }
+            Log.d("LoginActivity", "til_password found successfully");
+            
+            // 初始化输入框
+            Log.d("LoginActivity", "Initializing EditTexts...");
+            etUsername = findViewById(R.id.et_username);
+            etPassword = findViewById(R.id.et_password);
+            etPhone = findViewById(R.id.et_phone);
+            etVerificationCode = findViewById(R.id.et_verification_code);
+            
+            // 检查关键输入框是否找到
+            if (etUsername == null) {
+                Log.e("LoginActivity", "et_username not found in layout");
+                throw new RuntimeException("Username EditText not found - ID: et_username");
+            }
+            Log.d("LoginActivity", "et_username found successfully");
+            
+            if (etPassword == null) {
+                Log.e("LoginActivity", "et_password not found in layout");
+                throw new RuntimeException("Password EditText not found - ID: et_password");
+            }
+            Log.d("LoginActivity", "et_password found successfully");
+            
+            // 初始化按钮
+            btnLogin = findViewById(R.id.btn_login);
+            btnRegister = findViewById(R.id.btn_register);
+            btnSendCode = findViewById(R.id.btn_send_code);
+            tvForgotPassword = findViewById(R.id.tv_forgot_password);
+            
+            // 检查关键按钮是否找到
+            if (btnLogin == null) {
+                throw new RuntimeException("Login button not found");
+            }
+            
+            // Initialize loading indicators
+            pbLoginLoading = findViewById(R.id.pb_login_loading);
+            pbSendCodeLoading = findViewById(R.id.pb_send_code_loading);
+            
+            setupInputValidation();
+            setupInputFocusAnimations();
+            
+            Log.d("LoginActivity", "All views initialized successfully");
+            
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Error initializing views", e);
+            throw e; // 重新抛出异常，让onCreate处理
+        }
     }
     
     private void setupInputValidation() {
@@ -142,28 +422,37 @@ public class LoginActivity extends AppCompatActivity {
     }
     
     private void setupClickListeners() {
-        btnLogin.setOnClickListener(v -> performLogin());
+        if (btnLogin != null) {
+            btnLogin.setOnClickListener(v -> performLogin());
+        }
         
-        btnRegister.setOnClickListener(v -> {
-            // 跳转到注册页面
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
-            startActivity(intent);
-            // 添加界面切换动画
-            overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out);
-        });
+        if (btnRegister != null) {
+            btnRegister.setOnClickListener(v -> {
+                // 跳转到注册页面
+                Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+                startActivity(intent);
+                // 添加界面切换动画
+                overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out);
+            });
+        }
         
-        btnSendCode.setOnClickListener(v -> sendVerificationCode());
+        if (btnSendCode != null) {
+            btnSendCode.setOnClickListener(v -> sendVerificationCode());
+        }
         
-        tvForgotPassword.setOnClickListener(v -> {
-            Toast.makeText(this, "忘记密码功能开发中...", Toast.LENGTH_SHORT).show();
-        });
+        if (tvForgotPassword != null) {
+            tvForgotPassword.setOnClickListener(v -> {
+                Toast.makeText(this, "忘记密码功能开发中...", Toast.LENGTH_SHORT).show();
+            });
+        }
     }
     
     private void performLogin() {
-        String username = etUsername.getText().toString().trim();
-        String password = etPassword.getText().toString().trim();
-        String phone = etPhone.getText().toString().trim();
-        String verificationCode = etVerificationCode.getText().toString().trim();
+        // 安全获取输入内容
+        String username = (etUsername != null) ? etUsername.getText().toString().trim() : "";
+        String password = (etPassword != null) ? etPassword.getText().toString().trim() : "";
+        String phone = (etPhone != null) ? etPhone.getText().toString().trim() : "";
+        String verificationCode = (etVerificationCode != null) ? etVerificationCode.getText().toString().trim() : "";
         
         // 检查是否使用手机验证码登录
         if (!TextUtils.isEmpty(phone) && !TextUtils.isEmpty(verificationCode)) {
@@ -173,24 +462,36 @@ public class LoginActivity extends AppCompatActivity {
         
         // 传统用户名密码登录
         if (TextUtils.isEmpty(username)) {
-            tilUsername.setError("请输入用户名");
-            etUsername.requestFocus();
+            if (tilUsername != null) {
+                tilUsername.setError("请输入用户名");
+            }
+            if (etUsername != null) {
+                etUsername.requestFocus();
+            }
             return;
         }
         
         if (!validateUsername(username)) {
-            etUsername.requestFocus();
+            if (etUsername != null) {
+                etUsername.requestFocus();
+            }
             return;
         }
         
         if (TextUtils.isEmpty(password)) {
-            tilPassword.setError("请输入密码");
-            etPassword.requestFocus();
+            if (tilPassword != null) {
+                tilPassword.setError("请输入密码");
+            }
+            if (etPassword != null) {
+                etPassword.requestFocus();
+            }
             return;
         }
         
         if (!validatePassword(password)) {
-            etPassword.requestFocus();
+            if (etPassword != null) {
+                etPassword.requestFocus();
+            }
             return;
         }
         
@@ -297,27 +598,31 @@ public class LoginActivity extends AppCompatActivity {
     }
     
     private void setupAnimations() {
-        // Logo区域淡入动画
-        View logoArea = findViewById(R.id.logo_area);
-        if (logoArea != null) {
-            Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
-            logoArea.startAnimation(fadeIn);
-        }
-        
-        // 表单区域从下方滑入
-        View formContainer = findViewById(R.id.form_container);
-        if (formContainer != null) {
-            Animation slideInBottom = AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom);
-            slideInBottom.setStartOffset(200); // 延迟200ms开始
-            formContainer.startAnimation(slideInBottom);
-        }
-        
-        // 按钮区域从下方滑入
-        View buttonContainer = findViewById(R.id.button_container);
-        if (buttonContainer != null) {
-            Animation slideInBottom = AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom);
-            slideInBottom.setStartOffset(400); // 延迟400ms开始
-            buttonContainer.startAnimation(slideInBottom);
+        try {
+            // Logo区域淡入动画
+            View logoArea = findViewById(R.id.logo_area);
+            if (logoArea != null) {
+                Animation fadeIn = AnimationUtils.loadAnimation(this, R.anim.fade_in);
+                logoArea.startAnimation(fadeIn);
+            }
+            
+            // 表单区域从下方滑入
+            View formContainer = findViewById(R.id.form_container);
+            if (formContainer != null) {
+                Animation slideInBottom = AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom);
+                slideInBottom.setStartOffset(200); // 延迟200ms开始
+                formContainer.startAnimation(slideInBottom);
+            }
+            
+            // 按钮区域从下方滑入
+            View buttonContainer = findViewById(R.id.button_container);
+            if (buttonContainer != null) {
+                Animation slideInBottom = AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom);
+                slideInBottom.setStartOffset(400); // 延迟400ms开始
+                buttonContainer.startAnimation(slideInBottom);
+            }
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Setup animations error: " + e.getMessage());
         }
         
         // 为按钮添加点击动画
@@ -326,46 +631,77 @@ public class LoginActivity extends AppCompatActivity {
     
     private void setupButtonAnimations() {
         // 登录按钮点击动画
-        btnLogin.setOnTouchListener((v, event) -> {
-            if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-                Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.button_scale);
-                v.startAnimation(scaleDown);
-            }
-            return false; // 让其他点击事件继续处理
-        });
+        if (btnLogin != null) {
+            btnLogin.setOnTouchListener((v, event) -> {
+                if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+                    try {
+                        Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.button_scale);
+                        v.startAnimation(scaleDown);
+                    } catch (Exception e) {
+                        Log.e("LoginActivity", "Button animation error: " + e.getMessage());
+                    }
+                }
+                return false; // 让其他点击事件继续处理
+            });
+        }
         
         // 发送验证码按钮点击动画
-        btnSendCode.setOnTouchListener((v, event) -> {
-            if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-                Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.button_scale);
-                v.startAnimation(scaleDown);
-            }
-            return false;
-        });
+        if (btnSendCode != null) {
+            btnSendCode.setOnTouchListener((v, event) -> {
+                if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+                    try {
+                        Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.button_scale);
+                        v.startAnimation(scaleDown);
+                    } catch (Exception e) {
+                        Log.e("LoginActivity", "Button animation error: " + e.getMessage());
+                    }
+                }
+                return false;
+            });
+        }
         
         // 注册按钮点击动画
-        btnRegister.setOnTouchListener((v, event) -> {
-            if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
-                Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.button_scale);
-                v.startAnimation(scaleDown);
-            }
-            return false;
-        });
+        if (btnRegister != null) {
+            btnRegister.setOnTouchListener((v, event) -> {
+                if (event.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+                    try {
+                        Animation scaleDown = AnimationUtils.loadAnimation(this, R.anim.button_scale);
+                        v.startAnimation(scaleDown);
+                    } catch (Exception e) {
+                        Log.e("LoginActivity", "Button animation error: " + e.getMessage());
+                    }
+                }
+                return false;
+            });
+        }
      }
      
      private void setupInputFocusAnimations() {
          // 为所有输入框添加获得焦点时的动画
          View.OnFocusChangeListener focusAnimationListener = (v, hasFocus) -> {
              if (hasFocus) {
-                 Animation focusAnimation = AnimationUtils.loadAnimation(this, R.anim.input_focus);
-                 v.startAnimation(focusAnimation);
+                 try {
+                     Animation focusAnimation = AnimationUtils.loadAnimation(this, R.anim.input_focus);
+                     v.startAnimation(focusAnimation);
+                 } catch (Exception e) {
+                     Log.e("LoginActivity", "Focus animation error: " + e.getMessage());
+                 }
              }
          };
          
-         etUsername.setOnFocusChangeListener(focusAnimationListener);
-         etPhone.setOnFocusChangeListener(focusAnimationListener);
-         etVerificationCode.setOnFocusChangeListener(focusAnimationListener);
-         etPassword.setOnFocusChangeListener(focusAnimationListener);
+         // 添加空指针检查
+         if (etUsername != null) {
+             etUsername.setOnFocusChangeListener(focusAnimationListener);
+         }
+         if (etPhone != null) {
+             etPhone.setOnFocusChangeListener(focusAnimationListener);
+         }
+         if (etVerificationCode != null) {
+             etVerificationCode.setOnFocusChangeListener(focusAnimationListener);
+         }
+         if (etPassword != null) {
+             etPassword.setOnFocusChangeListener(focusAnimationListener);
+         }
      }
      
      private void startCountdown() {
@@ -475,13 +811,272 @@ public class LoginActivity extends AppCompatActivity {
     
     private void showLoginLoading(boolean show) {
         if (show) {
-            pbLoginLoading.setVisibility(View.VISIBLE);
-            btnLogin.setEnabled(false);
-            btnLogin.setText("登录中...");
+            if (pbLoginLoading != null) {
+                pbLoginLoading.setVisibility(View.VISIBLE);
+            }
+            if (btnLogin != null) {
+                btnLogin.setEnabled(false);
+                btnLogin.setText("登录中...");
+            }
         } else {
-            pbLoginLoading.setVisibility(View.GONE);
-            btnLogin.setEnabled(true);
-            btnLogin.setText("登录");
+            if (pbLoginLoading != null) {
+                pbLoginLoading.setVisibility(View.GONE);
+            }
+            if (btnLogin != null) {
+                btnLogin.setEnabled(true);
+                btnLogin.setText("登录");
+            }
+        }
+    }
+    
+    private void logMemoryUsage(String tag) {
+        try {
+            Runtime runtime = Runtime.getRuntime();
+            long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+            long maxMemory = runtime.maxMemory();
+            Log.d("LoginActivity", tag + " - Memory usage: " + (usedMemory / 1024 / 1024) + "MB / " + (maxMemory / 1024 / 1024) + "MB");
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Error logging memory usage", e);
+        }
+    }
+    
+    private void logAvailableViewIds() {
+        try {
+            Log.d("LoginActivity-Debug", "Attempting to find available views for debugging...");
+            
+            // 尝试查找一些常见的视图来确认布局是否加载
+            String[] commonIds = {
+                "logo_area", "form_container", "button_container",
+                "til_username", "til_password", "til_phone", "til_verification_code",
+                "et_username", "et_password", "et_phone", "et_verification_code",
+                "btn_login", "btn_register", "btn_send_code"
+            };
+            
+            for (String idName : commonIds) {
+                try {
+                    int resId = getResources().getIdentifier(idName, "id", getPackageName());
+                    if (resId != 0) {
+                        View view = findViewById(resId);
+                        Log.d("LoginActivity-Debug", String.format(
+                            "ID: %s, ResId: %d, View: %s",
+                            idName,
+                            resId,
+                            view != null ? view.getClass().getSimpleName() : "null"
+                        ));
+                    } else {
+                        Log.d("LoginActivity-Debug", "ID not found in resources: " + idName);
+                    }
+                } catch (Exception e) {
+                    Log.e("LoginActivity-Debug", "Error checking ID: " + idName, e);
+                }
+            }
+            
+        } catch (Exception e) {
+             Log.e("LoginActivity-Debug", "Error in logAvailableViewIds", e);
+         }
+     }
+     
+     private void initViewsFallback() {
+         Log.d("LoginActivity", "Starting fallback view initialization...");
+         
+         try {
+             // 使用更加健壮的方法查找视图
+             // 首先确保Activity和布局状态正常
+             if (isFinishing() || isDestroyed()) {
+                 throw new RuntimeException("Activity is finishing or destroyed");
+             }
+             
+             // 使用getWindow().getDecorView()来确保布局已加载
+             View decorView = getWindow().getDecorView();
+             if (decorView == null) {
+                 throw new RuntimeException("DecorView is null");
+             }
+             
+             // 直接执行初始化，不使用异步
+             initViewsFallbackInternal();
+             
+         } catch (Exception e) {
+             Log.e("LoginActivity", "Error in fallback initialization", e);
+             throw e;
+         }
+     }
+     
+     private void initViewsFallbackInternal() {
+         Log.d("LoginActivity", "Executing fallback internal initialization...");
+         
+         // 使用资源ID直接查找，而不依赖R.id常量
+         try {
+             // 获取包名用于资源查找
+             String packageName = getPackageName();
+             
+             // 查找TextInputLayout
+             int tilUsernameId = getResources().getIdentifier("til_username", "id", packageName);
+             int tilPasswordId = getResources().getIdentifier("til_password", "id", packageName);
+             int tilPhoneId = getResources().getIdentifier("til_phone", "id", packageName);
+             int tilVerificationCodeId = getResources().getIdentifier("til_verification_code", "id", packageName);
+             
+             if (tilUsernameId == 0) {
+                 throw new RuntimeException("Cannot find til_username resource ID");
+             }
+             if (tilPasswordId == 0) {
+                 throw new RuntimeException("Cannot find til_password resource ID");
+             }
+             
+             tilUsername = findViewById(tilUsernameId);
+             tilPassword = findViewById(tilPasswordId);
+             tilPhone = findViewById(tilPhoneId);
+             tilVerificationCode = findViewById(tilVerificationCodeId);
+             
+             if (tilUsername == null) {
+                 throw new RuntimeException("til_username view is null even with valid resource ID");
+             }
+             if (tilPassword == null) {
+                 throw new RuntimeException("til_password view is null even with valid resource ID");
+             }
+             
+             Log.d("LoginActivity", "TextInputLayouts found successfully in fallback method");
+             
+             // 查找EditText
+             int etUsernameId = getResources().getIdentifier("et_username", "id", packageName);
+             int etPasswordId = getResources().getIdentifier("et_password", "id", packageName);
+             int etPhoneId = getResources().getIdentifier("et_phone", "id", packageName);
+             int etVerificationCodeId = getResources().getIdentifier("et_verification_code", "id", packageName);
+             
+             if (etUsernameId == 0) {
+                 throw new RuntimeException("Cannot find et_username resource ID");
+             }
+             if (etPasswordId == 0) {
+                 throw new RuntimeException("Cannot find et_password resource ID");
+             }
+             
+             etUsername = findViewById(etUsernameId);
+             etPassword = findViewById(etPasswordId);
+             etPhone = findViewById(etPhoneId);
+             etVerificationCode = findViewById(etVerificationCodeId);
+             
+             if (etUsername == null) {
+                 throw new RuntimeException("et_username view is null even with valid resource ID");
+             }
+             if (etPassword == null) {
+                 throw new RuntimeException("et_password view is null even with valid resource ID");
+             }
+             
+             Log.d("LoginActivity", "EditTexts found successfully in fallback method");
+             
+             // 查找按钮
+             int btnLoginId = getResources().getIdentifier("btn_login", "id", packageName);
+             int btnRegisterId = getResources().getIdentifier("btn_register", "id", packageName);
+             int btnSendCodeId = getResources().getIdentifier("btn_send_code", "id", packageName);
+             int tvForgotPasswordId = getResources().getIdentifier("tv_forgot_password", "id", packageName);
+             
+             btnLogin = findViewById(btnLoginId);
+             btnRegister = findViewById(btnRegisterId);
+             btnSendCode = findViewById(btnSendCodeId);
+             tvForgotPassword = findViewById(tvForgotPasswordId);
+             
+             if (btnLogin == null) {
+                 throw new RuntimeException("btn_login view is null");
+             }
+             
+             Log.d("LoginActivity", "Buttons found successfully in fallback method");
+             
+             // 查找加载指示器
+             int pbLoginLoadingId = getResources().getIdentifier("pb_login_loading", "id", packageName);
+             int pbSendCodeLoadingId = getResources().getIdentifier("pb_send_code_loading", "id", packageName);
+             
+             pbLoginLoading = findViewById(pbLoginLoadingId);
+             pbSendCodeLoading = findViewById(pbSendCodeLoadingId);
+             
+             // 设置输入验证
+             setupInputValidation();
+             setupInputFocusAnimations();
+             
+             Log.d("LoginActivity", "Fallback view initialization completed successfully");
+             
+         } catch (Exception e) {
+             Log.e("LoginActivity", "Error in fallback internal initialization", e);
+             throw e;
+         }
+     }
+    
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("LoginActivity", "onStart called");
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("LoginActivity", "onResume called");
+        logMemoryUsage("onResume");
+    }
+    
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("LoginActivity", "onPause called");
+    }
+    
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("LoginActivity", "onStop called");
+    }
+    
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("LoginActivity", "onDestroy called");
+        logMemoryUsage("onDestroy");
+    }
+    
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        try {
+            // 保存当前状态
+            if (etUsername != null) {
+                outState.putString("username", etUsername.getText().toString());
+            }
+            if (etPhone != null) {
+                outState.putString("phone", etPhone.getText().toString());
+            }
+            outState.putBoolean("isCodeSent", isCodeSent);
+            outState.putInt("countdown", countdown);
+            Log.d("LoginActivity", "State saved successfully");
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Error saving instance state", e);
+        }
+    }
+    
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        try {
+            // 恢复保存的状态
+            if (savedInstanceState != null) {
+                String username = savedInstanceState.getString("username", "");
+                String phone = savedInstanceState.getString("phone", "");
+                isCodeSent = savedInstanceState.getBoolean("isCodeSent", false);
+                countdown = savedInstanceState.getInt("countdown", 60);
+                
+                if (etUsername != null && !TextUtils.isEmpty(username)) {
+                    etUsername.setText(username);
+                }
+                if (etPhone != null && !TextUtils.isEmpty(phone)) {
+                    etPhone.setText(phone);
+                }
+                
+                // 如果验证码已发送且还在倒计时中，恢复倒计时
+                if (isCodeSent && countdown > 0 && countdown < 60) {
+                    startCountdown();
+                }
+                
+                Log.d("LoginActivity", "State restored successfully");
+            }
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Error restoring instance state", e);
         }
     }
 }
