@@ -15,7 +15,7 @@ class AlipayConfig:
         self.sign_type = 'RSA2'
         self.charset = 'utf-8'
         self.gateway_url = os.getenv('ALIPAY_GATEWAY_URL', 'https://openapi.alipaydev.com/gateway.do')  # 沙箱环境
-        self.notify_url = os.getenv('ALIPAY_NOTIFY_URL', 'https://your-domain.com/api/v1/payments/alipay/notify')  # 支付宝异步通知地址
+        self.notify_url = os.getenv('ALIPAY_NOTIFY_URL', 'https://wenteng.xyz/api/v1/payments/alipay/notify')  # 支付宝异步通知地址
         
     def get_app_id(self) -> str:
         """获取应用ID"""

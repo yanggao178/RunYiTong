@@ -36,7 +36,7 @@ public class ApiClient {
             return "http://10.0.2.15:8000/";
         } else {
             // 真实设备环境，使用局域网IP地址
-           return "http://192.168.0.8:8000/";
+           return "http://192.168.0.6:8000/";
           ///  return "http://8.141.2.166:8000";
         }
         

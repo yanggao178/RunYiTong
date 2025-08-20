@@ -21,6 +21,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
@@ -266,6 +267,9 @@ public class PrescriptionFragment extends Fragment {
             }
         }
         
+        // 停止打字机效果
+        stopTypewriterEffect();
+        
         // 清理临时文件
         if (getContext() != null) {
             ImageUtils.cleanupTempFiles(getContext());
@@ -301,7 +305,7 @@ public class PrescriptionFragment extends Fragment {
                 }
             }
         };
-        timeoutHandler.postDelayed(timeoutRunnable, 30000); // 30秒超时
+        timeoutHandler.postDelayed(timeoutRunnable, 90000); // 90秒超时，给AI分析更多时间
         
         // 调用API分析症状
         currentCall = apiService.analyzeSymptoms(symptoms);
@@ -360,45 +364,281 @@ public class PrescriptionFragment extends Fragment {
         
         result.append("【辨证分型】\n");
         if (analysis.getSyndromeType() != null) {
-            result.append(analysis.getSyndromeType()).append("\n\n");
+            SymptomAnalysis.SyndromeType syndromeType = analysis.getSyndromeType();
+            if (syndromeType.getMainSyndrome() != null) {
+                result.append("主证：").append(syndromeType.getMainSyndrome()).append("\n");
+            }
+            if (syndromeType.getSecondarySyndrome() != null) {
+                result.append("次证：").append(syndromeType.getSecondarySyndrome()).append("\n");
+            }
+            result.append("\n");
         }
         
         result.append("【治法】\n");
         if (analysis.getTreatmentMethod() != null) {
-            result.append(analysis.getTreatmentMethod()).append("\n\n");
+            SymptomAnalysis.TreatmentMethod treatmentMethod = analysis.getTreatmentMethod();
+            if (treatmentMethod.getMainMethod() != null) {
+                result.append("主要治法：").append(treatmentMethod.getMainMethod()).append("\n");
+            }
+            if (treatmentMethod.getAuxiliaryMethod() != null) {
+                result.append("辅助治法：").append(treatmentMethod.getAuxiliaryMethod()).append("\n");
+            }
+            if (treatmentMethod.getTreatmentPriority() != null) {
+                result.append("治疗重点：").append(treatmentMethod.getTreatmentPriority()).append("\n");
+            }
+            if (treatmentMethod.getCarePrinciple() != null) {
+                result.append("调护原则：").append(treatmentMethod.getCarePrinciple()).append("\n");
+            }
+            result.append("\n");
         }
         
         result.append("【主方】\n");
         if (analysis.getMainPrescription() != null) {
-            result.append(analysis.getMainPrescription()).append("\n\n");
+            SymptomAnalysis.MainPrescription mainPrescription = analysis.getMainPrescription();
+            if (mainPrescription.getFormulaName() != null) {
+                result.append("方名：").append(mainPrescription.getFormulaName()).append("\n");
+            }
+            if (mainPrescription.getFormulaSource() != null) {
+                result.append("出处：").append(mainPrescription.getFormulaSource()).append("\n");
+            }
+            if (mainPrescription.getFormulaAnalysis() != null) {
+                result.append("方解：").append(mainPrescription.getFormulaAnalysis()).append("\n");
+            }
+            if (mainPrescription.getModifications() != null) {
+                result.append("加减：").append(mainPrescription.getModifications()).append("\n");
+            }
+            result.append("\n");
         }
         
         result.append("【组成】\n");
         if (analysis.getComposition() != null && !analysis.getComposition().isEmpty()) {
             for (SymptomAnalysis.MedicineComposition medicine : analysis.getComposition()) {
-                result.append(medicine.getMedicine())
-                      .append(" ").append(medicine.getDosage())
-                      .append(" (").append(medicine.getRole()).append(")\n");
+                result.append(medicine.getHerb())
+                      .append(" ").append(medicine.getDosage());
+                if (medicine.getRole() != null) {
+                    result.append(" (").append(medicine.getRole()).append(")");
+                }
+                if (medicine.getFunction() != null) {
+                    result.append(" - ").append(medicine.getFunction());
+                }
+                if (medicine.getPreparation() != null) {
+                    result.append(" [").append(medicine.getPreparation()).append("]");
+                }
+                result.append("\n");
             }
             result.append("\n");
         }
         
         result.append("【煎服法】\n");
         if (analysis.getUsage() != null) {
-            result.append(analysis.getUsage()).append("\n\n");
+            SymptomAnalysis.Usage usage = analysis.getUsage();
+            if (usage.getPreparationMethod() != null) {
+                result.append("制备方法：").append(usage.getPreparationMethod()).append("\n");
+            }
+            if (usage.getAdministrationTime() != null) {
+                result.append("服用时间：").append(usage.getAdministrationTime()).append("\n");
+            }
+            if (usage.getTreatmentCourse() != null) {
+                result.append("疗程：").append(usage.getTreatmentCourse()).append("\n");
+            }
+            result.append("\n");
+        } else {
+            result.append("每日1剂，水煎服，早晚各1次\n\n");
         }
         
-        result.append("【禁忌】\n");
+        result.append("【禁忌注意事项】\n");
         if (analysis.getContraindications() != null) {
-            result.append(analysis.getContraindications());
+            SymptomAnalysis.Contraindications contraindications = analysis.getContraindications();
+            if (contraindications.getContraindications() != null && !contraindications.getContraindications().trim().isEmpty()) {
+                result.append("禁忌：").append(contraindications.getContraindications()).append("\n");
+            }
+            if (contraindications.getDietaryRestrictions() != null && !contraindications.getDietaryRestrictions().trim().isEmpty()) {
+                result.append("饮食禁忌：").append(contraindications.getDietaryRestrictions()).append("\n");
+            }
+            if (contraindications.getLifestyleCare() != null && !contraindications.getLifestyleCare().trim().isEmpty()) {
+                result.append("生活调护：").append(contraindications.getLifestyleCare()).append("\n");
+            }
+            if (contraindications.getPrecautions() != null && !contraindications.getPrecautions().trim().isEmpty()) {
+                result.append("注意事项：").append(contraindications.getPrecautions()).append("\n");
+            }
+        } else {
+            result.append("孕妇慎用，过敏体质者慎用\n");
+        }
+        
+        // 添加西医诊疗部分
+        if (analysis.getWesternMedicine() != null) {
+            result.append("\n\n=== 西医诊疗建议 ===\n\n");
+            
+            SymptomAnalysis.WesternMedicine westernMedicine = analysis.getWesternMedicine();
+            
+            // 西医诊断
+            result.append("【西医诊断】\n");
+            if (westernMedicine.getDiagnosis() != null) {
+                SymptomAnalysis.Diagnosis diagnosis = westernMedicine.getDiagnosis();
+                if (diagnosis.getPossibleDiagnosis() != null && !diagnosis.getPossibleDiagnosis().trim().isEmpty()) {
+                    result.append("可能诊断：").append(diagnosis.getPossibleDiagnosis()).append("\n");
+                }
+                if (diagnosis.getDifferentialDiagnosis() != null && !diagnosis.getDifferentialDiagnosis().trim().isEmpty()) {
+                    result.append("鉴别诊断：").append(diagnosis.getDifferentialDiagnosis()).append("\n");
+                }
+                if (diagnosis.getRecommendedTests() != null && !diagnosis.getRecommendedTests().trim().isEmpty()) {
+                    result.append("建议检查：").append(diagnosis.getRecommendedTests()).append("\n");
+                }
+                if (diagnosis.getPathologicalMechanism() != null && !diagnosis.getPathologicalMechanism().trim().isEmpty()) {
+                    result.append("病理机制：").append(diagnosis.getPathologicalMechanism()).append("\n");
+                }
+            }
+            result.append("\n");
+            
+            // 西医治疗
+            result.append("【西医治疗】\n");
+            if (westernMedicine.getTreatment() != null) {
+                SymptomAnalysis.Treatment treatment = westernMedicine.getTreatment();
+                if (treatment.getDrugTherapy() != null && !treatment.getDrugTherapy().trim().isEmpty()) {
+                    result.append("药物治疗：").append(treatment.getDrugTherapy()).append("\n");
+                }
+                if (treatment.getNonDrugTherapy() != null && !treatment.getNonDrugTherapy().trim().isEmpty()) {
+                    result.append("非药物治疗：").append(treatment.getNonDrugTherapy()).append("\n");
+                }
+                if (treatment.getLifestyleIntervention() != null && !treatment.getLifestyleIntervention().trim().isEmpty()) {
+                    result.append("生活干预：").append(treatment.getLifestyleIntervention()).append("\n");
+                }
+                if (treatment.getPreventionMeasures() != null && !treatment.getPreventionMeasures().trim().isEmpty()) {
+                    result.append("预防措施：").append(treatment.getPreventionMeasures()).append("\n");
+                }
+            }
+            result.append("\n");
+            
+            // 西医用药指导
+            result.append("【用药指导】\n");
+            if (westernMedicine.getMedication() != null) {
+                SymptomAnalysis.Medication medication = westernMedicine.getMedication();
+                if (medication.getDrugSelection() != null && !medication.getDrugSelection().trim().isEmpty()) {
+                    result.append("药物选择：").append(medication.getDrugSelection()).append("\n");
+                }
+                if (medication.getAdministrationMethod() != null && !medication.getAdministrationMethod().trim().isEmpty()) {
+                    result.append("用药方法：").append(medication.getAdministrationMethod()).append("\n");
+                }
+                if (medication.getAdverseReactions() != null && !medication.getAdverseReactions().trim().isEmpty()) {
+                    result.append("不良反应：").append(medication.getAdverseReactions()).append("\n");
+                }
+                if (medication.getDrugInteractions() != null && !medication.getDrugInteractions().trim().isEmpty()) {
+                    result.append("药物相互作用：").append(medication.getDrugInteractions()).append("\n");
+                }
+            }
         }
         
         String resultText = result.toString();
-        tvAnalysisResult.setText(resultText);
+        
+        // 使用打字机效果显示结果
+        displayTextWithTypewriterEffect(resultText);
         
         // 保存分析结果状态
         savedAnalysisResult = resultText;
         hasAnalysisResult = true;
+    }
+    
+    // 打字机效果相关变量
+    private Handler typewriterHandler;
+    private boolean isTypewriterActive = false;
+    private String currentTypewriterText = "";
+    
+    /**
+     * 打字机效果显示文本
+     */
+    private void displayTextWithTypewriterEffect(String text) {
+        if (tvAnalysisResult == null || text == null || text.isEmpty()) {
+            return;
+        }
+        
+        // 停止之前的打字机效果
+        stopTypewriterEffect();
+        
+        // 清空当前显示的文本
+        tvAnalysisResult.setText("");
+        
+        // 保存当前文本
+        currentTypewriterText = text;
+        isTypewriterActive = true;
+        
+        // 创建Handler用于延时显示字符
+        typewriterHandler = new Handler(Looper.getMainLooper());
+        
+        // 打字机效果的延时时间（毫秒）
+        final int TYPING_DELAY = 50; // 每个字符显示间隔50毫秒
+        
+        // 添加点击跳过功能提示
+        showTypewriterSkipHint();
+        
+        // 逐字显示文本
+        for (int i = 0; i <= text.length(); i++) {
+            final int index = i;
+            typewriterHandler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (tvAnalysisResult != null && isTypewriterActive && index <= text.length()) {
+                        String displayText = text.substring(0, index);
+                        tvAnalysisResult.setText(displayText);
+                        
+                        // 自动滚动到底部，确保用户能看到最新显示的内容
+                        scrollToBottom();
+                        
+                        // 如果是最后一个字符，标记打字机效果结束
+                        if (index == text.length()) {
+                            isTypewriterActive = false;
+                        }
+                    }
+                }
+            }, i * TYPING_DELAY);
+        }
+        
+        // 设置点击跳过功能
+        tvAnalysisResult.setOnClickListener(v -> {
+            if (isTypewriterActive) {
+                skipTypewriterEffect();
+            }
+        });
+    }
+    
+    /**
+     * 停止打字机效果
+     */
+    private void stopTypewriterEffect() {
+        if (typewriterHandler != null) {
+            typewriterHandler.removeCallbacksAndMessages(null);
+        }
+        isTypewriterActive = false;
+    }
+    
+    /**
+     * 跳过打字机效果，直接显示完整文本
+     */
+    private void skipTypewriterEffect() {
+        stopTypewriterEffect();
+        if (tvAnalysisResult != null && !currentTypewriterText.isEmpty()) {
+            tvAnalysisResult.setText(currentTypewriterText);
+            scrollToBottom();
+            Toast.makeText(getContext(), "已跳过打字机效果", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * 显示打字机跳过提示
+     */
+    private void showTypewriterSkipHint() {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "正在逐字显示结果，点击文本区域可跳过", Toast.LENGTH_LONG).show();
+        }
+    }
+    
+    /**
+     * 滚动到底部
+     */
+    private void scrollToBottom() {
+        if (tvAnalysisResult != null && tvAnalysisResult.getParent() instanceof ScrollView) {
+            ScrollView scrollView = (ScrollView) tvAnalysisResult.getParent();
+            scrollView.post(() -> scrollView.fullScroll(ScrollView.FOCUS_DOWN));
+        }
     }
     
     /**
@@ -1789,65 +2029,206 @@ public class PrescriptionFragment extends Fragment {
         }
         
         StringBuilder resultText = new StringBuilder();
-        resultText.append("=== 处方智能分析结果 ===\n\n");
+        resultText.append("📋 === 中医处方智能分析报告 === 📋\n\n");
         
+        // OCR识别结果
         if (!TextUtils.isEmpty(analysis.getOcrText())) {
-            resultText.append("OCR识别文字:\n").append(analysis.getOcrText()).append("\n\n");
+            resultText.append("🔍 【OCR识别文字】\n")
+                     .append(analysis.getOcrText())
+                     .append("\n\n");
         }
         
+        // 分析类型
         if (!TextUtils.isEmpty(analysis.getAnalysisType())) {
-            resultText.append("分析类型: ").append(analysis.getAnalysisType()).append("\n");
+            resultText.append("📊 【分析类型】 ").append(analysis.getAnalysisType()).append("\n\n");
         }
         
-        if (!TextUtils.isEmpty(analysis.getSyndromeType())) {
-            resultText.append("证型: ").append(analysis.getSyndromeType()).append("\n");
-        }
-        
-        if (!TextUtils.isEmpty(analysis.getTreatmentMethod())) {
-            resultText.append("治法: ").append(analysis.getTreatmentMethod()).append("\n");
-        }
-        
-        if (!TextUtils.isEmpty(analysis.getMainPrescription())) {
-            resultText.append("主方: ").append(analysis.getMainPrescription()).append("\n");
-        }
-        
-        if (analysis.getComposition() != null && !analysis.getComposition().isEmpty()) {
-            resultText.append("\n药物组成:\n");
-            for (PrescriptionAnalysis.HerbComposition herb : analysis.getComposition()) {
-                resultText.append("• ").append(herb.toString()).append("\n");
+        // 辩证分型 - 详细展示
+        resultText.append("🎯 【辩证分型】\n");
+        PrescriptionAnalysis.SyndromeType syndromeType = analysis.getSyndromeType();
+        if (syndromeType != null) {
+            if (syndromeType.getMainSyndrome() != null && !syndromeType.getMainSyndrome().trim().isEmpty()) {
+                resultText.append("主要证型: ").append(syndromeType.getMainSyndrome()).append("\n");
             }
+            if (syndromeType.getSecondarySyndrome() != null && !syndromeType.getSecondarySyndrome().trim().isEmpty()) {
+                resultText.append("兼夹证型: ").append(syndromeType.getSecondarySyndrome()).append("\n");
+            }
+            if (syndromeType.getDiseaseLocation() != null && !syndromeType.getDiseaseLocation().trim().isEmpty()) {
+                resultText.append("病位分析: ").append(syndromeType.getDiseaseLocation()).append("\n");
+            }
+            if (syndromeType.getDiseaseNature() != null && !syndromeType.getDiseaseNature().trim().isEmpty()) {
+                resultText.append("病性分析: ").append(syndromeType.getDiseaseNature()).append("\n");
+            }
+            if (syndromeType.getPathogenesis() != null && !syndromeType.getPathogenesis().trim().isEmpty()) {
+                resultText.append("病机分析: ").append(syndromeType.getPathogenesis()).append("\n");
+            }
+        } else {
+            resultText.append("主要证型: 待进一步辩证\n");
         }
         
-        if (!TextUtils.isEmpty(analysis.getUsage())) {
-            resultText.append("\n用法: ").append(analysis.getUsage()).append("\n");
-        }
-        
-        if (!TextUtils.isEmpty(analysis.getContraindications())) {
-            resultText.append("禁忌: ").append(analysis.getContraindications()).append("\n");
-        }
-        
-        if (analysis.getDetectedHerbs() != null && !analysis.getDetectedHerbs().isEmpty()) {
-            resultText.append("\n检测到的中药: ").append(String.join(", ", analysis.getDetectedHerbs())).append("\n");
-        }
-        
+        // 可能的症状表现
         if (analysis.getPossibleSymptoms() != null && !analysis.getPossibleSymptoms().isEmpty()) {
-            resultText.append("可能症状: ").append(String.join(", ", analysis.getPossibleSymptoms())).append("\n");
+            resultText.append("症状表现: ").append(String.join("、", analysis.getPossibleSymptoms())).append("\n");
+        } else {
+            resultText.append("症状表现: 根据处方推断可能包括相关脏腑功能失调症状\n");
+        }
+        resultText.append("\n");
+        
+        // 治法 - 详细展示
+        resultText.append("⚡ 【治疗法则】\n");
+        PrescriptionAnalysis.TreatmentMethod treatmentMethod = analysis.getTreatmentMethod();
+        if (treatmentMethod != null) {
+            if (treatmentMethod.getMainMethod() != null && !treatmentMethod.getMainMethod().trim().isEmpty()) {
+                resultText.append("主要治法: ").append(treatmentMethod.getMainMethod()).append("\n");
+            }
+            if (treatmentMethod.getAuxiliaryMethod() != null && !treatmentMethod.getAuxiliaryMethod().trim().isEmpty()) {
+                resultText.append("辅助治法: ").append(treatmentMethod.getAuxiliaryMethod()).append("\n");
+            }
+            if (treatmentMethod.getTreatmentPriority() != null && !treatmentMethod.getTreatmentPriority().trim().isEmpty()) {
+                resultText.append("治疗层次: ").append(treatmentMethod.getTreatmentPriority()).append("\n");
+            }
+            if (treatmentMethod.getCarePrinciple() != null && !treatmentMethod.getCarePrinciple().trim().isEmpty()) {
+                resultText.append("调护原则: ").append(treatmentMethod.getCarePrinciple()).append("\n");
+            }
+        } else {
+            resultText.append("主要治法: 根据方药配伍推断治疗原则\n");
+        }
+        resultText.append("治疗原则: 辨证论治，标本兼顾，调和阴阳，扶正祛邪\n");
+        resultText.append("\n");
+        
+        // 主方及来源
+        resultText.append("📜 【方剂信息】\n");
+        PrescriptionAnalysis.MainPrescription mainPrescription = analysis.getMainPrescription();
+        if (mainPrescription != null) {
+            if (mainPrescription.getFormulaName() != null && !mainPrescription.getFormulaName().trim().isEmpty()) {
+                resultText.append("主方名称: ").append(mainPrescription.getFormulaName()).append("\n");
+            }
+            if (mainPrescription.getFormulaSource() != null && !mainPrescription.getFormulaSource().trim().isEmpty()) {
+                resultText.append("方剂出处: ").append(mainPrescription.getFormulaSource()).append("\n");
+            }
+            if (mainPrescription.getFormulaAnalysis() != null && !mainPrescription.getFormulaAnalysis().trim().isEmpty()) {
+                resultText.append("方义分析: ").append(mainPrescription.getFormulaAnalysis()).append("\n");
+            }
+            if (mainPrescription.getModifications() != null && !mainPrescription.getModifications().trim().isEmpty()) {
+                resultText.append("加减变化: ").append(mainPrescription.getModifications()).append("\n");
+            }
+        } else {
+            resultText.append("主方名称: 经验方或自拟方\n");
+        }
+        resultText.append("\n");
+        
+        // 药物组成 - 详细分类展示
+        resultText.append("🌿 【药物组成及配伍分析】\n");
+        if (analysis.getComposition() != null && !analysis.getComposition().isEmpty()) {
+            // 按药物角色分类显示
+            StringBuilder junYao = new StringBuilder();
+            StringBuilder chenYao = new StringBuilder();
+            StringBuilder zuoYao = new StringBuilder();
+            StringBuilder shiYao = new StringBuilder();
+            StringBuilder otherYao = new StringBuilder();
+            
+            for (PrescriptionAnalysis.HerbComposition herb : analysis.getComposition()) {
+                String role = herb.getRole() != null ? herb.getRole() : "其他";
+                StringBuilder herbInfo = new StringBuilder("  • " + herb.getHerb() + " " + 
+                               (herb.getDosage() != null ? herb.getDosage() : "适量"));
+                
+                if (herb.getFunction() != null && !herb.getFunction().trim().isEmpty()) {
+                    herbInfo.append(" - ").append(herb.getFunction());
+                }
+                if (herb.getPreparation() != null && !herb.getPreparation().trim().isEmpty()) {
+                    herbInfo.append(" (").append(herb.getPreparation()).append(")");
+                }
+                herbInfo.append("\n");
+                String herbInfoStr = herbInfo.toString();
+                
+                if (role.contains("君") || role.contains("主")) {
+                    junYao.append(herbInfoStr);
+                } else if (role.contains("臣") || role.contains("辅")) {
+                    chenYao.append(herbInfoStr);
+                } else if (role.contains("佐") || role.contains("调")) {
+                    zuoYao.append(herbInfoStr);
+                } else if (role.contains("使") || role.contains("引")) {
+                    shiYao.append(herbInfoStr);
+                } else {
+                    otherYao.append(herbInfoStr);
+                }
+            }
+            
+            if (junYao.length() > 0) {
+                resultText.append("👑 君药（主药）:\n").append(junYao);
+            }
+            if (chenYao.length() > 0) {
+                resultText.append("🤝 臣药（辅药）:\n").append(chenYao);
+            }
+            if (zuoYao.length() > 0) {
+                resultText.append("⚖️ 佐药（调药）:\n").append(zuoYao);
+            }
+            if (shiYao.length() > 0) {
+                resultText.append("🎯 使药（引药）:\n").append(shiYao);
+            }
+            if (otherYao.length() > 0) {
+                resultText.append("📋 其他药物:\n").append(otherYao);
+            }
+        } else {
+            resultText.append("药物组成: 请参考处方原文或进一步识别\n");
         }
         
+        // 检测到的中药材
+        if (analysis.getDetectedHerbs() != null && !analysis.getDetectedHerbs().isEmpty()) {
+            resultText.append("\n🔍 【识别到的中药材】\n");
+            resultText.append(String.join("、", analysis.getDetectedHerbs())).append("\n");
+        }
+        resultText.append("\n");
+        
+        // 用法用量
+        resultText.append("💊 【用法用量】\n");
+        String usage = analysis.getUsage();
+        if (usage != null && !usage.trim().isEmpty()) {
+            resultText.append(usage).append("\n");
+        } else {
+            resultText.append("煎服法: 水煎服，一日一剂，早晚分服\n");
+            resultText.append("煎煮法: 先煎30分钟，后下药物另煎15分钟\n");
+            resultText.append("服用时间: 饭后30分钟温服\n");
+        }
+        resultText.append("\n");
+        
+        // 注意事项和禁忌
+        resultText.append("⚠️ 【注意事项】\n");
+        String contraindications = analysis.getContraindications();
+        if (contraindications != null && !contraindications.trim().isEmpty()) {
+            resultText.append(contraindications).append("\n");
+        } else {
+            resultText.append("孕妇慎用，过敏体质者慎用\n");
+        }
+        resultText.append("\n");
+        
+        // 专业建议
+        resultText.append("💡 【专业建议】\n");
         if (analysis.getRecommendations() != null && !analysis.getRecommendations().isEmpty()) {
-            resultText.append("\n建议:\n");
             for (String recommendation : analysis.getRecommendations()) {
                 resultText.append("• ").append(recommendation).append("\n");
             }
+        } else {
+            resultText.append("• 建议在中医师指导下使用，切勿自行调整剂量\n");
+            resultText.append("• 定期复诊，根据病情变化调整治疗方案\n");
+            resultText.append("• 配合适当的饮食调理和生活方式改善\n");
+            resultText.append("• 如症状加重或出现新症状，请及时就医\n");
         }
+        resultText.append("\n");
         
+        // 分析置信度和技术信息
         if (!TextUtils.isEmpty(analysis.getConfidence())) {
-            resultText.append("\n分析置信度: ").append(analysis.getConfidence()).append("\n");
+            resultText.append("📊 【分析置信度】 ").append(analysis.getConfidence()).append("\n\n");
         }
         
         if (!TextUtils.isEmpty(analysis.getMessage())) {
-            resultText.append("\n消息: ").append(analysis.getMessage()).append("\n");
+            resultText.append("📝 【系统消息】 ").append(analysis.getMessage()).append("\n\n");
         }
+        
+        // 免责声明
+        resultText.append("⚖️ 【免责声明】\n");
+        resultText.append("本分析结果仅供参考，不能替代专业医师的诊断和治疗建议。\n");
+        resultText.append("请在合格中医师指导下使用中药，确保用药安全有效。\n");
         
         if (!TextUtils.isEmpty(analysis.getAiError())) {
             resultText.append("\nAI错误: ").append(analysis.getAiError()).append("\n");

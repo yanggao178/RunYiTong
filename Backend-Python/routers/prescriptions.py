@@ -164,18 +164,44 @@ async def upload_prescription_image(
 @router.post("/analyze-symptoms")
 async def analyze_symptoms(symptoms: str = Form(...)):
     """症状分析（集成AI中医处方生成）"""
+    print("="*50)
+    print("🎯🎯🎯 症状分析端点被调用！🎯🎯🎯")
+    print(f"🎯🎯🎯 接收到的症状: {symptoms}")
+    print("="*50)
     try:
         # 从环境变量获取API密钥和模型配置
         api_key = os.getenv("OPENAI_API_KEY")
         ai_model = os.getenv("AI_MODEL", "deepseek-chat")
+        
+        # 添加调试信息
+        print(f"🔍 调试信息: API Key存在: {bool(api_key)}, 长度: {len(api_key) if api_key else 0}")
+        print(f"🔍 调试信息: AI Model: {ai_model}")
+        print(f"🔍 调试信息: 症状: {symptoms}")
+        
         if not api_key:
-            # 如果没有API密钥，返回模拟结果
+            # 如果没有API密钥，返回模拟结果（保持与正常流程一致的数据结构）
             analysis_data = {
                 "symptoms": symptoms,
                 "analysis": "暂未配置AI服务，返回模拟分析结果",
-                "syndrome_type": "风寒表证",
-                "treatment_method": "辛温解表",
-                "main_prescription": "桂枝汤加减",
+                "syndrome_type": {
+                    "main_syndrome": "风寒表证",
+                    "secondary_syndrome": "无",
+                    "disease_location": "表",
+                    "disease_nature": "寒证",
+                    "pathogenesis": "风寒外袭，卫阳被遏"
+                },
+                "treatment_method": {
+                    "main_method": "辛温解表",
+                    "auxiliary_method": "调和营卫",
+                    "treatment_priority": "解表为主",
+                    "care_principle": "避风寒，适当休息"
+                },
+                "main_prescription": {
+                    "formula_name": "桂枝汤加减",
+                    "formula_source": "伤寒论",
+                    "formula_analysis": "桂枝汤为调和营卫之代表方",
+                    "modifications": "根据症状可适当加减"
+                },
                 "composition": [
                     {"药材": "桂枝", "剂量": "10g", "角色": "君药"},
                     {"药材": "白芍", "剂量": "10g", "角色": "臣药"},
@@ -183,8 +209,17 @@ async def analyze_symptoms(symptoms: str = Form(...)):
                     {"药材": "大枣", "剂量": "3枚", "角色": "使药"},
                     {"药材": "甘草", "剂量": "6g", "角色": "使药"}
                 ],
-                "usage": "水煎服，每日1剂，分2次温服",
-                "contraindications": "孕妇慎用，高血压患者注意监测血压"
+                "usage": {
+                    "preparation_method": "水煎服",
+                    "administration_time": "每日1剂，分2次温服",
+                    "treatment_course": "3-5天为一疗程"
+                },
+                "contraindications": {
+                    "contraindications": "阴虚发热者慎用",
+                    "dietary_restrictions": "忌食生冷",
+                    "lifestyle_care": "注意保暖，避风寒",
+                    "precautions": "孕妇慎用，高血压患者注意监测血压"
+                }
             }
             return {
                 "success": True,
@@ -193,23 +228,37 @@ async def analyze_symptoms(symptoms: str = Form(...)):
             }
         
         # 调用AI生成处方
-        prescription = generate_tcm_prescription(
-            symptoms=symptoms,
-            api_key=api_key,
-            patient_info=None,  # 可以根据需要传入患者信息
-            model=ai_model,
-            max_tokens=1000
-        )
+        print(f"🚀 开始调用AI生成处方...")
+        print(f"🔧 调用参数: symptoms={symptoms}, api_key前10位={api_key[:10] if api_key else 'None'}, model={ai_model}")
+        
+        try:
+            ai_result = generate_tcm_prescription(
+                symptoms=symptoms,
+                api_key=api_key,
+                patient_info=None,  # 可以根据需要传入患者信息
+                model=ai_model,
+                max_tokens=1000
+            )
+            print(f"✅ AI调用成功，结果类型: {type(ai_result)}")
+            print(f"📋 AI结果预览: {str(ai_result)[:200]}...")
+        except Exception as ai_error:
+            print(f"💥 AI函数调用异常: {ai_error}")
+            print(f"💥 异常类型: {type(ai_error).__name__}")
+            raise ai_error
+        
+        # 处理TCMPrescription对象数据结构
+        # ai_result是TCMPrescription对象，其属性已经是字典，直接使用即可
         
         analysis_data = {
             "symptoms": symptoms,
-            "analysis": "AI中医辨证分析完成",
-            "syndrome_type": prescription.syndrome_type,
-            "treatment_method": prescription.treatment_method,
-            "main_prescription": prescription.main_prescription,
-            "composition": prescription.composition,
-            "usage": prescription.usage,
-            "contraindications": prescription.contraindications
+            "analysis": "AI中医诊疗分析完成",
+            # 中医诊疗部分 - 直接使用TCMPrescription对象的字典属性
+            "syndrome_type": ai_result.syndrome_type,
+            "treatment_method": ai_result.treatment_method,
+            "main_prescription": ai_result.main_prescription,
+            "composition": ai_result.composition,
+            "usage": ai_result.usage,
+            "contraindications": ai_result.contraindications
         }
         return {
             "success": True,
@@ -218,20 +267,50 @@ async def analyze_symptoms(symptoms: str = Form(...)):
         }
         
     except Exception as e:
-        # 如果AI调用失败，返回错误信息
+        # 如果AI调用失败，返回完整的默认数据结构
+        print(f"❌ AI调用异常: {str(e)}")
+        print(f"❌ 异常类型: {type(e).__name__}")
+        import traceback
+        print(f"❌ 详细错误: {traceback.format_exc()}")
+        
         analysis_data = {
             "symptoms": symptoms,
             "analysis": f"AI分析失败: {str(e)}",
-            "syndrome_type": "分析失败",
-            "treatment_method": "请咨询专业中医师",
-            "main_prescription": "暂无",
+            "syndrome_type": {
+                 "main_syndrome": "分析失败",
+                 "secondary_syndrome": "请重新尝试",
+                 "disease_location": "暂无",
+                 "disease_nature": "暂无",
+                 "pathogenesis": "请咨询专业中医师"
+             },
+            "treatment_method": {
+                "main_method": "请咨询专业中医师",
+                "auxiliary_method": "暂无",
+                "treatment_priority": "暂无",
+                "care_principle": "请遵医嘱"
+            },
+            "main_prescription": {
+                "formula_name": "暂无",
+                "formula_source": "暂无",
+                "formula_analysis": "暂无",
+                "modifications": "暂无"
+            },
             "composition": [],
-            "usage": "请遵医嘱",
-            "contraindications": "请咨询医生"
+            "usage": {
+                "preparation_method": "请咨询医生",
+                "administration_time": "暂无",
+                "treatment_course": "暂无"
+            },
+            "contraindications": {
+                "contraindications": "请咨询医生",
+                "dietary_restrictions": "暂无",
+                "lifestyle_care": "暂无",
+                "precautions": "请遵医嘱"
+            }
         }
         return {
-            "success": False,
-            "message": f"分析失败: {str(e)}",
+            "success": True,
+            "message": "使用默认分析结果，建议重新尝试或咨询医师",
             "data": analysis_data
         }
 

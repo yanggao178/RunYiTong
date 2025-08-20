@@ -3,6 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+import os
+
+# 加载环境变量
+load_dotenv()
 
 # 导入路由
 from routers import products, books, prescriptions, appointments, users, payments
