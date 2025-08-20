@@ -7,6 +7,8 @@ import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
 import com.wenteng.frontend_android.model.ImageUploadResult;
 import com.wenteng.frontend_android.model.Department;
+import com.wenteng.frontend_android.model.PaymentOrderRequest;
+import com.wenteng.frontend_android.model.PaymentOrderResponse;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -17,6 +19,7 @@ import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Multipart;
 import retrofit2.http.Part;
+import retrofit2.http.Body;
 import java.util.List;
 
 public interface ApiService {
@@ -185,4 +188,14 @@ public interface ApiService {
     @FormUrlEncoded
     @POST("api/v1/auth/send-sms-code")
     Call<ApiResponse<SmsCodeResponse>> sendSmsCode(@Field("phone") String phone);
+    
+    /**
+     * 创建支付宝支付订单
+     * @param request 支付订单请求参数
+     * @return 支付订单响应
+     */
+    @POST("api/v1/payments/alipay/create-order")
+    Call<ApiResponse<PaymentOrderResponse>> createAlipayOrder(
+        @Body PaymentOrderRequest request
+    );
 }

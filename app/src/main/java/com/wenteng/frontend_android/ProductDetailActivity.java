@@ -13,6 +13,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.wenteng.frontend_android.api.ApiClient;
+import com.wenteng.frontend_android.api.ApiResponse;
+import com.wenteng.frontend_android.model.PaymentOrderRequest;
+import com.wenteng.frontend_android.model.PaymentOrderResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.alipay.sdk.app.PayTask;
@@ -259,49 +267,127 @@ public class ProductDetailActivity extends AppCompatActivity {
      private void processAlipayPayment() {
          Toast.makeText(this, "正在启动支付宝支付...", Toast.LENGTH_SHORT).show();
          
-         // 构建支付订单信息
-         String orderInfo = getOrderInfo(1); // 默认数量为1
+         // 显示加载对话框
+         android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+         progressDialog.setMessage("正在创建订单...");
+         progressDialog.setCancelable(true); // 允许用户取消
+         progressDialog.setOnCancelListener(dialog -> {
+             Toast.makeText(this, "订单创建已取消", Toast.LENGTH_SHORT).show();
+         });
+         progressDialog.show();
          
-         Runnable payRunnable = new Runnable() {
-             @Override
-             public void run() {
-                 PayTask alipay = new PayTask(ProductDetailActivity.this);
-                 Map<String, String> result = alipay.payV2(orderInfo, true);
-                 
-                 Message msg = new Message();
-                 msg.what = SDK_PAY_FLAG;
-                 msg.obj = result;
-                 mHandler.sendMessage(msg);
+         // 设置超时处理
+         android.os.Handler timeoutHandler = new android.os.Handler();
+         Runnable timeoutRunnable = () -> {
+             if (progressDialog.isShowing()) {
+                 progressDialog.dismiss();
+                 Toast.makeText(this, "订单创建超时，请重试", Toast.LENGTH_LONG).show();
              }
          };
+         timeoutHandler.postDelayed(timeoutRunnable, 30000); // 30秒超时
          
-         // 必须异步调用
-         Thread payThread = new Thread(payRunnable);
-         payThread.start();
+         // 从服务器获取订单信息
+         getOrderInfoFromServer(1, new OrderInfoCallback() { // 默认数量为1
+             @Override
+             public void onSuccess(String orderString, PaymentOrderResponse.OrderInfo orderInfo) {
+                 // 取消超时处理
+                 timeoutHandler.removeCallbacks(timeoutRunnable);
+                 // 关闭加载对话框
+                 if (progressDialog.isShowing()) {
+                     progressDialog.dismiss();
+                 }
+                 
+                 // 执行支付宝支付
+                 Runnable payRunnable = new Runnable() {
+                     @Override
+                     public void run() {
+                         PayTask alipay = new PayTask(ProductDetailActivity.this);
+                         Map<String, String> result = alipay.payV2(orderString, true);
+                         
+                         Message msg = new Message();
+                         msg.what = SDK_PAY_FLAG;
+                         msg.obj = result;
+                         mHandler.sendMessage(msg);
+                     }
+                 };
+                 
+                 // 必须异步调用
+                 Thread payThread = new Thread(payRunnable);
+                 payThread.start();
+             }
+             
+             @Override
+             public void onError(String errorMessage) {
+                 // 取消超时处理
+                 timeoutHandler.removeCallbacks(timeoutRunnable);
+                 // 关闭加载对话框
+                 if (progressDialog.isShowing()) {
+                     progressDialog.dismiss();
+                 }
+                 
+                 // 显示错误信息
+                 runOnUiThread(() -> {
+                     Toast.makeText(ProductDetailActivity.this, "订单创建失败: " + errorMessage, Toast.LENGTH_LONG).show();
+                 });
+             }
+         });
      }
 
      /**
-       * 获取支付订单信息
+       * 从服务器获取支付订单信息
        */
-      private String getOrderInfo(int quantity) {
-          // 生成唯一订单号
-          String outTradeNo = "ORDER_" + System.currentTimeMillis();
+      private void getOrderInfoFromServer(int quantity, OrderInfoCallback callback) {
+          // 创建请求对象
+          PaymentOrderRequest request = new PaymentOrderRequest(
+              currentProduct.getId(),
+              quantity,
+              "30m"
+          );
           
-          // 计算总金额
-          double totalAmount = currentProduct.getPrice() * quantity;
+          android.util.Log.d("ProductDetail", "开始创建订单，商品ID: " + currentProduct.getId() + ", 数量: " + quantity);
           
-          // 构建订单信息字符串，这里应该从服务器获取
-          String orderInfo = "app_id=2021000000000000" +
-                            "&biz_content={\"timeout_express\":\"30m\",\"product_code\":\"QUICK_MSECURITY_PAY\",\"total_amount\":\"" + String.format("%.2f", totalAmount) + 
-                            "\",\"subject\":\"" + currentProduct.getName() + "(" + quantity + "件)" +
-                            "\",\"body\":\"" + currentProduct.getDescription() + 
-                            "\",\"out_trade_no\":\"" + outTradeNo + "\"}" +
-                            "&charset=utf-8" +
-                            "&method=alipay.trade.app.pay" +
-                            "&sign_type=RSA2" +
-                            "&timestamp=" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date()) +
-                            "&version=1.0";
-          return orderInfo;
+          // 调用服务器API创建订单
+          Call<ApiResponse<PaymentOrderResponse>> call = ApiClient.getApiService().createAlipayOrder(request);
+          
+          call.enqueue(new Callback<ApiResponse<PaymentOrderResponse>>() {
+              @Override
+              public void onResponse(Call<ApiResponse<PaymentOrderResponse>> call, Response<ApiResponse<PaymentOrderResponse>> response) {
+                  android.util.Log.d("ProductDetail", "收到服务器响应，状态码: " + response.code());
+                  if (response.isSuccessful() && response.body() != null) {
+                      ApiResponse<PaymentOrderResponse> apiResponse = response.body();
+                      if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                          PaymentOrderResponse orderResponse = apiResponse.getData();
+                          if (orderResponse.isSuccess() && orderResponse.getOrderString() != null) {
+                              android.util.Log.d("ProductDetail", "订单创建成功");
+                              callback.onSuccess(orderResponse.getOrderString(), orderResponse.getOrderInfo());
+                          } else {
+                              android.util.Log.e("ProductDetail", "订单创建失败: " + orderResponse.getMessage());
+                              callback.onError("订单创建失败: " + orderResponse.getMessage());
+                          }
+                      } else {
+                          android.util.Log.e("ProductDetail", "API调用失败: " + apiResponse.getMessage());
+                          callback.onError("API调用失败: " + apiResponse.getMessage());
+                      }
+                  } else {
+                      android.util.Log.e("ProductDetail", "网络请求失败: " + response.message());
+                      callback.onError("网络请求失败: " + response.message());
+                  }
+              }
+              
+              @Override
+              public void onFailure(Call<ApiResponse<PaymentOrderResponse>> call, Throwable t) {
+                  android.util.Log.e("ProductDetail", "网络连接失败: " + t.getMessage(), t);
+                  callback.onError("网络连接失败: " + t.getMessage());
+              }
+          });
+      }
+      
+      /**
+       * 订单信息回调接口
+       */
+      private interface OrderInfoCallback {
+          void onSuccess(String orderString, PaymentOrderResponse.OrderInfo orderInfo);
+          void onError(String errorMessage);
       }
 
      /**

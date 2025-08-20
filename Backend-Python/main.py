@@ -5,7 +5,7 @@ import uvicorn
 from contextlib import asynccontextmanager
 
 # 导入路由
-from routers import products, books, prescriptions, appointments, users
+from routers import products, books, prescriptions, appointments, users, payments
 from database import engine, Base
 
 # 创建数据库表
@@ -42,6 +42,7 @@ app.include_router(books.router, prefix="/api/v1/books", tags=["图书管理"])
 app.include_router(prescriptions.router, prefix="/api/v1/prescriptions", tags=["处方管理"])
 app.include_router(appointments.router, prefix="/api/v1/appointments", tags=["预约挂号"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["用户管理"])
+app.include_router(payments.router, prefix="/api/v1/payments", tags=["支付管理"])
 
 @app.get("/")
 async def root():
