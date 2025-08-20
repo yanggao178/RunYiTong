@@ -30,24 +30,24 @@
                 android:tint="@color/white" />
                 
             <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="智能开方"
-                android:textSize="24sp"
-                android:textStyle="bold"
-                android:textColor="@color/white" />
+                    android:id="@+id/tv_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="智能开方"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white" />
                 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="AI助手"
-                android:textSize="12sp"
-                android:textColor="@color/white"
-                android:background="@drawable/badge_background"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AI助手"
+                    android:textSize="10sp"
+                    android:textColor="@color/white"
+                    android:background="@drawable/badge_background"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp" />
                 
         </LinearLayout>
         
@@ -89,7 +89,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="分析结果"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textStyle="bold"
                     android:textColor="@color/primary_color" />
                     
@@ -115,7 +115,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="💡 请输入症状描述，点击上传按钮或按回车键进行AI分析\n\n🔍 您可以：\n• 详细描述您的症状\n• 上传处方图片进行识别\n• 获得专业的中医建议"
-                    android:textSize="15sp"
+                    android:textSize="13sp"
                     android:textColor="#555555"
                     android:lineSpacingExtra="6dp"
                     android:padding="8dp" />
@@ -146,7 +146,7 @@
                      android:layout_width="wrap_content"
                      android:layout_height="wrap_content"
                      android:text="🤖 AI正在分析您的症状\n⏱️ 预计需要10-30秒，请耐心等待"
-                     android:textSize="14sp"
+                     android:textSize="12sp"
                      android:textColor="@color/primary_color"
                      android:gravity="center"
                      android:lineSpacingExtra="4dp" />
@@ -191,7 +191,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="症状描述"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     android:textColor="@color/primary_color" />
                     
@@ -214,7 +214,7 @@
                     android:layout_weight="1"
                     android:hint="请详细描述您的症状..."
                     android:textColorHint="#999999"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:textColor="#333333"
                     android:background="@null"
                     android:inputType="textMultiLine"
@@ -250,7 +250,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="💡 提示：您可以输入文字描述或上传处方图片进行AI分析"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:textColor="#666666"
                 android:gravity="center" />
                 
