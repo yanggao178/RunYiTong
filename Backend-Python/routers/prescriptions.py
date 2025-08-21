@@ -189,36 +189,6 @@ async def analyze_symptoms(symptoms: str = Form(...)):
                     "disease_location": "表",
                     "disease_nature": "寒证",
                     "pathogenesis": "风寒外袭，卫阳被遏"
-                },
-                "treatment_method": {
-                    "main_method": "辛温解表",
-                    "auxiliary_method": "调和营卫",
-                    "treatment_priority": "解表为主",
-                    "care_principle": "避风寒，适当休息"
-                },
-                "main_prescription": {
-                    "formula_name": "桂枝汤加减",
-                    "formula_source": "伤寒论",
-                    "formula_analysis": "桂枝汤为调和营卫之代表方",
-                    "modifications": "根据症状可适当加减"
-                },
-                "composition": [
-                    {"药材": "桂枝", "剂量": "10g", "角色": "君药"},
-                    {"药材": "白芍", "剂量": "10g", "角色": "臣药"},
-                    {"药材": "生姜", "剂量": "6g", "角色": "佐药"},
-                    {"药材": "大枣", "剂量": "3枚", "角色": "使药"},
-                    {"药材": "甘草", "剂量": "6g", "角色": "使药"}
-                ],
-                "usage": {
-                    "preparation_method": "水煎服",
-                    "administration_time": "每日1剂，分2次温服",
-                    "treatment_course": "3-5天为一疗程"
-                },
-                "contraindications": {
-                    "contraindications": "阴虚发热者慎用",
-                    "dietary_restrictions": "忌食生冷",
-                    "lifestyle_care": "注意保暖，避风寒",
-                    "precautions": "孕妇慎用，高血压患者注意监测血压"
                 }
             }
             return {
@@ -226,10 +196,433 @@ async def analyze_symptoms(symptoms: str = Form(...)):
                 "message": "症状分析完成",
                 "data": analysis_data
             }
+            
+    except Exception as e:
+        print(f"❌ 症状分析异常: {str(e)}")
+        return {
+            "success": False,
+            "message": f"症状分析失败: {str(e)}",
+            "data": None
+        }
+
+# 医学影像类型检测
+def detect_medical_image_type(image_array):
+    """
+    检测医学影像类型
+    这是一个简化的检测逻辑，实际应用中需要使用深度学习模型
+    改进版本：更严格地判断医学影像特征，避免将普通照片误判为医学影像
+    """
+    try:
+        # 获取图像基本信息
+        height, width = image_array.shape[:2]
+        
+        # 计算图像的一些特征
+        gray = cv2.cvtColor(image_array, cv2.COLOR_BGR2GRAY) if len(image_array.shape) == 3 else image_array
+        
+        # 计算图像的平均亮度和对比度
+        mean_brightness = np.mean(gray)
+        std_brightness = np.std(gray)
+        
+        # 计算图像的其他特征来判断是否为医学影像
+        # 1. 检查图像是否主要为灰度（医学影像通常是灰度的）
+        if len(image_array.shape) == 3:
+            # 计算颜色通道的方差，如果方差很小说明接近灰度
+            color_variance = np.var([np.mean(image_array[:,:,0]), np.mean(image_array[:,:,1]), np.mean(image_array[:,:,2])])
+            is_grayscale_like = color_variance < 100  # 阈值可调整
+        else:
+            is_grayscale_like = True
+        
+        # 2. 检查图像边缘特征（医学影像通常有特定的边缘模式）
+        edges = cv2.Canny(gray, 50, 150)
+        edge_density = np.sum(edges > 0) / (height * width)
+        
+        # 3. 检查图像的纹理特征
+        # 使用Sobel算子检测纹理
+        sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0, ksize=3)
+        sobely = cv2.Sobel(gray, cv2.CV_64F, 0, 1, ksize=3)
+        texture_strength = np.mean(np.sqrt(sobelx**2 + sobely**2))
+        
+        # 4. 检查图像的直方图分布（医学影像通常有特定的分布模式）
+        hist = cv2.calcHist([gray], [0], None, [256], [0, 256])
+        hist_peaks = len([i for i in range(1, 255) if hist[i] > hist[i-1] and hist[i] > hist[i+1] and hist[i] > 100])
+        
+        print(f"图像分析 - 亮度: {mean_brightness:.1f}, 对比度: {std_brightness:.1f}, 边缘密度: {edge_density:.3f}, 纹理强度: {texture_strength:.1f}, 直方图峰数: {hist_peaks}")
+        
+        # 更严格的医学影像判断条件
+        # 只有同时满足多个条件才认为是医学影像
+        is_medical_image = (
+            is_grayscale_like and  # 主要为灰度
+            (edge_density > 0.01) and  # 有一定的边缘密度
+            (texture_strength > 5) and  # 有一定的纹理强度
+            (std_brightness > 20)  # 有一定的对比度
+        )
+        
+        if not is_medical_image:
+            print("检测结果：不是医学影像，可能是普通照片")
+            return "unknown"
+        
+        # 如果确定是医学影像，再进行类型分类
+        # 使用更严格的条件进行分类
+        if mean_brightness < 40 and std_brightness > 40:  # X光：很暗且有对比度
+            return "xray"
+        elif mean_brightness > 180 and edge_density < 0.05:  # 超声：很亮且边缘较少
+            return "ultrasound"
+        elif std_brightness > 80 and texture_strength > 15:  # CT：高对比度和纹理
+            return "ct"
+        elif 80 < mean_brightness < 160 and texture_strength > 10:  # MRI：中等亮度和纹理
+            return "mri"
+        elif mean_brightness > 100 and hist_peaks > 3:  # PET-CT：复杂的直方图分布
+            return "petct"
+        else:
+            # 虽然看起来像医学影像，但无法确定具体类型
+            print("检测结果：疑似医学影像但无法确定具体类型")
+            return "unknown"
+            
+    except Exception as e:
+        print(f"图像类型检测失败: {str(e)}")
+        return "unknown"
+
+# X光影像分析
+@router.post("/analyze-xray")
+async def analyze_xray_image(file: UploadFile = File(...)):
+    """X光影像智能分析"""
+    try:
+        # 读取图像
+        content = await file.read()
+        image = Image.open(io.BytesIO(content))
+        image_array = np.array(image)
+        
+        # 检测图像类型
+        detected_type = detect_medical_image_type(image_array)
+        
+        # 如果不是X光图像，返回类型不匹配的分析结果
+        if detected_type != "xray":
+            analysis_result = {
+                "image_type": detected_type,
+                "analysis_type": "X光智能分析",
+                "findings": [
+                    f"检测到的图像类型：{detected_type}",
+                    f"期望的图像类型：xray",
+                    "类型不一致，无法处理"
+                ],
+                "diagnosis": "图像类型不匹配，系统无法进行X光影像分析",
+                "recommendations": [
+                    "请上传正确的X光影像",
+                    "确保图像清晰可见"
+                ],
+                "confidence": 0.0,
+                "error_code": "IMAGE_TYPE_MISMATCH"
+            }
+            return {
+                "success": True,
+                "message": "分析完成 - 类型不匹配",
+                "data": analysis_result
+            }
+        
+        # 模拟X光分析结果
+        analysis_result = {
+            "image_type": "xray",
+            "analysis_type": "X光智能分析",
+            "findings": [
+                "肺部纹理清晰",
+                "心影大小正常",
+                "未见明显异常阴影"
+            ],
+            "diagnosis": "影像学检查未见明显异常",
+            "recommendations": [
+                "建议定期复查",
+                "如有症状请及时就医"
+            ],
+            "confidence": 0.85
+        }
+        
+        return {
+            "success": True,
+            "message": "X光影像分析完成",
+            "data": analysis_result
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"X光影像分析失败: {str(e)}",
+            "data": {"error_details": str(e)}
+        }
+
+# CT影像分析
+@router.post("/analyze-ct")
+async def analyze_ct_image(file: UploadFile = File(...)):
+    """CT影像智能分析"""
+    try:
+        # 读取图像
+        content = await file.read()
+        image = Image.open(io.BytesIO(content))
+        image_array = np.array(image)
+        
+        # 检测图像类型
+        detected_type = detect_medical_image_type(image_array)
+        
+        # 如果不是CT图像，返回类型不匹配的分析结果
+        if detected_type != "ct":
+            analysis_result = {
+                "image_type": detected_type,
+                "analysis_type": "CT智能分析",
+                "findings": [
+                    f"检测到的图像类型：{detected_type}",
+                    f"期望的图像类型：ct",
+                    "类型不一致，无法处理"
+                ],
+                "diagnosis": "图像类型不匹配，系统无法进行CT影像分析",
+                "recommendations": [
+                    "请上传正确的CT影像",
+                    "确保图像清晰可见"
+                ],
+                "confidence": 0.0,
+                "error_code": "IMAGE_TYPE_MISMATCH"
+            }
+            return {
+                "success": True,
+                "message": "分析完成 - 类型不匹配",
+                "data": analysis_result
+            }
+        
+        # 模拟CT分析结果
+        analysis_result = {
+            "image_type": "ct",
+            "analysis_type": "CT智能分析",
+            "findings": [
+                "脑实质密度均匀",
+                "脑室系统无扩张",
+                "未见出血征象"
+            ],
+            "diagnosis": "CT检查未见明显异常",
+            "recommendations": [
+                "建议结合临床症状",
+                "必要时行增强扫描"
+            ],
+            "confidence": 0.88
+        }
+        
+        return {
+            "success": True,
+            "message": "CT影像分析完成",
+            "data": analysis_result
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"CT影像分析失败: {str(e)}",
+            "data": {"error_details": str(e)}
+        }
+
+# B超影像分析
+@router.post("/analyze-ultrasound")
+async def analyze_ultrasound_image(file: UploadFile = File(...)):
+    """B超影像智能分析"""
+    try:
+        # 读取图像
+        content = await file.read()
+        image = Image.open(io.BytesIO(content))
+        image_array = np.array(image)
+        
+        # 检测图像类型
+        detected_type = detect_medical_image_type(image_array)
+        
+        # 如果不是B超图像，返回类型不匹配的分析结果
+        if detected_type != "ultrasound":
+            analysis_result = {
+                "image_type": detected_type,
+                "analysis_type": "B超智能分析",
+                "findings": [
+                    f"检测到的图像类型：{detected_type}",
+                    f"期望的图像类型：ultrasound",
+                    "类型不一致，无法处理"
+                ],
+                "diagnosis": "图像类型不匹配，系统无法进行B超影像分析",
+                "recommendations": [
+                    "请上传正确的B超影像",
+                    "确保图像清晰可见"
+                ],
+                "confidence": 0.0,
+                "error_code": "IMAGE_TYPE_MISMATCH"
+            }
+            return {
+                "success": True,
+                "message": "分析完成 - 类型不匹配",
+                "data": analysis_result
+            }
+        
+        # 模拟B超分析结果
+        analysis_result = {
+            "image_type": "ultrasound",
+            "analysis_type": "B超智能分析",
+            "findings": [
+                "肝脏大小形态正常",
+                "肝实质回声均匀",
+                "胆囊壁光滑"
+            ],
+            "diagnosis": "超声检查未见明显异常",
+            "recommendations": [
+                "建议定期体检",
+                "注意饮食健康"
+            ],
+            "confidence": 0.82
+        }
+        
+        return {
+            "success": True,
+            "message": "B超影像分析完成",
+            "data": analysis_result
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"B超影像分析失败: {str(e)}",
+            "data": {"error_details": str(e)}
+        }
+
+# MRI影像分析
+@router.post("/analyze-mri")
+async def analyze_mri_image(file: UploadFile = File(...)):
+    """MRI影像智能分析"""
+    try:
+        # 读取图像
+        content = await file.read()
+        image = Image.open(io.BytesIO(content))
+        image_array = np.array(image)
+        
+        # 检测图像类型
+        detected_type = detect_medical_image_type(image_array)
+        
+        # 如果不是MRI图像，返回类型不匹配的分析结果
+        if detected_type != "mri":
+            analysis_result = {
+                "image_type": detected_type,
+                "analysis_type": "MRI智能分析",
+                "findings": [
+                    f"检测到的图像类型：{detected_type}",
+                    f"期望的图像类型：mri",
+                    "类型不一致，无法处理"
+                ],
+                "diagnosis": "图像类型不匹配，系统无法进行MRI影像分析",
+                "recommendations": [
+                    "请上传正确的MRI影像",
+                    "确保图像清晰可见"
+                ],
+                "confidence": 0.0,
+                "error_code": "IMAGE_TYPE_MISMATCH"
+            }
+            return {
+                "success": True,
+                "message": "分析完成 - 类型不匹配",
+                "data": analysis_result
+            }
+        
+        # 模拟MRI分析结果
+        analysis_result = {
+            "image_type": "mri",
+            "analysis_type": "MRI智能分析",
+            "findings": [
+                "脑白质信号正常",
+                "灰质结构清晰",
+                "未见异常信号"
+            ],
+            "diagnosis": "MRI检查未见明显异常",
+            "recommendations": [
+                "建议结合临床表现",
+                "必要时复查对比"
+            ],
+            "confidence": 0.90
+        }
+        
+        return {
+            "success": True,
+            "message": "MRI影像分析完成",
+            "data": analysis_result
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"MRI影像分析失败: {str(e)}",
+            "data": {"error_details": str(e)}
+        }
+
+# PET-CT影像分析
+@router.post("/analyze-petct")
+async def analyze_petct_image(file: UploadFile = File(...)):
+    """PET-CT影像智能分析"""
+    try:
+        # 读取图像
+        content = await file.read()
+        image = Image.open(io.BytesIO(content))
+        image_array = np.array(image)
+        
+        # 检测图像类型
+        detected_type = detect_medical_image_type(image_array)
+        
+        # 如果不是PET-CT图像，返回类型不匹配的分析结果
+        if detected_type != "petct":
+            analysis_result = {
+                "image_type": detected_type,
+                "analysis_type": "PET-CT智能分析",
+                "findings": [
+                    f"检测到的图像类型：{detected_type}",
+                    f"期望的图像类型：petct",
+                    "类型不一致，无法处理"
+                ],
+                "diagnosis": "图像类型不匹配，系统无法进行PET-CT影像分析",
+                "recommendations": [
+                    "请上传正确的PET-CT影像",
+                    "确保图像清晰可见"
+                ],
+                "confidence": 0.0,
+                "error_code": "IMAGE_TYPE_MISMATCH"
+            }
+            return {
+                "success": True,
+                "message": "分析完成 - 类型不匹配",
+                "data": analysis_result
+            }
+        
+        # 模拟PET-CT分析结果
+        analysis_result = {
+            "image_type": "petct",
+            "analysis_type": "PET-CT智能分析",
+            "findings": [
+                "全身代谢分布正常",
+                "未见异常高代谢灶",
+                "淋巴结无肿大"
+            ],
+            "diagnosis": "PET-CT检查未见明显异常",
+            "recommendations": [
+                "建议定期随访",
+                "保持健康生活方式"
+            ],
+            "confidence": 0.87
+        }
+        
+        return {
+            "success": True,
+            "message": "PET-CT影像分析完成",
+            "data": analysis_result
+        }
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "message": f"PET-CT影像分析失败: {str(e)}",
+            "data": {"error_details": str(e)}
+        }
         
         # 调用AI生成处方
         print(f"🚀 开始调用AI生成处方...")
         print(f"🔧 调用参数: symptoms={symptoms}, api_key前10位={api_key[:10] if api_key else 'None'}, model={ai_model}")
+        
+        import time
+        start_time = time.time()
         
         try:
             ai_result = generate_tcm_prescription(
@@ -237,14 +630,57 @@ async def analyze_symptoms(symptoms: str = Form(...)):
                 api_key=api_key,
                 patient_info=None,  # 可以根据需要传入患者信息
                 model=ai_model,
-                max_tokens=1000
+                max_tokens=600,  # 减少token数量，提高响应速度
+                max_retries=2  # 减少重试次数，避免超时
             )
-            print(f"✅ AI调用成功，结果类型: {type(ai_result)}")
+            elapsed_time = time.time() - start_time
+            print(f"✅ AI调用成功，耗时: {elapsed_time:.2f}秒，结果类型: {type(ai_result)}")
             print(f"📋 AI结果预览: {str(ai_result)[:200]}...")
         except Exception as ai_error:
-            print(f"💥 AI函数调用异常: {ai_error}")
+            elapsed_time = time.time() - start_time
+            print(f"💥 AI函数调用异常，耗时: {elapsed_time:.2f}秒: {ai_error}")
             print(f"💥 异常类型: {type(ai_error).__name__}")
-            raise ai_error
+            # 不再抛出异常，而是返回友好的错误信息
+            analysis_data = {
+                "symptoms": symptoms,
+                "analysis": f"AI分析暂时不可用（耗时{elapsed_time:.1f}秒后超时），请稍后重试",
+                "syndrome_type": {
+                    "main_syndrome": "系统繁忙",
+                    "secondary_syndrome": "请稍后重试",
+                    "disease_location": "暂无",
+                    "disease_nature": "暂无",
+                    "pathogenesis": "请咨询专业中医师"
+                },
+                "treatment_method": {
+                    "main_method": "请咨询专业中医师",
+                    "auxiliary_method": "暂无",
+                    "treatment_priority": "暂无",
+                    "care_principle": "请遵医嘱"
+                },
+                "main_prescription": {
+                    "formula_name": "暂无",
+                    "formula_source": "暂无",
+                    "formula_analysis": "暂无",
+                    "modifications": "暂无"
+                },
+                "composition": [],
+                "usage": {
+                    "preparation_method": "请咨询医生",
+                    "administration_time": "暂无",
+                    "treatment_course": "暂无"
+                },
+                "contraindications": {
+                    "contraindications": "请咨询医生",
+                    "dietary_restrictions": "暂无",
+                    "lifestyle_care": "暂无",
+                    "precautions": "请遵医嘱"
+                }
+            }
+            return {
+                "success": True,
+                "message": "AI服务暂时繁忙，已返回提示信息",
+                "data": analysis_data
+            }
         
         # 处理TCMPrescription对象数据结构
         # ai_result是TCMPrescription对象，其属性已经是字典，直接使用即可

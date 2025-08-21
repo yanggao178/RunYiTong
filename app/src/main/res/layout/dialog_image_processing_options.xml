@@ -52,9 +52,9 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- OCR文字识别 -->
+        <!-- X光智能分析 -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/card_ocr"
+            android:id="@+id/card_xray"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -72,17 +72,17 @@
                 <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_text_recognition"
+                    android:src="@drawable/ic_xray"
                     android:tint="@color/colorPrimary"
                     android:background="@drawable/circle_background_light"
                     android:padding="12dp"
                     android:layout_marginBottom="12dp"
-                    android:contentDescription="@string/ocr_icon" />
+                    android:contentDescription="@string/xray_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/ocr_text_recognition"
+                    android:text="@string/xray_analysis"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -91,7 +91,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/ocr_description"
+                    android:text="@string/xray_description"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"
@@ -101,9 +101,9 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- 处方智能分析 -->
+        <!-- CT智能分析 -->
         <androidx.cardview.widget.CardView
-            android:id="@+id/card_analysis"
+            android:id="@+id/card_ct"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
@@ -121,17 +121,17 @@
                 <ImageView
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_analysis"
+                    android:src="@drawable/ic_ct"
                     android:tint="@color/colorAccent"
                     android:background="@drawable/circle_background_accent"
                     android:padding="12dp"
                     android:layout_marginBottom="12dp"
-                    android:contentDescription="@string/analysis_icon" />
+                    android:contentDescription="@string/ct_icon" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/smart_analysis"
+                    android:text="@string/ct_analysis"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -140,7 +140,154 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/analysis_description"
+                    android:text="@string/ct_description"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- B超智能分析 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_ultrasound"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:foreground="?attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:gravity="center_horizontal">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_ultrasound"
+                    android:tint="@color/colorSuccess"
+                    android:background="@drawable/circle_background_success"
+                    android:padding="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="@string/ultrasound_icon" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ultrasound_analysis"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/ultrasound_description"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- MRI智能分析 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_mri"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:foreground="?attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:gravity="center_horizontal">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_mri"
+                    android:tint="@color/colorWarning"
+                    android:background="@drawable/circle_background_warning"
+                    android:padding="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="@string/mri_icon" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/mri_analysis"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/mri_description"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp"
+                    android:gravity="center" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- PET-CT智能分析 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_petct"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            android:foreground="?attr/selectableItemBackground">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:gravity="center_horizontal">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_petct"
+                    android:tint="#9C27B0"
+                    android:background="@drawable/circle_background_light"
+                    android:padding="12dp"
+                    android:layout_marginBottom="12dp"
+                    android:contentDescription="@string/petct_icon" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/petct_analysis"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/petct_description"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp"
                     android:layout_marginTop="4dp"

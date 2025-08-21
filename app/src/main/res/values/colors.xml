@@ -49,6 +49,13 @@
     <color name="text_error">#DC3545</color>
     <color name="text_success">#28A745</color>
     
+    <!-- 对话框相关颜色 -->
+    <color name="warning_color">#FF9800</color>
+    <color name="error_color">#F44336</color>
+    <color name="divider_color">#E0E0E0</color>
+    <color name="info_card_background">#FFF3E0</color>
+    <color name="dialog_border_color">#E0E0E0</color>
+    
     <!-- 按钮增强效果颜色 -->
     <color name="button_ripple_color">#33667eea</color>
     <color name="button_secondary_ripple_color">#33764ba2</color>

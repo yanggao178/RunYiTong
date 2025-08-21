@@ -126,7 +126,7 @@ def _validate_input(symptoms: str, patient_info: Optional[Dict[str, Any]]) -> No
 
 
 def _build_optimized_prompt(patient_context: str, symptoms: str) -> str:
-    """构建优化的AI提示词
+    """构建优化的AI提示词（简化版，提高响应速度）
     
     Args:
         patient_context: 患者上下文信息
@@ -135,45 +135,23 @@ def _build_optimized_prompt(patient_context: str, symptoms: str) -> str:
     Returns:
         str: 优化后的提示词
     """
-    return f"""# 中医诊疗分析任务
-
-## 角色定位
-你是一位具有30年临床经验的中医主任医师，精通中医理论和临床实践。
+    return f"""# 中医症状分析
 
 ## 患者信息
 {patient_context}
-**主要症状**: {symptoms}
+**症状**: {symptoms}
 
-## 分析要求
-请按照中医辨证论治的标准流程，进行系统性分析：
-
-### 1. 辨证分型 (Syndrome Analysis)
-- 确定主要证型和兼夹证型
-- 明确病位、病性和病机
-- 分析证候特点和发病规律
-
-### 2. 治疗法则 (Treatment Principles)
-- 制定主要治法和辅助治法
-- 确定治疗优先级和调护原则
-- 考虑标本缓急关系
-
-### 3. 方药选择 (Prescription Selection)
-- 选择合适的经典方剂
-- 说明方剂来源和配伍意义
-- 根据症状进行个性化加减
-
-### 4. 药物组成 (Herbal Composition)
-- 每味药材包含：名称、剂量、作用、功效、炮制
-- 遵循《中国药典》剂量标准
-- 标注特殊煎法和注意事项
-
-### 5. 用法指导 (Usage Instructions)
-- 详细的煎服方法和时间
-- 饮食宜忌和生活调护
-- 禁忌症和安全注意事项
+## 任务要求
+请快速分析并返回JSON格式结果，包含：
+1. 辨证分型（主证、病位、病性、病机）
+2. 治疗方法（主要治法、辅助治法）
+3. 方剂选择（方名、来源、分析）
+4. 药物组成（药材、剂量、角色）
+5. 用法用量（煎服方法、服用时间）
+6. 注意事项（禁忌、饮食、调护）
 
 ## 输出格式
-请严格按照以下JSON结构返回分析结果：
+严格按照以下JSON结构返回：
 
 {{
     "syndrome_type": {{
@@ -291,12 +269,13 @@ def generate_tcm_prescription(
             response = client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "你是一名资深的中医专家，精通中医理论和临床实践。"},
+                    {"role": "system", "content": "你是一名资深的中医专家，精通中医理论和临床实践。请简洁准确地回答。"},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3,
-                max_tokens=max_tokens,
-                response_format={"type": "json_object"}
+                temperature=0.1,  # 降低随机性，提高响应速度
+                max_tokens=min(max_tokens, 800),  # 限制最大token数，提高响应速度
+                response_format={"type": "json_object"},
+                timeout=60  # 设置60秒超时
             )
             
             # 获取AI响应内容

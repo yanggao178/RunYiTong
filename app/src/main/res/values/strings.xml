@@ -14,26 +14,60 @@
     <string name="empty_order_image_desc">空订单状态图标</string>
     
     <!-- Image processing dialog strings -->
-    <string name="image_processing_options">图片处理选项</string>
-    <string name="ocr_text_recognition">OCR文字识别</string>
-    <string name="smart_analysis">处方智能分析</string>
+    <string name="image_processing_options">医学影像分析选项</string>
+    <string name="xray_analysis">X光智能分析</string>
+    <string name="ct_analysis">CT智能分析</string>
+    <string name="ultrasound_analysis">B超智能分析</string>
+    <string name="mri_analysis">MRI智能分析</string>
+    <string name="petct_analysis">PET-CT智能分析</string>
     <string name="upload_to_server">上传到服务器</string>
     <string name="preview_image">预览图片</string>
     <string name="cancel">取消</string>
     
-    <!-- Image processing dialog descriptions -->
-    <string name="ocr_description">智能识别图片中的文字内容</string>
-    <string name="analysis_description">AI分析处方内容和用药建议</string>
+    <!-- Medical imaging analysis descriptions -->
+    <string name="xray_description">AI智能分析X光片，识别骨折、肺部病变等</string>
+    <string name="ct_description">AI智能分析CT影像，检测肿瘤、器官异常等</string>
+    <string name="ultrasound_description">AI智能分析B超图像，识别器官结构异常</string>
+    <string name="mri_description">AI智能分析MRI影像，检测软组织病变</string>
+    <string name="petct_description">AI智能分析PET-CT，检测代谢异常和肿瘤</string>
     <string name="upload_description">保存图片到云端存储</string>
     <string name="preview_description">查看图片详细信息</string>
     
     <!-- Content descriptions -->
-    <string name="processing_options_icon">处理选项</string>
-    <string name="close_dialog">关闭</string>
-    <string name="ocr_icon">OCR识别</string>
-    <string name="analysis_icon">智能分析</string>
-    <string name="upload_icon">上传</string>
-    <string name="preview_icon">预览</string>
+    <string name="processing_options_icon">处理选项图标</string>
+    <string name="close_dialog">关闭对话框</string>
+    <string name="xray_icon">X光分析图标</string>
+    <string name="ct_icon">CT分析图标</string>
+    <string name="ultrasound_icon">B超分析图标</string>
+    <string name="mri_icon">MRI分析图标</string>
+    <string name="petct_icon">PET-CT分析图标</string>
+    <string name="upload_icon">上传图标</string>
+    <string name="preview_icon">预览图标</string>
+    
+    <!-- Error messages for medical imaging analysis -->
+    <string name="image_type_mismatch_title">图像类型不匹配</string>
+    <string name="image_type_mismatch_message">您上传的图像不是%1$s类型，请重新选择正确的医学影像。</string>
+    <string name="xray_type_name">X光</string>
+    <string name="ct_type_name">CT</string>
+    <string name="ultrasound_type_name">B超</string>
+    <string name="mri_type_name">MRI</string>
+    <string name="petct_type_name">PET-CT</string>
+    <string name="select_correct_image">选择正确图像</string>
+    <string name="retry">重试</string>
+    <string name="unknown_image_type">未知类型</string>
+    <string name="image_analysis_failed">图像分析失败</string>
+    <string name="image_analysis_error_message">分析过程中出现错误，请稍后重试。</string>
+    <string name="image_type_detection_failed">图像类型检测失败，请确保上传的是清晰的医学影像。</string>
+    
+    <!-- 美化对话框字符串 -->
+    <string name="warning_icon">警告图标</string>
+    <string name="analysis_type_icon">分析类型图标</string>
+    <string name="detection_result_icon">检测结果图标</string>
+    <string name="requested_analysis_type">请求分析类型：</string>
+    <string name="detection_result">检测结果：</string>
+    <string name="not_medical_image">非医学影像</string>
+    <string name="solution_suggestions">💡 解决方案</string>
+    <string name="solution_details">• 请选择正确的医学影像文件\n• 确保图像清晰且完整\n• 支持的格式：JPEG、PNG\n• 如需帮助，请联系客服</string>
     
     <!-- Accessibility service strings -->
     <string name="accessibility_service_description">AI医疗助手无障碍服务，用于自动化微信搜索医院公众号功能。启用后可以自动打开微信并搜索指定的医院公众号。</string>

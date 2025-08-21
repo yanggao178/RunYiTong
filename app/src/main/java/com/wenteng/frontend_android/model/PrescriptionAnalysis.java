@@ -34,6 +34,14 @@ public class PrescriptionAnalysis {
     private String ai_error;
     @SerializedName("error_details")
     private String error_details;
+    @SerializedName("error_code")
+    private String error_code;
+    @SerializedName("image_type")
+    private String image_type;
+    @SerializedName("findings")
+    private List<String> findings;
+    @SerializedName("diagnosis")
+    private String diagnosis;
     
     // 内部类：辨证分型
     public static class SyndromeType {
@@ -340,6 +348,38 @@ public class PrescriptionAnalysis {
     
     public void setErrorDetails(String error_details) {
         this.error_details = error_details;
+    }
+    
+    public String getErrorCode() {
+        return error_code;
+    }
+    
+    public void setErrorCode(String error_code) {
+        this.error_code = error_code;
+    }
+    
+    public String getImageType() {
+        return image_type;
+    }
+    
+    public void setImageType(String image_type) {
+        this.image_type = image_type;
+    }
+    
+    public List<String> getFindings() {
+        return findings;
+    }
+    
+    public void setFindings(List<String> findings) {
+        this.findings = findings;
+    }
+    
+    public String getDiagnosis() {
+        return diagnosis;
+    }
+    
+    public void setDiagnosis(String diagnosis) {
+        this.diagnosis = diagnosis;
     }
     
     @Override

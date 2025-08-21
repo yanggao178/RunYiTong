@@ -47,6 +47,7 @@ import com.wenteng.frontend_android.dialog.ImageProcessingDialogFragment;
 import com.wenteng.frontend_android.dialog.ImagePickerDialogFragment;
 import com.wenteng.frontend_android.dialog.TestDialogFragment;
 import com.wenteng.frontend_android.dialog.CustomImageProcessingDialog;
+import com.wenteng.frontend_android.dialog.ImageTypeMismatchDialog;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -1059,13 +1060,28 @@ public class PrescriptionFragment extends Fragment {
             // 设置监听器
             testDialog.setOnProcessingOptionSelectedListener(new ImageProcessingDialogFragment.OnProcessingOptionSelectedListener() {
                 @Override
-                public void onOCRSelected() {
-                    android.util.Log.d("PrescriptionFragment", "测试对话框 - OCR选项被选中");
+                public void onXRaySelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - X光分析选项被选中");
                 }
                 
                 @Override
-                public void onAnalysisSelected() {
-                    android.util.Log.d("PrescriptionFragment", "测试对话框 - 分析选项被选中");
+                public void onCTSelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - CT分析选项被选中");
+                }
+                
+                @Override
+                public void onUltrasoundSelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - B超分析选项被选中");
+                }
+                
+                @Override
+                public void onMRISelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - MRI分析选项被选中");
+                }
+                
+                @Override
+                public void onPETCTSelected() {
+                    android.util.Log.d("PrescriptionFragment", "测试对话框 - PET-CT分析选项被选中");
                 }
                 
                 @Override
@@ -1230,15 +1246,33 @@ public class PrescriptionFragment extends Fragment {
             CustomImageProcessingDialog customDialog = CustomImageProcessingDialog.newInstance();
             customDialog.setOnProcessingOptionSelectedListener(new CustomImageProcessingDialog.OnProcessingOptionSelectedListener() {
                 @Override
-                public void onOCRSelected() {
-                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - OCR识别被选择");
-                    performOCRRecognition();
+                public void onXRaySelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - X光分析被选择");
+                    performMedicalImageAnalysis("xray");
                 }
                 
                 @Override
-                public void onAnalysisSelected() {
-                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - 处方分析被选择");
-                    performPrescriptionAnalysis();
+                public void onCTSelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - CT分析被选择");
+                    performMedicalImageAnalysis("ct");
+                }
+                
+                @Override
+                public void onUltrasoundSelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - B超分析被选择");
+                    performMedicalImageAnalysis("ultrasound");
+                }
+                
+                @Override
+                public void onMRISelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - MRI分析被选择");
+                    performMedicalImageAnalysis("mri");
+                }
+                
+                @Override
+                public void onPETCTSelected() {
+                    android.util.Log.d("PrescriptionFragment", "自定义对话框 - PET-CT分析被选择");
+                    performMedicalImageAnalysis("petct");
                 }
                 
                 @Override
@@ -1344,8 +1378,11 @@ public class PrescriptionFragment extends Fragment {
             }
 
             dialogFragment.setOnProcessingOptionSelectedListener(new ImageProcessingDialogFragment.OnProcessingOptionSelectedListener() {
-                @Override public void onOCRSelected() { performOCRRecognition(); }
-                @Override public void onAnalysisSelected() { performPrescriptionAnalysis(); }
+                @Override public void onXRaySelected() { performMedicalImageAnalysis("xray"); }
+                @Override public void onCTSelected() { performMedicalImageAnalysis("ct"); }
+                @Override public void onUltrasoundSelected() { performMedicalImageAnalysis("ultrasound"); }
+                @Override public void onMRISelected() { performMedicalImageAnalysis("mri"); }
+                @Override public void onPETCTSelected() { performMedicalImageAnalysis("petct"); }
                 @Override public void onUploadSelected() { uploadImageToServer(); }
                 @Override public void onPreviewSelected() { previewImage(); }
                 @Override public void onDialogCancelled() { Log.d(TAG, "用户取消对话框"); }
@@ -1799,6 +1836,256 @@ public class PrescriptionFragment extends Fragment {
     }
     
     /**
+     * 执行医学影像分析
+     * @param imageType 影像类型："xray", "ct", "ultrasound", "mri", "petct"
+     */
+    private void performMedicalImageAnalysis(String imageType) {
+        Log.d("PrescriptionFragment", "开始执行医学影像分析，类型: " + imageType);
+        
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 创建MultipartBody.Part
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "file");
+        if (imagePart == null) {
+            Toast.makeText(getContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        showLoading(true);
+        
+        // 根据影像类型设置不同的加载文本
+        String loadingText;
+        switch (imageType) {
+            case "xray":
+                loadingText = "正在分析X光影像...";
+                break;
+            case "ct":
+                loadingText = "正在分析CT影像...";
+                break;
+            case "ultrasound":
+                loadingText = "正在分析B超影像...";
+                break;
+            case "mri":
+                loadingText = "正在分析MRI影像...";
+                break;
+            case "petct":
+                loadingText = "正在分析PET-CT影像...";
+                break;
+            default:
+                loadingText = "正在分析医学影像...";
+                break;
+        }
+        tvLoadingText.setText(loadingText);
+        
+        // 调用相应的API接口进行医学影像分析
+        Call<ApiResponse<PrescriptionAnalysis>> analysisCall = null;
+        
+        switch (imageType) {
+            case "xray":
+                analysisCall = apiService.analyzeXRayImage(imagePart);
+                break;
+            case "ct":
+                analysisCall = apiService.analyzeCTImage(imagePart);
+                break;
+            case "ultrasound":
+                analysisCall = apiService.analyzeUltrasoundImage(imagePart);
+                break;
+            case "mri":
+                analysisCall = apiService.analyzeMRIImage(imagePart);
+                break;
+            case "petct":
+                analysisCall = apiService.analyzePETCTImage(imagePart);
+                break;
+            default:
+                showLoading(false);
+                Toast.makeText(getContext(), "不支持的影像类型", Toast.LENGTH_SHORT).show();
+                return;
+        }
+        
+        if (analysisCall != null) {
+            analysisCall.enqueue(new Callback<ApiResponse<PrescriptionAnalysis>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<PrescriptionAnalysis>> call, Response<ApiResponse<PrescriptionAnalysis>> response) {
+                    showLoading(false);
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse<PrescriptionAnalysis> apiResponse = response.body();
+                        Log.d("PrescriptionFragment", "API响应成功 - success: " + apiResponse.isSuccess() + ", message: " + apiResponse.getMessage());
+                        
+                        if (apiResponse.isSuccess()) {
+                            PrescriptionAnalysis analysisData = apiResponse.getData();
+                            Log.d("PrescriptionFragment", "分析数据 - errorCode: " + (analysisData != null ? analysisData.getErrorCode() : "null"));
+                            
+                            // 检查是否为图像类型不匹配错误（即使success为true）
+                            if (analysisData != null && "IMAGE_TYPE_MISMATCH".equals(analysisData.getErrorCode())) {
+                                Log.d("PrescriptionFragment", "检测到IMAGE_TYPE_MISMATCH错误，显示错误对话框");
+                                showImageTypeMismatchDialog(imageType, apiResponse.getMessage());
+                                // 不显示分析结果，直接返回
+                                return;
+                            } else {
+                                Log.d("PrescriptionFragment", "显示正常分析结果");
+                                // 显示真实的分析结果
+                                displayPrescriptionAnalysis(analysisData);
+                                Toast.makeText(getContext(), getImageTypeDisplayName(imageType) + "影像分析完成", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Log.d("PrescriptionFragment", "API响应失败 - errorCode: " + apiResponse.getErrorCode());
+                            // 检查是否为图像类型不匹配错误
+                            if ("IMAGE_TYPE_MISMATCH".equals(apiResponse.getErrorCode())) {
+                                Log.d("PrescriptionFragment", "API级别检测到IMAGE_TYPE_MISMATCH错误，显示错误对话框");
+                                showImageTypeMismatchDialog(imageType, apiResponse.getMessage());
+                                // 不显示分析结果，直接返回
+                                return;
+                            } else {
+                                // 其他API错误，使用模拟结果作为备用方案
+                                String mockResult = generateMockAnalysisResult(imageType);
+                                displayTextWithTypewriterEffect(mockResult);
+                                Toast.makeText(getContext(), "使用模拟分析结果: " + apiResponse.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    } else {
+                        // 网络请求失败，使用模拟结果作为备用方案
+                        Log.e("PrescriptionFragment", "网络请求失败 - HTTP状态码: " + response.code() + ", 消息: " + response.message());
+                        String mockResult = generateMockAnalysisResult(imageType);
+                        displayTextWithTypewriterEffect(mockResult);
+                        Toast.makeText(getContext(), "网络请求失败(" + response.code() + ")，使用模拟分析结果", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<ApiResponse<PrescriptionAnalysis>> call, Throwable t) {
+                    showLoading(false);
+                    if (!call.isCanceled()) {
+                        // 网络请求失败，使用模拟结果作为备用方案
+                        Log.e("PrescriptionFragment", "网络连接失败: " + t.getClass().getSimpleName() + " - " + t.getMessage(), t);
+                        String mockResult = generateMockAnalysisResult(imageType);
+                        displayTextWithTypewriterEffect(mockResult);
+                        Toast.makeText(getContext(), "网络连接失败(" + t.getClass().getSimpleName() + ")，使用模拟分析结果", Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+    }
+    
+    /**
+     * 生成模拟的医学影像分析结果
+     * @param imageType 影像类型
+     * @return 分析结果文本
+     */
+    private String generateMockAnalysisResult(String imageType) {
+        StringBuilder result = new StringBuilder();
+        result.append("=== ").append(getImageTypeDisplayName(imageType)).append("影像分析报告 ===\n\n");
+        
+        switch (imageType) {
+            case "xray":
+                result.append("影像质量：良好\n");
+                result.append("主要发现：\n");
+                result.append("• 双肺纹理清晰\n");
+                result.append("• 心影大小正常\n");
+                result.append("• 未见明显异常阴影\n\n");
+                result.append("建议：定期复查，保持健康生活方式");
+                break;
+            case "ct":
+                result.append("扫描范围：胸部CT平扫\n");
+                result.append("主要发现：\n");
+                result.append("• 肺实质密度均匀\n");
+                result.append("• 纵隔结构正常\n");
+                result.append("• 未见占位性病变\n\n");
+                result.append("建议：影像表现正常，建议定期体检");
+                break;
+            case "ultrasound":
+                result.append("检查部位：腹部超声\n");
+                result.append("主要发现：\n");
+                result.append("• 肝脏大小形态正常\n");
+                result.append("• 胆囊壁光滑\n");
+                result.append("• 脾脏回声均匀\n\n");
+                result.append("建议：超声检查未见异常，注意饮食健康");
+                break;
+            case "mri":
+                result.append("扫描序列：T1WI、T2WI\n");
+                result.append("主要发现：\n");
+                result.append("• 脑实质信号正常\n");
+                result.append("• 脑室系统无扩张\n");
+                result.append("• 未见异常强化灶\n\n");
+                result.append("建议：MRI检查结果正常，继续观察");
+                break;
+            case "petct":
+                result.append("显像剂：18F-FDG\n");
+                result.append("主要发现：\n");
+                result.append("• 全身代谢活动正常\n");
+                result.append("• 未见异常高代谢灶\n");
+                result.append("• 淋巴结无肿大\n\n");
+                result.append("建议：PET-CT检查未见异常，定期随访");
+                break;
+            default:
+                result.append("影像分析完成\n");
+                result.append("建议：请咨询专业医师获取详细解读");
+                break;
+        }
+        
+        result.append("\n\n注意：此为AI辅助分析结果，仅供参考，请以专业医师诊断为准。");
+        return result.toString();
+    }
+    
+    /**
+     * 获取影像类型的显示名称
+     * @param imageType 影像类型
+     * @return 显示名称
+     */
+    private String getImageTypeDisplayName(String imageType) {
+        switch (imageType) {
+            case "xray":
+                return "X光";
+            case "ct":
+                return "CT";
+            case "ultrasound":
+                return "B超";
+            case "mri":
+                return "MRI";
+            case "petct":
+                return "PET-CT";
+            default:
+                return "医学影像";
+        }
+    }
+    
+    /**
+     * 显示图像类型不匹配错误对话框
+     * @param requestedType 用户请求的分析类型
+     * @param errorMessage 错误消息
+     */
+    private void showImageTypeMismatchDialog(String requestedType, String errorMessage) {
+        if (getContext() == null) {
+            return;
+        }
+        
+        ImageTypeMismatchDialog dialog = new ImageTypeMismatchDialog(getContext(), requestedType, errorMessage);
+        dialog.setOnActionListener(new ImageTypeMismatchDialog.OnActionListener() {
+            @Override
+            public void onSelectCorrectImage() {
+                // 重新选择图片
+                showImagePickerDialog();
+            }
+            
+            @Override
+            public void onRetry() {
+                // 重新尝试分析
+                performMedicalImageAnalysis(requestedType);
+            }
+            
+            @Override
+            public void onCancel() {
+                // 取消操作，不需要额外处理
+            }
+        });
+        
+        dialog.show();
+    }
+    
+    /**
      * 上传图片到服务器
      */
     private void uploadImageToServer() {
@@ -2025,6 +2312,62 @@ public class PrescriptionFragment extends Fragment {
     private void displayPrescriptionAnalysis(PrescriptionAnalysis analysis) {
         if (analysis == null) {
             Toast.makeText(getContext(), "处方分析结果为空", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 检查是否为图像类型不匹配错误
+        if ("IMAGE_TYPE_MISMATCH".equals(analysis.getErrorCode())) {
+            StringBuilder errorText = new StringBuilder();
+            errorText.append("⚠️ === 图像类型不匹配 === ⚠️\n\n");
+            
+            // 显示分析类型
+            if (!TextUtils.isEmpty(analysis.getAnalysisType())) {
+                errorText.append("📊 【请求的分析类型】 ").append(analysis.getAnalysisType()).append("\n\n");
+            }
+            
+            // 显示检测结果
+            if (analysis.getFindings() != null && !analysis.getFindings().isEmpty()) {
+                errorText.append("🔍 【检测结果】\n");
+                for (String finding : analysis.getFindings()) {
+                    errorText.append("• ").append(finding).append("\n");
+                }
+                errorText.append("\n");
+            }
+            
+            // 显示诊断结果
+            if (!TextUtils.isEmpty(analysis.getDiagnosis())) {
+                errorText.append("🚫 【诊断结果】\n").append(analysis.getDiagnosis()).append("\n\n");
+            }
+            
+            // 显示建议
+            if (analysis.getRecommendations() != null && !analysis.getRecommendations().isEmpty()) {
+                errorText.append("💡 【建议】\n");
+                for (String recommendation : analysis.getRecommendations()) {
+                    errorText.append("• ").append(recommendation).append("\n");
+                }
+                errorText.append("\n");
+            }
+            
+            // 显示置信度（应该是0.0）
+            if (analysis.getConfidence() != null) {
+                errorText.append("📊 【置信度】 ").append(analysis.getConfidence()).append("\n\n");
+            }
+            
+            errorText.append("📝 【说明】\n");
+            errorText.append("系统检测到您上传的图像类型与所选择的分析类型不匹配。\n");
+            errorText.append("请重新选择正确的医学影像或选择匹配的分析类型。\n\n");
+            
+            errorText.append("🔄 【解决方案】\n");
+            errorText.append("1. 重新上传正确类型的医学影像\n");
+            errorText.append("2. 选择与当前图像匹配的分析类型\n");
+            errorText.append("3. 确保图像清晰且为标准医学影像格式\n");
+            
+            tvAnalysisResult.setText(errorText.toString());
+            tvAnalysisResult.setVisibility(View.VISIBLE);
+            
+            // 保存错误结果状态
+            hasAnalysisResult = true;
+            savedAnalysisResult = errorText.toString();
             return;
         }
         

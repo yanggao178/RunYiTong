@@ -30,8 +30,11 @@ public class ImageProcessingDialogFragment extends DialogFragment {
     
     // 回调接口
     public interface OnProcessingOptionSelectedListener {
-        void onOCRSelected();
-        void onAnalysisSelected();
+        void onXRaySelected();
+        void onCTSelected();
+        void onUltrasoundSelected();
+        void onMRISelected();
+        void onPETCTSelected();
         void onUploadSelected();
         void onPreviewSelected();
         void onDialogCancelled();
@@ -268,15 +271,24 @@ public class ImageProcessingDialogFragment extends DialogFragment {
         
         switch (index) {
             case 0:
-                listener.onOCRSelected();
+                listener.onXRaySelected();
                 break;
             case 1:
-                listener.onAnalysisSelected();
+                listener.onCTSelected();
                 break;
             case 2:
-                listener.onUploadSelected();
+                listener.onUltrasoundSelected();
                 break;
             case 3:
+                listener.onMRISelected();
+                break;
+            case 4:
+                listener.onPETCTSelected();
+                break;
+            case 5:
+                listener.onUploadSelected();
+                break;
+            case 6:
                 listener.onPreviewSelected();
                 break;
         }
@@ -314,40 +326,94 @@ public class ImageProcessingDialogFragment extends DialogFragment {
         Log.d(TAG, "设置增强版点击事件监听器");
         
         try {
-            // OCR识别
-            View ocrCard = view.findViewById(R.id.card_ocr);
-            if (ocrCard != null) {
-                ocrCard.setOnClickListener(v -> {
-                    Log.d(TAG, "用户选择OCR识别");
+            // X光分析
+            View xrayCard = view.findViewById(R.id.card_xray);
+            if (xrayCard != null) {
+                xrayCard.setOnClickListener(v -> {
+                    Log.d(TAG, "用户选择X光分析");
                     addClickAnimation(v);
                     performDelayedAction(() -> {
                         if (listener != null) {
-                            listener.onOCRSelected();
+                            listener.onXRaySelected();
                         }
                         dismissWithAnimation();
                     });
                 });
-                Log.d(TAG, "OCR卡片点击事件设置成功");
+                Log.d(TAG, "X光卡片点击事件设置成功");
             } else {
-                Log.e(TAG, "找不到OCR卡片视图 (R.id.card_ocr)");
+                Log.e(TAG, "找不到X光卡片视图 (R.id.card_xray)");
             }
             
-            // 处方分析
-            View analysisCard = view.findViewById(R.id.card_analysis);
-            if (analysisCard != null) {
-                analysisCard.setOnClickListener(v -> {
-                    Log.d(TAG, "用户选择处方分析");
+            // CT分析
+            View ctCard = view.findViewById(R.id.card_ct);
+            if (ctCard != null) {
+                ctCard.setOnClickListener(v -> {
+                    Log.d(TAG, "用户选择CT分析");
                     addClickAnimation(v);
                     performDelayedAction(() -> {
                         if (listener != null) {
-                            listener.onAnalysisSelected();
+                            listener.onCTSelected();
                         }
                         dismissWithAnimation();
                     });
                 });
-                Log.d(TAG, "分析卡片点击事件设置成功");
+                Log.d(TAG, "CT卡片点击事件设置成功");
             } else {
-                Log.e(TAG, "找不到分析卡片视图 (R.id.card_analysis)");
+                Log.e(TAG, "找不到CT卡片视图 (R.id.card_ct)");
+            }
+            
+            // B超分析
+            View ultrasoundCard = view.findViewById(R.id.card_ultrasound);
+            if (ultrasoundCard != null) {
+                ultrasoundCard.setOnClickListener(v -> {
+                    Log.d(TAG, "用户选择B超分析");
+                    addClickAnimation(v);
+                    performDelayedAction(() -> {
+                        if (listener != null) {
+                            listener.onUltrasoundSelected();
+                        }
+                        dismissWithAnimation();
+                    });
+                });
+                Log.d(TAG, "B超卡片点击事件设置成功");
+            } else {
+                Log.e(TAG, "找不到B超卡片视图 (R.id.card_ultrasound)");
+            }
+            
+            // MRI分析
+            View mriCard = view.findViewById(R.id.card_mri);
+            if (mriCard != null) {
+                mriCard.setOnClickListener(v -> {
+                    Log.d(TAG, "用户选择MRI分析");
+                    addClickAnimation(v);
+                    performDelayedAction(() -> {
+                        if (listener != null) {
+                            listener.onMRISelected();
+                        }
+                        dismissWithAnimation();
+                    });
+                });
+                Log.d(TAG, "MRI卡片点击事件设置成功");
+            } else {
+                Log.e(TAG, "找不到MRI卡片视图 (R.id.card_mri)");
+            }
+            
+            // PET-CT分析
+            View petctCard = view.findViewById(R.id.card_petct);
+            if (petctCard != null) {
+                petctCard.setOnClickListener(v -> {
+                    Log.d(TAG, "用户选择PET-CT分析");
+                    addClickAnimation(v);
+                    performDelayedAction(() -> {
+                        if (listener != null) {
+                            listener.onPETCTSelected();
+                        }
+                        dismissWithAnimation();
+                    });
+                });
+                Log.d(TAG, "PET-CT卡片点击事件设置成功");
+            } else {
+                Log.e(TAG, "找不到PET-CT卡片视图 (R.id.card_petct)");
             }
             
             // 上传到服务器

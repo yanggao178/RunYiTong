@@ -30,8 +30,11 @@ public class CustomImageProcessingDialog extends DialogFragment {
     
     // 回调接口
     public interface OnProcessingOptionSelectedListener {
-        void onOCRSelected();
-        void onAnalysisSelected();
+        void onXRaySelected();
+        void onCTSelected();
+        void onUltrasoundSelected();
+        void onMRISelected();
+        void onPETCTSelected();
         void onUploadSelected();
         void onPreviewSelected();
         void onDialogCancelled();
@@ -147,18 +150,42 @@ public class CustomImageProcessingDialog extends DialogFragment {
         container.setPadding(0, 0, 0, 24);
         
         // 创建选项卡片
-        container.addView(createOptionCard(context, "OCR文字识别", "识别图片中的文字内容", R.drawable.ic_text_recognition, R.drawable.circle_background_light, () -> {
-            Log.d(TAG, "用户选择OCR识别");
+        container.addView(createOptionCard(context, "X光智能分析", "分析X光影像的病理特征", R.drawable.ic_xray, R.drawable.circle_background_light, () -> {
+            Log.d(TAG, "用户选择X光分析");
             if (listener != null) {
-                listener.onOCRSelected();
+                listener.onXRaySelected();
             }
             dismiss();
         }));
         
-        container.addView(createOptionCard(context, "处方智能分析", "分析处方内容和用药建议", R.drawable.ic_analysis, R.drawable.circle_background_accent, () -> {
-            Log.d(TAG, "用户选择处方分析");
+        container.addView(createOptionCard(context, "CT智能分析", "分析CT影像的病理特征", R.drawable.ic_ct, R.drawable.circle_background_accent, () -> {
+            Log.d(TAG, "用户选择CT分析");
             if (listener != null) {
-                listener.onAnalysisSelected();
+                listener.onCTSelected();
+            }
+            dismiss();
+        }));
+        
+        container.addView(createOptionCard(context, "B超智能分析", "分析B超影像的病理特征", R.drawable.ic_ultrasound, R.drawable.circle_background_success, () -> {
+            Log.d(TAG, "用户选择B超分析");
+            if (listener != null) {
+                listener.onUltrasoundSelected();
+            }
+            dismiss();
+        }));
+        
+        container.addView(createOptionCard(context, "MRI智能分析", "分析MRI影像的病理特征", R.drawable.ic_mri, R.drawable.circle_background_warning, () -> {
+            Log.d(TAG, "用户选择MRI分析");
+            if (listener != null) {
+                listener.onMRISelected();
+            }
+            dismiss();
+        }));
+        
+        container.addView(createOptionCard(context, "PET-CT智能分析", "分析PET-CT影像的病理特征", R.drawable.ic_petct, R.drawable.circle_background_light, () -> {
+            Log.d(TAG, "用户选择PET-CT分析");
+            if (listener != null) {
+                listener.onPETCTSelected();
             }
             dismiss();
         }));

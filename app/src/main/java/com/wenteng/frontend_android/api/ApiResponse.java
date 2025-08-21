@@ -12,12 +12,22 @@ public class ApiResponse<T> {
     @SerializedName("data")
     private T data;
     
+    @SerializedName("error_code")
+    private String errorCode;
+    
     public ApiResponse() {}
     
     public ApiResponse(boolean success, String message, T data) {
         this.success = success;
         this.message = message;
         this.data = data;
+    }
+    
+    public ApiResponse(boolean success, String message, T data, String errorCode) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+        this.errorCode = errorCode;
     }
     
     public boolean isSuccess() {
@@ -42,5 +52,13 @@ public class ApiResponse<T> {
     
     public void setData(T data) {
         this.data = data;
+    }
+    
+    public String getErrorCode() {
+        return errorCode;
+    }
+    
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
     }
 }

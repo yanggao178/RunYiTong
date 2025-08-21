@@ -107,6 +107,51 @@ public interface ApiService {
     Call<ApiResponse<ImageUploadResult>> uploadImage(@Part MultipartBody.Part image);
     
     /**
+     * X光影像智能分析
+     * @param image X光影像文件
+     * @return X光分析结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/analyze-xray")
+    Call<ApiResponse<PrescriptionAnalysis>> analyzeXRayImage(@Part MultipartBody.Part image);
+    
+    /**
+     * CT影像智能分析
+     * @param image CT影像文件
+     * @return CT分析结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/analyze-ct")
+    Call<ApiResponse<PrescriptionAnalysis>> analyzeCTImage(@Part MultipartBody.Part image);
+    
+    /**
+     * B超影像智能分析
+     * @param image B超影像文件
+     * @return B超分析结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/analyze-ultrasound")
+    Call<ApiResponse<PrescriptionAnalysis>> analyzeUltrasoundImage(@Part MultipartBody.Part image);
+    
+    /**
+     * MRI影像智能分析
+     * @param image MRI影像文件
+     * @return MRI分析结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/analyze-mri")
+    Call<ApiResponse<PrescriptionAnalysis>> analyzeMRIImage(@Part MultipartBody.Part image);
+    
+    /**
+     * PET-CT影像智能分析
+     * @param image PET-CT影像文件
+     * @return PET-CT分析结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/analyze-petct")
+    Call<ApiResponse<PrescriptionAnalysis>> analyzePETCTImage(@Part MultipartBody.Part image);
+    
+    /**
      * 获取科室列表
      * @return 科室列表响应
      */
