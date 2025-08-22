@@ -123,12 +123,12 @@ class AlipaySignature:
         sorted_params = sorted(params.items())
         
         for k, v in sorted_params:
-            # 对参数值进行URL编码，但保留某些特殊字符
+            # 对参数值进行URL编码
             if isinstance(v, dict) or isinstance(v, list):
-                # JSON对象需要序列化
+                # JSON对象需要序列化后编码
                 encoded_value = quote_plus(json.dumps(v, ensure_ascii=False, separators=(',', ':')), safe='')
             else:
-                # 普通字符串值进行URL编码
+                # 普通字符串值进行URL编码，biz_content已经是JSON字符串
                 encoded_value = quote_plus(str(v), safe='')
             order_parts.append(f"{k}={encoded_value}")
         

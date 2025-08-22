@@ -25,10 +25,15 @@
     
     <!-- 支付宝SDK权限 -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    
+    <!-- 微信支付SDK权限 -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- 在AndroidManifest.xml中添加 -->
     <queries>
         <package android:name="com.tencent.mm" />
+        <package android:name="com.tencent.mobileqq" />
     </queries>
     
     <application
@@ -102,6 +107,19 @@
             android:name=".activity.RegisterActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+            
+        <!-- 微信支付回调Activity -->
+        <activity
+            android:name=".wxapi.WXPayEntryActivity"
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="wx" />
+            </intent-filter>
+        </activity>
             
         <!-- FileProvider for camera functionality -->
         <provider

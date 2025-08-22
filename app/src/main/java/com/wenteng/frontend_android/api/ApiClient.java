@@ -36,8 +36,8 @@ public class ApiClient {
             return "http://10.0.2.15:8000/";
         } else {
             // 真实设备环境，使用局域网IP地址
-           return "http://192.168.0.6:8000/";
-          ///  return "http://8.141.2.166:8000";
+            return "http://192.168.0.5:8000/";
+           // return "http://8.141.2.166:8000";
         }
         
     }
@@ -167,5 +167,12 @@ public class ApiClient {
             apiService = getRetrofitInstance().create(ApiService.class);
         }
         return apiService;
+    }
+    
+    /**
+     * 获取支付服务实例（与API服务相同）
+     */
+    public static ApiService getPaymentService() {
+        return getApiService();
     }
 }

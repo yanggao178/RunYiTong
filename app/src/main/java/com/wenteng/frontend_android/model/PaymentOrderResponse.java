@@ -79,6 +79,9 @@ public class PaymentOrderResponse {
         @SerializedName("unit_price")
         private double unitPrice;
         
+        @SerializedName("app_pay_params")
+        private Map<String, String> appPayParams;
+        
         public OrderInfo() {}
         
         // Getters and Setters
@@ -136,6 +139,14 @@ public class PaymentOrderResponse {
         
         public void setUnitPrice(double unitPrice) {
             this.unitPrice = unitPrice;
+        }
+        
+        public Map<String, String> getAppPayParams() {
+            return appPayParams;
+        }
+        
+        public void setAppPayParams(Map<String, String> appPayParams) {
+            this.appPayParams = appPayParams;
         }
     }
 }

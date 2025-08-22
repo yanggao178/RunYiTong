@@ -243,4 +243,14 @@ public interface ApiService {
     Call<ApiResponse<PaymentOrderResponse>> createAlipayOrder(
         @Body PaymentOrderRequest request
     );
+    
+    /**
+     * 创建微信支付订单
+     * @param request 支付订单请求参数
+     * @return 支付订单响应
+     */
+    @POST("api/v1/payments/wechat/create-order")
+    Call<ApiResponse<PaymentOrderResponse>> createWechatOrder(
+        @Body PaymentOrderRequest request
+    );
 }

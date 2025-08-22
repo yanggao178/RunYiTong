@@ -53,8 +53,8 @@ class AlipayOrderBuilder:
             "out_trade_no": out_trade_no
         }
         
-        # 支付宝要求严格的UTF-8编码，确保中文字符正确编码
-        return json.dumps(biz_content, ensure_ascii=True, separators=(',', ':'))
+        # 支付宝要求严格的UTF-8编码，保持中文字符原样
+        return json.dumps(biz_content, ensure_ascii=False, separators=(',', ':'))
     
     @staticmethod
     def build_order_params(app_id: str, product_name: str, product_description: str,

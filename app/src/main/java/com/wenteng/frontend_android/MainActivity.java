@@ -254,15 +254,15 @@ public class MainActivity extends AppCompatActivity {
      */
     private void restoreLastFragment() {
         String lastFragmentName = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
-            .getString(KEY_LAST_FRAGMENT, FRAGMENT_PRODUCT);
+            .getString(KEY_LAST_FRAGMENT, FRAGMENT_PRESCRIPTION);
         
         Fragment fragmentToShow = getFragmentByName(lastFragmentName);
         if (fragmentToShow != null) {
             showFragment(fragmentToShow);
             android.util.Log.d("MainActivity", "Restored last fragment: " + lastFragmentName);
         } else {
-            // 如果找不到对应Fragment，显示默认的商品Fragment
-            showFragment(productFragment);
+            // 如果找不到对应Fragment，显示默认的开方Fragment
+            showFragment(prescriptionFragment);
             android.util.Log.d("MainActivity", "Fallback to default fragment");
         }
     }

@@ -27,12 +27,21 @@ import com.alipay.sdk.app.PayTask;
 import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.model.Product;
 
+// 微信支付SDK导入
+import com.tencent.mm.opensdk.modelpay.PayReq;
+import com.tencent.mm.opensdk.openapi.IWXAPI;
+import com.tencent.mm.opensdk.openapi.WXAPIFactory;
+
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
     private static final int SDK_PAY_FLAG = 1;
+    private static final int WECHAT_PAY_REQUEST_CODE = 2;
+    
+    // 微信支付API
+    private IWXAPI wxApi;
     
     private ImageView productImage;
     private TextView productTitle;
@@ -56,13 +65,30 @@ public class ProductDetailActivity extends AppCompatActivity {
                      */
                     String resultInfo = payResult.getResult();// 同步返回需要验证的信息
                     String resultStatus = payResult.getResultStatus();
+                    String memo = payResult.getMemo();
+                    
+                    android.util.Log.d("AlipayResult", "支付结果: " + payResult.toString());
+                    
                     // 判断resultStatus 为9000则代表支付成功
                     if (TextUtils.equals(resultStatus, "9000")) {
                         // 该笔订单是否真实支付成功，需要依赖服务端的异步通知。
                         onPaymentSuccess("支付宝支付");
                     } else {
-                        // 该笔订单真实的支付结果，需要依赖服务端的异步通知。
-                        Toast.makeText(ProductDetailActivity.this, "支付失败", Toast.LENGTH_SHORT).show();
+                        // 显示详细的错误信息
+                        String errorMessage = "支付失败";
+                        if (!TextUtils.isEmpty(memo)) {
+                            errorMessage = memo;
+                        } else if (TextUtils.equals(resultStatus, "4000")) {
+                            errorMessage = "订单支付失败";
+                        } else if (TextUtils.equals(resultStatus, "6001")) {
+                            errorMessage = "用户中途取消";
+                        } else if (TextUtils.equals(resultStatus, "6002")) {
+                            errorMessage = "网络连接出错";
+                        } else if (TextUtils.equals(resultStatus, "8000")) {
+                            errorMessage = "支付结果因为支付渠道原因或者系统原因还在处理中";
+                        }
+                        
+                        Toast.makeText(ProductDetailActivity.this, errorMessage, Toast.LENGTH_LONG).show();
                     }
                     break;
                 }
@@ -76,9 +102,22 @@ public class ProductDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_detail);
-
+        
+        // 初始化微信API
+        initWechatAPI();
+        
         initViews();
         initData();
+    }
+    
+    /**
+     * 初始化微信API
+     */
+    private void initWechatAPI() {
+        // 微信AppID，需要与后端配置和WXPayEntryActivity保持一致
+        String wxAppId = "wx1234567890abcdef";
+        wxApi = WXAPIFactory.createWXAPI(this, wxAppId, true);
+        wxApi.registerApp(wxAppId);
     }
 
     private void initViews() {
@@ -389,6 +428,14 @@ public class ProductDetailActivity extends AppCompatActivity {
           void onSuccess(String orderString, PaymentOrderResponse.OrderInfo orderInfo);
           void onError(String errorMessage);
       }
+      
+      /**
+       * 微信支付订单信息回调接口
+       */
+      private interface WechatOrderInfoCallback {
+          void onSuccess(PaymentOrderResponse.OrderInfo orderInfo);
+          void onError(String errorMessage);
+      }
 
      /**
       * 支付结果处理类
@@ -446,14 +493,144 @@ public class ProductDetailActivity extends AppCompatActivity {
       * 处理微信支付
       */
      private void processWechatPayment() {
-         // 这里可以集成微信支付SDK进行实际支付
-         // 目前模拟支付流程
+         Toast.makeText(this, "正在启动微信支付...", Toast.LENGTH_SHORT).show();
          
-         // 模拟微信支付处理时间
-         new android.os.Handler().postDelayed(() -> {
-             // 模拟支付成功
-             onPaymentSuccess("微信支付");
-         }, 2000); // 模拟2秒的支付处理时间
+         // 显示加载对话框
+         android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+         progressDialog.setMessage("正在创建微信订单...");
+         progressDialog.setCancelable(true);
+         progressDialog.setOnCancelListener(dialog -> {
+             Toast.makeText(this, "订单创建已取消", Toast.LENGTH_SHORT).show();
+         });
+         progressDialog.show();
+         
+         // 设置超时处理
+         android.os.Handler timeoutHandler = new android.os.Handler();
+         Runnable timeoutRunnable = () -> {
+             if (progressDialog.isShowing()) {
+                 progressDialog.dismiss();
+                 Toast.makeText(this, "订单创建超时，请重试", Toast.LENGTH_LONG).show();
+             }
+         };
+         timeoutHandler.postDelayed(timeoutRunnable, 30000); // 30秒超时
+         
+         // 从服务器获取微信订单信息
+         getWechatOrderInfoFromServer(1, new WechatOrderInfoCallback() {
+             @Override
+             public void onSuccess(PaymentOrderResponse.OrderInfo orderInfo) {
+                 // 取消超时处理
+                 timeoutHandler.removeCallbacks(timeoutRunnable);
+                 // 关闭加载对话框
+                 if (progressDialog.isShowing()) {
+                     progressDialog.dismiss();
+                 }
+                 
+                 // 启动微信支付
+                 startWechatPay(orderInfo);
+             }
+             
+             @Override
+             public void onError(String errorMessage) {
+                 // 取消超时处理
+                 timeoutHandler.removeCallbacks(timeoutRunnable);
+                 // 关闭加载对话框
+                 if (progressDialog.isShowing()) {
+                     progressDialog.dismiss();
+                 }
+                 
+                 Toast.makeText(ProductDetailActivity.this, "创建微信订单失败: " + errorMessage, Toast.LENGTH_LONG).show();
+             }
+         });
+     }
+     
+     /**
+      * 从服务器获取微信订单信息
+      */
+     private void getWechatOrderInfoFromServer(int quantity, WechatOrderInfoCallback callback) {
+         PaymentOrderRequest request = new PaymentOrderRequest();
+         request.setProductId(currentProduct.getId());
+         request.setQuantity(quantity);
+         
+         Call<ApiResponse<PaymentOrderResponse>> call = ApiClient.getPaymentService().createWechatOrder(request);
+         call.enqueue(new Callback<ApiResponse<PaymentOrderResponse>>() {
+             @Override
+             public void onResponse(Call<ApiResponse<PaymentOrderResponse>> call, Response<ApiResponse<PaymentOrderResponse>> response) {
+                 if (response.isSuccessful() && response.body() != null) {
+                     ApiResponse<PaymentOrderResponse> apiResponse = response.body();
+                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                         PaymentOrderResponse.OrderInfo orderInfo = apiResponse.getData().getOrderInfo();
+                         if (orderInfo != null) {
+                             callback.onSuccess(orderInfo);
+                         } else {
+                             callback.onError("订单信息为空");
+                         }
+                     } else {
+                         String errorMsg = apiResponse.getMessage() != null ? apiResponse.getMessage() : "创建订单失败";
+                         callback.onError(errorMsg);
+                     }
+                 } else {
+                     callback.onError("网络请求失败: " + response.code());
+                 }
+             }
+             
+             @Override
+             public void onFailure(Call<ApiResponse<PaymentOrderResponse>> call, Throwable t) {
+                 callback.onError("网络连接失败: " + t.getMessage());
+             }
+         });
+     }
+     
+     /**
+      * 启动微信支付
+      */
+     private void startWechatPay(PaymentOrderResponse.OrderInfo orderInfo) {
+         if (!wxApi.isWXAppInstalled()) {
+             Toast.makeText(this, "未安装微信客户端", Toast.LENGTH_SHORT).show();
+             return;
+         }
+         
+         if (!wxApi.isWXAppSupportAPI()) {
+             Toast.makeText(this, "微信客户端版本不支持", Toast.LENGTH_SHORT).show();
+             return;
+         }
+         
+         // 获取APP支付参数
+         Map<String, String> appPayParams = orderInfo.getAppPayParams();
+         if (appPayParams == null) {
+             Toast.makeText(this, "支付参数错误", Toast.LENGTH_SHORT).show();
+             return;
+         }
+         
+         // 构建微信支付请求
+         PayReq payReq = new PayReq();
+         payReq.appId = appPayParams.get("appid");
+         payReq.partnerId = appPayParams.get("partnerid");
+         payReq.prepayId = appPayParams.get("prepayid");
+         payReq.packageValue = appPayParams.get("package");
+         payReq.nonceStr = appPayParams.get("noncestr");
+         payReq.timeStamp = appPayParams.get("timestamp");
+         payReq.sign = appPayParams.get("sign");
+         
+         // 发起微信支付
+         boolean result = wxApi.sendReq(payReq);
+         if (!result) {
+             Toast.makeText(this, "启动微信支付失败", Toast.LENGTH_SHORT).show();
+         }
+     }
+     
+     @Override
+     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+         super.onActivityResult(requestCode, resultCode, data);
+         
+         if (requestCode == WECHAT_PAY_REQUEST_CODE) {
+             if (resultCode == RESULT_OK) {
+                 // 微信支付成功
+                 onPaymentSuccess("微信支付");
+             } else {
+                 // 微信支付失败或取消
+                 Toast.makeText(this, "微信支付已取消", Toast.LENGTH_SHORT).show();
+             }
+         }
      }
 
      /**
