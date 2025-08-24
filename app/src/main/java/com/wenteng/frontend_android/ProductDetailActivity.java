@@ -589,10 +589,10 @@ public class ProductDetailActivity extends AppCompatActivity {
              return;
          }
          
-         if (!wxApi.isWXAppSupportAPI()) {
-             Toast.makeText(this, "微信客户端版本不支持", Toast.LENGTH_SHORT).show();
-             return;
-         }
+         if (wxApi.getWXAppSupportAPI() < 0x21020001) {
+            Toast.makeText(this, "微信客户端版本不支持", Toast.LENGTH_SHORT).show();
+            return;
+        }
          
          // 获取APP支付参数
          Map<String, String> appPayParams = orderInfo.getAppPayParams();

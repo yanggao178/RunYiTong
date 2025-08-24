@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/dialog_background">
+
+    <!-- 错误图标和标题 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_error"
+            android:tint="@color/text_error"
+            android:layout_marginEnd="12dp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="资源不存在"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_error" />
+
+    </LinearLayout>
+
+    <!-- 分割线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        android:layout_marginBottom="16dp" />
+
+    <!-- 错误消息 -->
+    <TextView
+        android:id="@+id/error_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="抱歉，您要访问的PDF文件不存在或已被删除。"
+        android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        android:lineSpacingExtra="4dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 详细信息 -->
+    <TextView
+        android:id="@+id/error_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="可能的原因：\n• 文件已被移动或删除\n• 存储权限不足\n• 文件路径无效"
+        android:textSize="14sp"
+        android:textColor="@color/text_secondary"
+        android:lineSpacingExtra="2dp"
+        android:layout_marginBottom="20dp" />
+
+    <!-- 按钮区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btn_retry"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="重新下载"
+            android:textSize="14sp"
+            android:textColor="@color/primary_color"
+            android:background="@drawable/button_retry_background"
+            android:paddingHorizontal="16dp"
+            android:layout_marginEnd="12dp"
+            android:minWidth="80dp" />
+
+        <Button
+            android:id="@+id/btn_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="确定"
+            android:textSize="14sp"
+            android:textColor="@android:color/white"
+            android:background="@drawable/button_primary_background"
+            android:paddingHorizontal="16dp"
+            android:minWidth="80dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

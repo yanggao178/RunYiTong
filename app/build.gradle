@@ -96,5 +96,8 @@ dependencies {
     
     // 微信支付SDK
     implementation 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:6.8.0'
+    
+    // PDF生成库
+    implementation 'com.itextpdf:itextg:5.5.10'
 
 }

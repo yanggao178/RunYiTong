@@ -47,6 +47,8 @@ class BookBase(BaseModel):
     category: Optional[str] = None
     description: Optional[str] = None
     cover_url: Optional[str] = None
+    pdf_file_path: Optional[str] = None
+    file_size: Optional[int] = None
     publish_date: Optional[datetime] = None
 
 class BookCreate(BookBase):
@@ -58,9 +60,36 @@ class BookUpdate(BaseModel):
     category: Optional[str] = None
     description: Optional[str] = None
     cover_url: Optional[str] = None
+    pdf_file_path: Optional[str] = None
+    file_size: Optional[int] = None
     publish_date: Optional[datetime] = None
 
-class Book(BookBase):
+class BookSchema(BookBase):
+    id: int
+    created_time: datetime
+    updated_time: datetime
+    
+    class Config:
+        from_attributes = True
+
+# 图书页面相关模式
+class BookPageBase(BaseModel):
+    book_id: int
+    page_number: int
+    title: Optional[str] = None
+    content: Optional[str] = None
+    image_url: Optional[str] = None
+
+class BookPageCreate(BookPageBase):
+    pass
+
+class BookPageUpdate(BaseModel):
+    page_number: Optional[int] = None
+    title: Optional[str] = None
+    content: Optional[str] = None
+    image_url: Optional[str] = None
+
+class BookPage(BookPageBase):
     id: int
     created_time: datetime
     updated_time: datetime

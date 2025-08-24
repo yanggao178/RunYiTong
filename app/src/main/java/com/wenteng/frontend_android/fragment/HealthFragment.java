@@ -1,5 +1,6 @@
 package com.wenteng.frontend_android.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.adapter.BookshelfAdapter;
+
 import com.wenteng.frontend_android.model.Book;
 import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiResponse;
@@ -122,14 +124,12 @@ public class HealthFragment extends Fragment {
         chineseMedicineClearSearch = view.findViewById(R.id.chinese_medicine_clear_search);
         westernMedicineClearSearch = view.findViewById(R.id.western_medicine_clear_search);
         
-        // 设置书架网格布局管理器
+        // 设置网格布局管理器
         if (chineseMedicineBooksRecyclerView != null) {
-            GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3); // 3列网格
-            chineseMedicineBooksRecyclerView.setLayoutManager(gridLayoutManager);
+            chineseMedicineBooksRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         }
         if (westernMedicineBooksRecyclerView != null) {
-            GridLayoutManager gridLayoutManager = new GridLayoutManager(getContext(), 3); // 3列网格
-            westernMedicineBooksRecyclerView.setLayoutManager(gridLayoutManager);
+            westernMedicineBooksRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
         }
         
         // 设置搜索功能
@@ -602,18 +602,17 @@ public class HealthFragment extends Fragment {
     private void handleBookClick(Book book, String category) {
         Log.d("HealthFragment", "书籍点击: " + book.getName() + " (" + category + ")");
         
-        // 显示书籍详情
-        String message = String.format("《%s》\n作者：%s\n分类：%s\n\n%s", 
-                book.getName(), 
-                book.getAuthor(), 
-                category,
-                book.getDescription() != null ? book.getDescription() : "暂无描述");
+        // 跳转到书籍详情页面，实现分页传输功能
+        Intent intent = new Intent(getActivity(), com.wenteng.frontend_android.activity.BookDetailActivity.class);
+        intent.putExtra("book_id", book.getId());
+        intent.putExtra("book_name", book.getName());
+        intent.putExtra("book_author", book.getAuthor());
+        intent.putExtra("book_description", book.getDescription());
+        intent.putExtra("book_cover_url", book.getCoverUrl());
+        intent.putExtra("book_category", category);
         
-        showMessage("书籍详情：" + book.getName());
+        startActivity(intent);
         
-        // TODO: 这里可以扩展为跳转到书籍详情页面
-        // 例如：Intent intent = new Intent(getActivity(), BookDetailActivity.class);
-        // intent.putExtra("book_id", book.getId());
-        // startActivity(intent);
+        Log.d("HealthFragment", "启动书籍详情页面，书籍ID: " + book.getId());
     }
 }

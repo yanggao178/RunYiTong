@@ -9,6 +9,8 @@
     <!-- 相机和存储权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <!-- Android 11+ 需要管理外部存储权限（如果需要访问其他应用的文件） -->
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE" tools:ignore="ScopedStorage" />
     
     <!-- 定位权限 -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -65,6 +67,13 @@
             android:name=".ProductDetailActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.BookDetailActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+            
+
             
         <activity
             android:name=".activity.OrderActivity"

@@ -17,6 +17,7 @@ import com.bumptech.glide.request.RequestOptions;
 import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.model.Book;
 
+
 import java.util.List;
 
 public class BookshelfAdapter extends RecyclerView.Adapter<BookshelfAdapter.BookViewHolder> {
@@ -97,7 +98,7 @@ public class BookshelfAdapter extends RecyclerView.Adapter<BookshelfAdapter.Book
         public BookViewHolder(@NonNull View itemView) {
             super(itemView);
             bookCover = itemView.findViewById(R.id.book_cover);
-            bookName = itemView.findViewById(R.id.book_name);
+            bookName = itemView.findViewById(R.id.book_title);
             bookAuthor = itemView.findViewById(R.id.book_author);
         }
     }

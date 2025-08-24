@@ -46,8 +46,9 @@
     <color name="button_primary_gradient_end">#764ba2</color>
     <color name="button_secondary_background">#F8F9FA</color>
     <color name="text_hint">#6C757D</color>
-    <color name="text_error">#DC3545</color>
+    <color name="text_error">#F44336</color>
     <color name="text_success">#28A745</color>
+    <color name="progress_background">#E0E0E0</color>
     
     <!-- 对话框相关颜色 -->
     <color name="warning_color">#FF9800</color>
@@ -75,4 +76,14 @@
     <color name="primary_blue">#2196F3</color>
     <color name="accent_green">#4CAF50</color>
     <color name="card_background_secondary">#F8F9FA</color>
+    
+    <!-- PDF阅读器颜色 -->
+    <color name="pdf_reader_background">#F5F5F5</color>
+    <color name="pdf_page_background">#FFFFFF</color>
+    <color name="pdf_toolbar_background">#FFFFFF</color>
+    <color name="pdf_control_background">#FFFFFF</color>
+    
+    <!-- 缺失的颜色资源 -->
+    <color name="background_color">#F5F5F5</color>
+    <color name="surface_color">#FFFFFF</color>
 </resources>

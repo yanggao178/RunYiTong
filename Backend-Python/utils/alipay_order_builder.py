@@ -39,7 +39,7 @@ class AlipayOrderBuilder:
         out_trade_no = AlipayOrderBuilder.generate_out_trade_no()
         formatted_amount = AlipayOrderBuilder.format_amount(total_amount)
         
-        # 构建商品标题（包含数量信息）
+        # 构建商品标题on（包含数量信息）
         subject = f"{product_name}"
         if quantity > 1:
             subject += f"({quantity}件)"

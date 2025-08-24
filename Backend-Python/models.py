@@ -48,9 +48,30 @@ class Book(Base):
     category = Column(String(100), index=True)
     description = Column(Text)
     cover_url = Column(String(500))
+    pdf_file_path = Column(String(500))  # PDF文件路径
+    file_size = Column(Integer)  # 文件大小（字节）
     publish_date = Column(DateTime)
     created_time = Column(DateTime, default=datetime.utcnow)
     updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 关联关系
+    pages = relationship("BookPage", back_populates="book")
+
+# 图书页面模型
+class BookPage(Base):
+    __tablename__ = "book_pages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    book_id = Column(Integer, ForeignKey("books.id"), nullable=False, index=True)
+    page_number = Column(Integer, nullable=False, index=True)
+    title = Column(String(255))
+    content = Column(Text)
+    image_url = Column(String(500))
+    created_time = Column(DateTime, default=datetime.utcnow)
+    updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 关联关系
+    book = relationship("Book", back_populates="pages")
 
 # 用户模型
 class User(Base):

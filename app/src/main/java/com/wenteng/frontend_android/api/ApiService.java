@@ -2,6 +2,7 @@ package com.wenteng.frontend_android.api;
 
 import com.wenteng.frontend_android.model.Product;
 import com.wenteng.frontend_android.model.Book;
+import com.wenteng.frontend_android.model.BookPage;
 import com.wenteng.frontend_android.model.SymptomAnalysis;
 import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
@@ -20,6 +21,8 @@ import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Multipart;
 import retrofit2.http.Part;
 import retrofit2.http.Body;
+import retrofit2.http.Streaming;
+import okhttp3.ResponseBody;
 import java.util.List;
 
 public interface ApiService {
@@ -63,12 +66,35 @@ public interface ApiService {
     Call<ApiResponse<List<Book>>> getWesternMedicineBooks();
     
     /**
-     * 获取单个图书详情
-     * @param bookId 图书ID
-     * @return 图书详情响应
+     * 获取单个书籍详情
+     * @param bookId 书籍ID
+     * @return 书籍详情响应
      */
     @GET("api/v1/books/{id}")
     Call<ApiResponse<Book>> getBook(@Path("id") int bookId);
+    
+    /**
+     * 获取书籍页面内容（分页）
+     * @param bookId 书籍ID
+     * @param page 页码
+     * @param size 每页数量
+     * @return 书籍页面列表响应
+     */
+    @GET("api/v1/books/{id}/pages")
+    Call<ApiResponse<List<BookPage>>> getBookPages(
+        @Path("id") int bookId,
+        @Query("page") int page,
+        @Query("size") int size
+    );
+    
+    /**
+     * 下载PDF文件
+     * @param bookId 书籍ID
+     * @return PDF文件流
+     */
+    @Streaming
+    @GET("api/v1/books/{id}/download")
+    Call<ResponseBody> downloadBookPdf(@Path("id") int bookId);
     
     /**
      * AI症状分析

@@ -73,7 +73,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -163,37 +163,14 @@
 
             </LinearLayout>
 
-            <!-- 中医书架容器 -->
-            <FrameLayout
+            <!-- 中医书籍RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/chinese_medicine_books"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
-
-                <!-- 固定的书架背景 -->
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bookshelf_background"
-                    android:scaleType="fitXY" />
-
-                <!-- 书架层板 -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="3dp"
-                    android:background="#654321"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginHorizontal="20dp" />
-
-                <!-- 书籍RecyclerView -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/chinese_medicine_books"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clipToPadding="false"
-                    android:padding="12dp"
-                    android:background="@android:color/transparent" />
-
-            </FrameLayout>
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:padding="8dp" />
 
         </LinearLayout>
 
@@ -212,7 +189,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:padding="16dp">
 
@@ -302,37 +279,14 @@
 
             </LinearLayout>
 
-            <!-- 西医书架容器 -->
-            <FrameLayout
+            <!-- 西医书籍RecyclerView -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/western_medicine_books"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1">
-
-                <!-- 固定的书架背景 -->
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@drawable/bookshelf_background"
-                    android:scaleType="fitXY" />
-
-                <!-- 书架层板 -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="3dp"
-                    android:background="#654321"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginHorizontal="20dp" />
-
-                <!-- 书籍RecyclerView -->
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/western_medicine_books"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:clipToPadding="false"
-                    android:padding="12dp"
-                    android:background="@android:color/transparent" />
-
-            </FrameLayout>
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:padding="8dp" />
 
         </LinearLayout>
 

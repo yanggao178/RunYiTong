@@ -1,6 +1,7 @@
 package com.wenteng.frontend_android.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -34,6 +35,12 @@ public class LoginActivity extends AppCompatActivity {
     
     // Loading indicators
     private ProgressBar pbLoginLoading, pbSendCodeLoading;
+    
+    // SharedPreferences相关
+    private SharedPreferences sharedPreferences;
+    private static final String PREFS_NAME = "user_login_state";
+    private static final String KEY_IS_LOGGED_IN = "is_logged_in";
+    private static final String KEY_USERNAME = "username";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +65,9 @@ public class LoginActivity extends AppCompatActivity {
     
     private void initViewsRobust() {
         Log.d("LoginActivity", "Starting robust view initialization...");
+        
+        // 初始化SharedPreferences
+        sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         
         // 初始化TextInputLayout - 使用安全的方式
         tilUsername = findViewById(R.id.til_username);
@@ -505,6 +515,9 @@ public class LoginActivity extends AppCompatActivity {
             
             // 简单的演示登录逻辑
             if (username.equals("admin") && password.equals("123456")) {
+                // 保存登录状态
+                saveLoginState(true, username);
+                
                 Toast.makeText(this, "登录成功！", Toast.LENGTH_SHORT).show();
                 
                 // 跳转到主页面
@@ -536,6 +549,9 @@ public class LoginActivity extends AppCompatActivity {
         
         // 模拟验证码验证（实际应用中应该调用后端API验证）
         if (verificationCode.equals("123456")) {
+            // 保存登录状态，使用手机号作为用户名
+            saveLoginState(true, phone);
+            
             Toast.makeText(this, "手机验证码登录成功！", Toast.LENGTH_SHORT).show();
             
             // 跳转到主页面
@@ -1077,6 +1093,19 @@ public class LoginActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             Log.e("LoginActivity", "Error restoring instance state", e);
+        }
+    }
+    
+    /**
+     * 保存登录状态到SharedPreferences
+     */
+    private void saveLoginState(boolean isLoggedIn, String username) {
+        if (sharedPreferences != null) {
+            sharedPreferences.edit()
+                    .putBoolean(KEY_IS_LOGGED_IN, isLoggedIn)
+                    .putString(KEY_USERNAME, username)
+                    .apply();
+            Log.d("LoginActivity", "登录状态已保存: " + isLoggedIn + ", 用户名: " + username);
         }
     }
 }
