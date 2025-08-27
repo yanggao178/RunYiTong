@@ -777,7 +777,7 @@ def analyze_medical_image_dashscope(
     image_type: str,
     patient_info: Optional[Dict[str, Any]] = None,
     api_key: Optional[str] = None,
-    model: str = "qwen-vl-plus",
+    model: str = "qwen-vl-max",
     max_tokens: int = 4000,
     max_retries: int = 3
 ) -> MedicalImageAnalysis:
@@ -806,7 +806,10 @@ def analyze_medical_image_dashscope(
     
     if not os.path.exists(image_path):
         raise ValueError(f"图像文件不存在: {image_path}")
-    
+
+    extension = os.path.splitext(image_path)[1]
+    if extension not in ['.jpg', '.jpeg', '.png']:
+        raise ValueError("仅支持JPG/JPEG/PNG图像文件")
     # 读取图像文件并转换为Base64
     try:
         with open(image_path, "rb") as image_file:
@@ -918,7 +921,7 @@ def analyze_medical_image_dashscope(
                             {
                                 "type": "image_url",
                                 "image_url": {
-                                    "url": f"../routers/{image_path}"
+                                    "url": f"data:image/{extension[1:]};base64,{image_data}"
                                 },
                             },
                             {"type": "text", "text":prompt},
@@ -928,7 +931,7 @@ def analyze_medical_image_dashscope(
                 temperature=0.1,  # 降低随机性，提高响应速度
                 max_tokens=max_tokens,  # 限制最大token数，提高响应速度
                 response_format={"type": "json_object"},
-                timeout=60  # 设置60秒超时
+                timeout=120  # 设置60秒超时
             )
             print(completion.choices[0].message.content)
             # 获取AI响应内容

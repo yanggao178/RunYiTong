@@ -322,14 +322,25 @@ async def analyze_medical_image(image: UploadFile, image_type: str):
             # )
             
             # 保存临时图像文件
-            temp_image_path = f"temp_image_{uuid.uuid4().hex}.jpg"
+            extension = os.path.splitext(image.filename)[1]
+            temp_image_path = f"temp_image_{uuid.uuid4().hex}{extension}"
             with open(temp_image_path, "wb") as temp_file:
                 temp_file.write(content)
             
             try:
+                # 转换影像类型格式：小写转换为后端期望的格式
+                image_type_mapping = {
+                    "xray": "X-ray",
+                    "ct": "CT", 
+                    "ultrasound": "Ultrasound",
+                    "mri": "MRI",
+                    "petct": "PET-CT"
+                }
+                backend_image_type = image_type_mapping.get(image_type, image_type)
+                
                 ai_result = analyze_medical_image_dashscope(
                     image_path=temp_image_path,
-                    image_type=image_type,
+                    image_type=backend_image_type,
                     patient_info=None
                 )
             finally:
