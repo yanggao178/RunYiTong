@@ -40,6 +40,11 @@ import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiResponse;
 import com.wenteng.frontend_android.api.ApiService;
+import com.wenteng.frontend_android.utils.SymptomsHistoryManager;
+import com.wenteng.frontend_android.adapter.SymptomsHistoryAdapter;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.cardview.widget.CardView;
 import com.wenteng.frontend_android.model.SymptomAnalysis;
 import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
@@ -88,6 +93,14 @@ public class PrescriptionFragment extends Fragment {
     private ActivityResultLauncher<String> cameraPermissionLauncher;
     private Uri photoUri;
     
+    // 历史记录相关
+    private SymptomsHistoryManager historyManager;
+    private SymptomsHistoryAdapter historyAdapter;
+    private RecyclerView rvHistory;
+    private CardView cvHistoryDropdown;
+    private TextView tvClearHistory;
+    private boolean isHistoryDropdownVisible = false;
+    
     // 状态保存相关
     private static final String KEY_SYMPTOMS_TEXT = "symptoms_text";
     private static final String KEY_ANALYSIS_RESULT = "analysis_result";
@@ -114,6 +127,20 @@ public class PrescriptionFragment extends Fragment {
         tvLoadingText = view.findViewById(R.id.tv_loading_text);
         btnSelectImageSource = view.findViewById(R.id.btn_select_image_source);
         btnUploadPrescription = view.findViewById(R.id.btn_upload_prescription);
+        
+        // 初始化历史记录相关控件
+        cvHistoryDropdown = view.findViewById(R.id.cv_history_dropdown);
+        rvHistory = view.findViewById(R.id.rv_history);
+        tvClearHistory = view.findViewById(R.id.tv_clear_history);
+        
+        // 初始化历史记录管理器
+        historyManager = new SymptomsHistoryManager(getContext());
+        
+        // 设置历史记录列表
+        setupHistoryRecyclerView();
+        
+        // 设置历史记录功能
+        setupHistoryFeatures();
         
         // 设置症状输入框的监听器
         etSymptoms.setOnEditorActionListener((v, actionId, event) -> {
@@ -153,6 +180,110 @@ public class PrescriptionFragment extends Fragment {
         restoreState();
         
         return view;
+    }
+    
+    /**
+     * 设置历史记录RecyclerView
+     */
+    private void setupHistoryRecyclerView() {
+        historyAdapter = new SymptomsHistoryAdapter(historyManager.getHistory());
+        rvHistory.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvHistory.setAdapter(historyAdapter);
+        
+        // 设置历史记录项点击事件
+        historyAdapter.setOnItemClickListener(symptom -> {
+            etSymptoms.setText(symptom);
+            etSymptoms.setSelection(symptom.length()); // 将光标移到末尾
+            hideHistoryDropdown();
+        });
+        
+        // 设置历史记录项删除事件
+        historyAdapter.setOnItemDeleteListener((symptom, position) -> {
+            historyManager.removeSymptom(symptom);
+            historyAdapter.updateHistory(historyManager.getHistory());
+            
+            // 如果没有历史记录了，隐藏下拉框
+            if (!historyManager.hasHistory()) {
+                hideHistoryDropdown();
+            }
+        });
+    }
+    
+    /**
+     * 设置历史记录功能
+     */
+    private void setupHistoryFeatures() {
+        // 设置症状输入框的焦点监听器
+        etSymptoms.setOnFocusChangeListener((v, hasFocus) -> {
+            if (hasFocus && historyManager.hasHistory()) {
+                showHistoryDropdown();
+            } else if (!hasFocus) {
+                // 延迟隐藏，给用户时间点击历史记录项
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (!etSymptoms.hasFocus()) {
+                        hideHistoryDropdown();
+                    }
+                }, 200);
+            }
+        });
+        
+        // 设置症状输入框的点击监听器
+        etSymptoms.setOnClickListener(v -> {
+            if (historyManager.hasHistory()) {
+                showHistoryDropdown();
+            }
+        });
+        
+        // 设置清空历史记录按钮点击事件
+        tvClearHistory.setOnClickListener(v -> {
+            new AlertDialog.Builder(getContext())
+                .setTitle("清空历史记录")
+                .setMessage("确定要清空所有症状历史记录吗？")
+                .setPositiveButton("确定", (dialog, which) -> {
+                    historyManager.clearHistory();
+                    historyAdapter.updateHistory(historyManager.getHistory());
+                    hideHistoryDropdown();
+                    Toast.makeText(getContext(), "历史记录已清空", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("取消", null)
+                .show();
+        });
+    }
+    
+    /**
+     * 显示历史记录下拉框
+     */
+    private void showHistoryDropdown() {
+        if (!isHistoryDropdownVisible && historyManager.hasHistory()) {
+            // 更新历史记录数据
+            historyAdapter.updateHistory(historyManager.getHistory());
+            
+            cvHistoryDropdown.setVisibility(View.VISIBLE);
+            isHistoryDropdownVisible = true;
+            
+            // 添加动画效果
+            cvHistoryDropdown.setAlpha(0f);
+            cvHistoryDropdown.animate()
+                .alpha(1f)
+                .setDuration(200)
+                .start();
+        }
+    }
+    
+    /**
+     * 隐藏历史记录下拉框
+     */
+    private void hideHistoryDropdown() {
+        if (isHistoryDropdownVisible) {
+            cvHistoryDropdown.animate()
+                .alpha(0f)
+                .setDuration(200)
+                .withEndAction(() -> {
+                    cvHistoryDropdown.setVisibility(View.GONE);
+                    isHistoryDropdownVisible = false;
+                })
+                .start();
+        }
     }
     
     /**
@@ -232,7 +363,7 @@ public class PrescriptionFragment extends Fragment {
                     if (progressStep < messages.length) {
                         tvLoadingText.setText(messages[progressStep]);
                         progressStep++;
-                        timeoutHandler.postDelayed(this, 5000); // 每5秒更新一次
+                        timeoutHandler.postDelayed(this, 3000); // 每5秒更新一次
                     }
                 }
             }
@@ -270,13 +401,13 @@ public class PrescriptionFragment extends Fragment {
                     if (progressStep < progressMessages.length) {
                         tvLoadingText.setText(progressMessages[progressStep]);
                         progressStep++;
-                        timeoutHandler.postDelayed(this, 8000); // 每8秒更新一次
+                        timeoutHandler.postDelayed(this, 3000); // 每8秒更新一次
                     } else {
                         // 循环显示最后几条消息
                         progressStep = Math.max(0, progressMessages.length - 3);
                         tvLoadingText.setText(progressMessages[progressStep]);
                         progressStep++;
-                        timeoutHandler.postDelayed(this, 8000);
+                        timeoutHandler.postDelayed(this, 3000);
                     }
                 }
             }
@@ -348,6 +479,18 @@ public class PrescriptionFragment extends Fragment {
         
         // 保存当前输入的症状文本
         savedSymptomsText = symptoms;
+        
+        // 将症状描述添加到历史记录中
+        if (historyManager != null) {
+            historyManager.addSymptom(symptoms);
+            // 更新历史记录列表
+            if (historyAdapter != null) {
+                historyAdapter.updateHistory(historyManager.getHistory());
+            }
+        }
+        
+        // 隐藏历史记录下拉框
+        hideHistoryDropdown();
         
         // 显示加载状态
         showLoading(true);

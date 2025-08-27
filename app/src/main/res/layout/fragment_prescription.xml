@@ -198,51 +198,124 @@
             </LinearLayout>
             
             <!-- 输入框区域 -->
-            <LinearLayout
-                android:id="@+id/ll_symptoms_input"
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="@drawable/input_background"
-                android:padding="12dp">
-
-                <EditText
-                    android:id="@+id/et_symptoms"
-                    android:layout_width="0dp"
+                android:layout_height="wrap_content">
+                
+                <LinearLayout
+                    android:id="@+id/ll_symptoms_input"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:hint="请详细描述您的症状..."
-                    android:textColorHint="#999999"
-                    android:textSize="14sp"
-                    android:textColor="#333333"
-                    android:background="@null"
-                    android:inputType="textMultiLine"
-                    android:minHeight="48dp"
-                    android:maxLines="3" />
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/input_background"
+                    android:padding="12dp">
 
-                <ImageButton
-                    android:id="@+id/btn_select_image_source"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:layout_marginStart="8dp"
-                    android:src="@drawable/ic_image"
-                    android:background="@drawable/button_circle"
-                    android:backgroundTint="@color/primary_color"
-                    android:tint="@color/white"
-                    android:contentDescription="选择图片来源" />
+                    <EditText
+                        android:id="@+id/et_symptoms"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="请详细描述您的症状..."
+                        android:textColorHint="#999999"
+                        android:textSize="14sp"
+                        android:textColor="#333333"
+                        android:background="@null"
+                        android:inputType="textMultiLine"
+                        android:minHeight="48dp"
+                        android:maxLines="3" />
 
-                <ImageButton
-                    android:id="@+id/btn_upload_prescription"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    android:layout_marginStart="8dp"
-                    android:src="@drawable/ic_upload"
-                    android:background="@drawable/button_circle"
-                    android:backgroundTint="#4CAF50"
-                    android:tint="@color/white"
-                    android:contentDescription="上传处方图片" />
-            </LinearLayout>
+                    <ImageButton
+                        android:id="@+id/btn_select_image_source"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_image"
+                        android:background="@drawable/button_circle"
+                        android:backgroundTint="@color/primary_color"
+                        android:tint="@color/white"
+                        android:contentDescription="选择图片来源" />
+
+                    <ImageButton
+                        android:id="@+id/btn_upload_prescription"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="8dp"
+                        android:src="@drawable/ic_upload"
+                        android:background="@drawable/button_circle"
+                        android:backgroundTint="#4CAF50"
+                        android:tint="@color/white"
+                        android:contentDescription="上传处方图片" />
+                </LinearLayout>
+                
+                <!-- 历史记录下拉列表 -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cv_history_dropdown"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/ll_symptoms_input"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="4dp"
+                    android:backgroundTint="@color/white">
+                    
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="8dp">
+                        
+                        <!-- 历史记录标题 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="4dp">
+                            
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="历史记录"
+                                android:textSize="12sp"
+                                android:textColor="@color/primary_color"
+                                android:textStyle="bold" />
+                                
+                            <TextView
+                                android:id="@+id/tv_clear_history"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="清空"
+                                android:textSize="10sp"
+                                android:textColor="#999999"
+                                android:padding="4dp"
+                                android:background="?android:attr/selectableItemBackground" />
+                                
+                        </LinearLayout>
+                        
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:background="#E0E0E0"
+                            android:layout_marginHorizontal="8dp"
+                            android:layout_marginBottom="4dp" />
+                        
+                        <!-- 历史记录列表 -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_history"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:maxHeight="200dp"
+                            android:scrollbars="vertical" />
+                            
+                    </LinearLayout>
+                    
+                </androidx.cardview.widget.CardView>
+                
+            </RelativeLayout>
             
             <!-- 功能提示 -->
             <TextView
