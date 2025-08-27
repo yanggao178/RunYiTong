@@ -132,45 +132,45 @@ public class MainActivity extends AppCompatActivity {
             }
             return true;
         });
+        
+
     }
 
     /**
-     * 初始化所有Fragment实例
+     * 初始化所有Fragment
      */
     private void initFragments() {
-        try {
-            android.util.Log.d("MainActivity", "Creating fragment instances");
-            productFragment = new ProductFragment();
-            registrationFragment = new RegistrationFragment();
-            prescriptionFragment = new PrescriptionFragment();
-            healthFragment = new HealthFragment();
-            profileFragment = new ProfileFragment();
-            android.util.Log.d("MainActivity", "All fragments created successfully");
-            
-            // 添加所有Fragment到容器中，但先隐藏它们
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            transaction.add(R.id.frame_layout, productFragment, "product");
-            transaction.add(R.id.frame_layout, registrationFragment, "registration");
-            transaction.add(R.id.frame_layout, prescriptionFragment, "prescription");
-            transaction.add(R.id.frame_layout, healthFragment, "health");
-            transaction.add(R.id.frame_layout, profileFragment, "profile");
-            android.util.Log.d("MainActivity", "All fragments added to transaction");
-            
-            // 隐藏所有Fragment
-            transaction.hide(productFragment);
-            transaction.hide(registrationFragment);
-            transaction.hide(prescriptionFragment);
-            transaction.hide(healthFragment);
-            transaction.hide(profileFragment);
-            android.util.Log.d("MainActivity", "All fragments hidden");
-            
-            // 使用commitNow()确保fragment立即被添加，然后再显示默认fragment
-            transaction.commitNow();
-            android.util.Log.d("MainActivity", "Fragment transaction committed immediately");
-        } catch (Exception e) {
-            android.util.Log.e("MainActivity", "Error initializing fragments", e);
-            throw e; // 重新抛出异常，让调用者知道初始化失败
-        }
+        android.util.Log.d("MainActivity", "Initializing fragments");
+        
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        
+        // 创建所有Fragment实例
+        productFragment = new ProductFragment();
+        registrationFragment = new RegistrationFragment();
+        prescriptionFragment = new PrescriptionFragment();
+        healthFragment = new HealthFragment();
+        profileFragment = new ProfileFragment();
+        
+        // 添加所有Fragment到容器中，但先隐藏它们
+        transaction.add(R.id.frame_layout, productFragment);
+        transaction.hide(productFragment);
+        
+        transaction.add(R.id.frame_layout, registrationFragment);
+        transaction.hide(registrationFragment);
+        
+        transaction.add(R.id.frame_layout, prescriptionFragment);
+        transaction.hide(prescriptionFragment);
+        
+        transaction.add(R.id.frame_layout, healthFragment);
+        transaction.hide(healthFragment);
+        
+        transaction.add(R.id.frame_layout, profileFragment);
+        transaction.hide(profileFragment);
+        
+        // 立即提交事务
+        transaction.commitNow();
+        
+        android.util.Log.d("MainActivity", "All fragments initialized and hidden");
     }
     
     /**

@@ -22,6 +22,7 @@ import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiService;
 import com.wenteng.frontend_android.api.ApiResponse;
 import com.wenteng.frontend_android.api.RegisterResponse;
+import com.wenteng.frontend_android.api.RegisterRequest;
 import com.wenteng.frontend_android.api.SmsCodeResponse;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -541,8 +542,14 @@ public class RegisterActivity extends AppCompatActivity {
         
         android.util.Log.d(TAG, "执行密码注册: " + username);
         
-        // 调用密码注册API
-        Call<ApiResponse<RegisterResponse>> call = apiService.registerWithPassword(username, email, password);
+        // 创建注册请求对象
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setEmail(email);
+        registerRequest.setPassword(password);
+        
+        // 调用密码注册API（JSON格式）
+        Call<ApiResponse<RegisterResponse>> call = apiService.registerWithPassword(registerRequest);
         call.enqueue(new Callback<ApiResponse<RegisterResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<RegisterResponse>> call, Response<ApiResponse<RegisterResponse>> response) {
@@ -590,8 +597,15 @@ public class RegisterActivity extends AppCompatActivity {
         
         android.util.Log.d(TAG, "执行短信验证码注册: " + username + ", 手机号: " + phone);
         
-        // 调用短信注册API
-        Call<ApiResponse<RegisterResponse>> call = apiService.registerWithSms(username, phone, verificationCode, password);
+        // 创建注册请求对象
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setPhone(phone);
+        registerRequest.setVerification_code(verificationCode);
+        registerRequest.setPassword(password);
+        
+        // 调用短信注册API（JSON格式）
+        Call<ApiResponse<RegisterResponse>> call = apiService.registerWithSms(registerRequest);
         call.enqueue(new Callback<ApiResponse<RegisterResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<RegisterResponse>> call, Response<ApiResponse<RegisterResponse>> response) {

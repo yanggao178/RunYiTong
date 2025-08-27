@@ -65,17 +65,10 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         put("首都医科大学附属北京天坛医院", "北京天坛医院");
     }};
     
-    // 医院微信公众号原始ID映射 - 用于直接跳转到公众号主页
-    private Map<String, String> hospitalWeChatIdMap = new HashMap<String, String>() {{
-        put("北京协和医院", "gh_1234567890ab"); // 示例原始ID，实际需要替换为真实ID
-        put("北京大学第一医院", "gh_2345678901bc"); // 示例原始ID，实际需要替换为真实ID
-        put("中国人民解放军总医院", "gh_3456789012cd"); // 示例原始ID，实际需要替换为真实ID
-        put("首都医科大学附属北京天坛医院", "gh_4567890123de"); // 示例原始ID，实际需要替换为真实ID
-    }};
+
     // 微信包名和协议
     private static final String WECHAT_PACKAGE = "com.tencent.mm";
     private static final String WECHAT_SEARCH_SCHEME = "weixin://dl/search?query=";
-    private static final String WECHAT_PROFILE_SCHEME = "weixin://profile/";
     private static final String WECHAT_GENERAL_SCHEME = "weixin://";
     public interface OnHospitalClickListener {
         void onHospitalClick(Hospital hospital);
@@ -158,9 +151,11 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
                 cardView.setCardBackgroundColor(itemView.getContext().getResources().getColor(android.R.color.white));
             }
         }
-    }
-    
-    /**
+     }
+     
+
+     
+     /**
      * 打开微信公众号
      */
     private void openWeChatPublicAccount(String hospitalName) {
@@ -169,13 +164,6 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
             return;
         }
         
-        // 优先尝试直接跳转到公众号主页
-        String wechatId = hospitalWeChatIdMap.get(hospitalName);
-        if (wechatId != null && openWeChatProfileDirectly(wechatId, hospitalName)) {
-            return; // 直接跳转成功，无需后续操作
-        }
-        
-        // 如果直接跳转失败，回退到搜索功能
         String searchKeyword = hospitalWeChatMap.get(hospitalName);
         if (searchKeyword == null) {
             Toast.makeText(context, "该医院暂未开通微信公众号", Toast.LENGTH_SHORT).show();
@@ -186,44 +174,7 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         showWeChatGuideDialogWithConfirmation(searchKeyword, hospitalName);
     }
     
-    /**
-     * 直接跳转到微信公众号主页
-     * @param wechatId 微信公众号原始ID
-     * @param hospitalName 医院名称
-     * @return 是否跳转成功
-     */
-    private boolean openWeChatProfileDirectly(String wechatId, String hospitalName) {
-        try {
-            // 检查微信是否已安装
-            PackageManager pm = context.getPackageManager();
-            try {
-                pm.getPackageInfo(WECHAT_PACKAGE, PackageManager.GET_ACTIVITIES);
-            } catch (PackageManager.NameNotFoundException e) {
-                android.util.Log.w("HospitalAdapter", "微信未安装");
-                Toast.makeText(context, "请先安装微信应用", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-            
-            // 尝试直接跳转到公众号主页
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            String profileUrl = WECHAT_PROFILE_SCHEME + wechatId;
-            intent.setData(Uri.parse(profileUrl));
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            
-            if (intent.resolveActivity(pm) != null) {
-                context.startActivity(intent);
-                android.util.Log.d("HospitalAdapter", "直接跳转成功：" + profileUrl);
-                Toast.makeText(context, "正在打开" + hospitalName + "微信公众号", Toast.LENGTH_SHORT).show();
-                return true;
-            } else {
-                android.util.Log.w("HospitalAdapter", "无法解析公众号协议：" + profileUrl);
-                return false;
-            }
-        } catch (Exception e) {
-            android.util.Log.e("HospitalAdapter", "直接跳转异常：" + e.getMessage());
-            return false;
-        }
-    }
+
     
     /**
      * 显示美化的微信搜索指引对话框，用户确认后启动微信

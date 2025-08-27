@@ -23,6 +23,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.textfield.TextInputLayout;
 import com.wenteng.frontend_android.MainActivity;
 import com.wenteng.frontend_android.R;
+import com.wenteng.frontend_android.api.ApiClient;
+import com.wenteng.frontend_android.api.ApiResponse;
+import com.wenteng.frontend_android.api.ApiService;
+import com.wenteng.frontend_android.api.LoginResponse;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -114,7 +121,99 @@ public class LoginActivity extends AppCompatActivity {
             Log.w("LoginActivity", "Failed to setup focus animations, continuing without them", e);
         }
         
+        // 处理从注册页面传来的参数
+        handleIntentExtras();
+        
         Log.d("LoginActivity", "Robust view initialization completed");
+    }
+    
+    /**
+     * 处理从其他Activity传来的Intent参数
+     */
+    private void handleIntentExtras() {
+        try {
+            Intent intent = getIntent();
+            Log.d("LoginActivity", "开始处理Intent参数, intent: " + (intent != null ? "存在" : "为空"));
+            
+            if (intent != null) {
+                // 获取从注册页面传来的用户名
+                String username = intent.getStringExtra("username");
+                String phone = intent.getStringExtra("phone");
+                
+                Log.d("LoginActivity", "Intent参数 - username: " + username + ", phone: " + phone);
+                Log.d("LoginActivity", "输入框状态 - etUsername: " + (etUsername != null ? "存在" : "为空") + ", etPhone: " + (etPhone != null ? "存在" : "为空"));
+                
+                if (!TextUtils.isEmpty(username)) {
+                    if (etUsername != null) {
+                        etUsername.setText(username);
+                        etUsername.setEnabled(true);
+                        etUsername.setFocusable(true);
+                        etUsername.setFocusableInTouchMode(true);
+                        Log.d("LoginActivity", "成功设置用户名: " + username);
+                    } else {
+                        Log.w("LoginActivity", "etUsername为空，无法设置用户名: " + username);
+                    }
+                } else {
+                    Log.d("LoginActivity", "用户名参数为空或null");
+                }
+                
+                if (!TextUtils.isEmpty(phone)) {
+                    if (etPhone != null) {
+                        etPhone.setText(phone);
+                        etPhone.setEnabled(true);
+                        etPhone.setFocusable(true);
+                        etPhone.setFocusableInTouchMode(true);
+                        Log.d("LoginActivity", "成功设置手机号: " + phone);
+                    } else {
+                        Log.w("LoginActivity", "etPhone为空，无法设置手机号: " + phone);
+                    }
+                } else {
+                    Log.d("LoginActivity", "手机号参数为空或null");
+                }
+                
+                // 确保所有输入框都可以输入
+                enableAllInputFields();
+            } else {
+                Log.d("LoginActivity", "Intent为空，没有参数需要处理");
+            }
+        } catch (Exception e) {
+            Log.e("LoginActivity", "处理Intent参数时出错", e);
+        }
+    }
+    
+    /**
+     * 确保所有输入框都可以正常输入
+     */
+    private void enableAllInputFields() {
+        try {
+            if (etUsername != null) {
+                etUsername.setEnabled(true);
+                etUsername.setFocusable(true);
+                etUsername.setFocusableInTouchMode(true);
+            }
+            
+            if (etPassword != null) {
+                etPassword.setEnabled(true);
+                etPassword.setFocusable(true);
+                etPassword.setFocusableInTouchMode(true);
+            }
+            
+            if (etPhone != null) {
+                etPhone.setEnabled(true);
+                etPhone.setFocusable(true);
+                etPhone.setFocusableInTouchMode(true);
+            }
+            
+            if (etVerificationCode != null) {
+                etVerificationCode.setEnabled(true);
+                etVerificationCode.setFocusable(true);
+                etVerificationCode.setFocusableInTouchMode(true);
+            }
+            
+            Log.d("LoginActivity", "所有输入框已启用");
+        } catch (Exception e) {
+            Log.w("LoginActivity", "启用输入框时出错", e);
+        }
     }
     
     private void logInitializationError(Exception e) {
@@ -508,27 +607,51 @@ public class LoginActivity extends AppCompatActivity {
         // 显示加载状态
         showLoginLoading(true);
         
-        // 模拟网络请求延迟
-        new android.os.Handler().postDelayed(() -> {
-            // 隐藏加载状态
-            showLoginLoading(false);
-            
-            // 简单的演示登录逻辑
-            if (username.equals("admin") && password.equals("123456")) {
-                // 保存登录状态
-                saveLoginState(true, username);
+        // 调用后端API进行登录验证
+        ApiService apiService = ApiClient.getApiService();
+        Call<ApiResponse<LoginResponse>> call = apiService.loginUser(username, password);
+        
+        call.enqueue(new Callback<ApiResponse<LoginResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<LoginResponse>> call, Response<ApiResponse<LoginResponse>> response) {
+                // 隐藏加载状态
+                showLoginLoading(false);
                 
-                Toast.makeText(this, "登录成功！", Toast.LENGTH_SHORT).show();
-                
-                // 跳转到主页面
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
-                finish();
-            } else {
-                Toast.makeText(this, "用户名或密码错误", Toast.LENGTH_SHORT).show();
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<LoginResponse> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        LoginResponse loginData = apiResponse.getData();
+                        
+                        // 保存登录状态和用户信息
+                        saveLoginState(true, loginData.getUsername());
+                        saveUserInfo(loginData);
+                        
+                        Toast.makeText(LoginActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
+                        
+                        // 跳转到主页面
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        String errorMsg = apiResponse.getMessage() != null ? apiResponse.getMessage() : "登录失败";
+                        Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this, "网络请求失败，请检查网络连接", Toast.LENGTH_SHORT).show();
+                }
             }
-        }, 2000); // 2秒延迟模拟网络请求
+            
+            @Override
+            public void onFailure(Call<ApiResponse<LoginResponse>> call, Throwable t) {
+                // 隐藏加载状态
+                showLoginLoading(false);
+                
+                Log.e("LoginActivity", "登录请求失败", t);
+                Toast.makeText(LoginActivity.this, "网络连接失败: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     
     private void performPhoneLogin(String phone, String verificationCode) {
@@ -1025,6 +1148,10 @@ public class LoginActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d("LoginActivity", "onResume called");
+        
+        // 确保所有输入框都可以正常输入
+        enableAllInputFields();
+        
         logMemoryUsage("onResume");
     }
     
@@ -1106,6 +1233,24 @@ public class LoginActivity extends AppCompatActivity {
                     .putString(KEY_USERNAME, username)
                     .apply();
             Log.d("LoginActivity", "登录状态已保存: " + isLoggedIn + ", 用户名: " + username);
+        }
+    }
+    
+    /**
+     * 保存用户详细信息到SharedPreferences
+     */
+    private void saveUserInfo(LoginResponse loginData) {
+        if (sharedPreferences != null && loginData != null) {
+            sharedPreferences.edit()
+                    .putInt("user_id", loginData.getUserId())
+                    .putString("email", loginData.getEmail())
+                    .putString("full_name", loginData.getFullName())
+                    .putString("phone", loginData.getPhone())
+                    .putString("avatar_url", loginData.getAvatarUrl())
+                    .putString("access_token", loginData.getAccessToken())
+                    .putString("token_type", loginData.getTokenType())
+                    .apply();
+            Log.d("LoginActivity", "用户信息已保存: " + loginData.getUsername());
         }
     }
 }

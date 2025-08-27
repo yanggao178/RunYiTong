@@ -43,6 +43,29 @@ public class PrescriptionAnalysis {
     @SerializedName("diagnosis")
     private String diagnosis;
     
+    // 医学影像分析相关字段
+    @SerializedName("analysis_result")
+    private String analysisResult;
+    
+    @SerializedName("confidence_score")
+    private double confidenceScore;
+    
+    @SerializedName("analysis_timestamp")
+    private String analysisTimestamp;
+    
+    // 后端医学影像分析返回的字段
+    @SerializedName("image_quality")
+    private String imageQuality;
+    
+    @SerializedName("main_findings")
+    private List<String> mainFindings;
+    
+    @SerializedName("success")
+    private boolean success;
+    
+    @SerializedName("data")
+    private Object data;
+    
     // 内部类：辨证分型
     public static class SyndromeType {
         @SerializedName("main_syndrome")
@@ -380,6 +403,64 @@ public class PrescriptionAnalysis {
     
     public void setDiagnosis(String diagnosis) {
         this.diagnosis = diagnosis;
+    }
+    
+    // 医学影像分析相关字段的getter和setter
+    public String getAnalysisResult() {
+        return analysisResult;
+    }
+    
+    public void setAnalysisResult(String analysisResult) {
+        this.analysisResult = analysisResult;
+    }
+    
+    public double getConfidenceScore() {
+        return confidenceScore;
+    }
+    
+    public void setConfidenceScore(double confidenceScore) {
+        this.confidenceScore = confidenceScore;
+    }
+    
+    public String getAnalysisTimestamp() {
+        return analysisTimestamp;
+    }
+    
+    public void setAnalysisTimestamp(String analysisTimestamp) {
+        this.analysisTimestamp = analysisTimestamp;
+    }
+    
+    // 新增字段的getter和setter方法
+    public String getImageQuality() {
+        return imageQuality;
+    }
+    
+    public void setImageQuality(String imageQuality) {
+        this.imageQuality = imageQuality;
+    }
+    
+    public List<String> getMainFindings() {
+        return mainFindings;
+    }
+    
+    public void setMainFindings(List<String> mainFindings) {
+        this.mainFindings = mainFindings;
+    }
+    
+    public boolean isSuccess() {
+        return success;
+    }
+    
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+    
+    public Object getData() {
+        return data;
+    }
+    
+    public void setData(Object data) {
+        this.data = data;
     }
     
     @Override

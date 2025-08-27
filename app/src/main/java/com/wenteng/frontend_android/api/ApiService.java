@@ -6,6 +6,7 @@ import com.wenteng.frontend_android.model.BookPage;
 import com.wenteng.frontend_android.model.SymptomAnalysis;
 import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
+import com.wenteng.frontend_android.model.MedicalImageAnalysis;
 import com.wenteng.frontend_android.model.ImageUploadResult;
 import com.wenteng.frontend_android.model.Department;
 import com.wenteng.frontend_android.model.PaymentOrderRequest;
@@ -139,7 +140,7 @@ public interface ApiService {
      */
     @Multipart
     @POST("api/v1/prescriptions/analyze-xray")
-    Call<ApiResponse<PrescriptionAnalysis>> analyzeXRayImage(@Part MultipartBody.Part image);
+    Call<ApiResponse<MedicalImageAnalysis>> analyzeXRayImage(@Part MultipartBody.Part image);
     
     /**
      * CT影像智能分析
@@ -148,7 +149,7 @@ public interface ApiService {
      */
     @Multipart
     @POST("api/v1/prescriptions/analyze-ct")
-    Call<ApiResponse<PrescriptionAnalysis>> analyzeCTImage(@Part MultipartBody.Part image);
+    Call<ApiResponse<MedicalImageAnalysis>> analyzeCTImage(@Part MultipartBody.Part image);
     
     /**
      * B超影像智能分析
@@ -157,7 +158,7 @@ public interface ApiService {
      */
     @Multipart
     @POST("api/v1/prescriptions/analyze-ultrasound")
-    Call<ApiResponse<PrescriptionAnalysis>> analyzeUltrasoundImage(@Part MultipartBody.Part image);
+    Call<ApiResponse<MedicalImageAnalysis>> analyzeUltrasoundImage(@Part MultipartBody.Part image);
     
     /**
      * MRI影像智能分析
@@ -166,7 +167,7 @@ public interface ApiService {
      */
     @Multipart
     @POST("api/v1/prescriptions/analyze-mri")
-    Call<ApiResponse<PrescriptionAnalysis>> analyzeMRIImage(@Part MultipartBody.Part image);
+    Call<ApiResponse<MedicalImageAnalysis>> analyzeMRIImage(@Part MultipartBody.Part image);
     
     /**
      * PET-CT影像智能分析
@@ -175,7 +176,7 @@ public interface ApiService {
      */
     @Multipart
     @POST("api/v1/prescriptions/analyze-petct")
-    Call<ApiResponse<PrescriptionAnalysis>> analyzePETCTImage(@Part MultipartBody.Part image);
+    Call<ApiResponse<MedicalImageAnalysis>> analyzePETCTImage(@Part MultipartBody.Part image);
     
     /**
      * 获取科室列表
@@ -221,21 +222,39 @@ public interface ApiService {
     
     /**
      * 用户密码注册
+     * @param request 注册请求对象
+     * @return 注册结果响应
+     */
+    @POST("api/v1/users/register")
+    Call<ApiResponse<RegisterResponse>> registerWithPassword(
+        @Body RegisterRequest request
+    );
+    
+    /**
+     * 用户密码注册（兼容旧版本）
      * @param username 用户名
      * @param email 邮箱
      * @param password 密码
      * @return 注册结果响应
      */
     @FormUrlEncoded
-    @POST("api/v1/auth/register/password")
-    Call<ApiResponse<RegisterResponse>> registerWithPassword(
+    @POST("api/v1/users/register-form")
+    Call<ApiResponse<RegisterResponse>> registerWithPasswordForm(
         @Field("username") String username,
         @Field("email") String email,
         @Field("password") String password
     );
     
     /**
-     * 用户短信验证码注册
+     * 用户短信注册（JSON格式）
+     * @param registerRequest 注册请求对象
+     * @return 注册结果响应
+     */
+    @POST("api/v1/users/register-with-sms")
+    Call<ApiResponse<RegisterResponse>> registerWithSms(@Body RegisterRequest registerRequest);
+
+    /**
+     * 用户短信注册（表单格式，兼容旧版本）
      * @param username 用户名
      * @param phone 手机号
      * @param verificationCode 验证码
@@ -243,8 +262,8 @@ public interface ApiService {
      * @return 注册结果响应
      */
     @FormUrlEncoded
-    @POST("api/v1/auth/register/sms")
-    Call<ApiResponse<RegisterResponse>> registerWithSms(
+    @POST("api/v1/users/register-with-sms")
+    Call<ApiResponse<RegisterResponse>> registerWithSmsForm(
         @Field("username") String username,
         @Field("phone") String phone,
         @Field("verification_code") String verificationCode,
@@ -257,8 +276,21 @@ public interface ApiService {
      * @return 发送结果响应
      */
     @FormUrlEncoded
-    @POST("api/v1/auth/send-sms-code")
+    @POST("api/v1/users/send-sms-code")
     Call<ApiResponse<SmsCodeResponse>> sendSmsCode(@Field("phone") String phone);
+    
+    /**
+     * 用户登录
+     * @param username 用户名
+     * @param password 密码
+     * @return 登录结果响应
+     */
+    @FormUrlEncoded
+    @POST("api/v1/users/login")
+    Call<ApiResponse<LoginResponse>> loginUser(
+        @Field("username") String username,
+        @Field("password") String password
+    );
     
     /**
      * 创建支付宝支付订单

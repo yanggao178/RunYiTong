@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
 import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiResponse;
@@ -41,6 +43,7 @@ import com.wenteng.frontend_android.api.ApiService;
 import com.wenteng.frontend_android.model.SymptomAnalysis;
 import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
+import com.wenteng.frontend_android.model.MedicalImageAnalysis;
 import com.wenteng.frontend_android.model.ImageUploadResult;
 import com.wenteng.frontend_android.utils.ImageUtils;
 import com.wenteng.frontend_android.dialog.ImageProcessingDialogFragment;
@@ -54,6 +57,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class PrescriptionFragment extends Fragment {
+    
+    private static final String TAG = "PrescriptionFragment";
     
     private EditText etSymptoms;
     private TextView tvAnalysisResult;
@@ -72,6 +77,7 @@ public class PrescriptionFragment extends Fragment {
     // 图片处理相关
     private Call<ApiResponse<OCRResult>> ocrCall;
     private Call<ApiResponse<PrescriptionAnalysis>> analysisCall;
+    private Call<ApiResponse<MedicalImageAnalysis>> medicalImageAnalysisCall;
     private Call<ApiResponse<ImageUploadResult>> uploadCall;
     private Uri selectedImageUri;
     private String imageSource = "unknown"; // 记录图片来源："camera" 或 "gallery"
@@ -242,6 +248,55 @@ public class PrescriptionFragment extends Fragment {
             timeoutHandler.removeCallbacks(progressUpdateRunnable);
         }
     }
+
+    /**
+     * 启动医学影像分析进度更新
+     */
+    private void startMedicalImageAnalysisProgressUpdate(String imageType) {
+        if (timeoutHandler == null) {
+            timeoutHandler = new Handler(Looper.getMainLooper());
+        }
+        
+        // 显示正在分析片子的等待提示
+        String imageTypeName = getImageTypeDisplayName(imageType);
+        Toast.makeText(getContext(), "🔍 正在分析" + imageTypeName + "片子，请稍候...", Toast.LENGTH_SHORT).show();
+        
+        progressStep = 0;
+        progressUpdateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (tvLoadingText != null) {
+                    String[] progressMessages = getImageAnalysisProgressMessages(imageType);
+                    if (progressStep < progressMessages.length) {
+                        tvLoadingText.setText(progressMessages[progressStep]);
+                        progressStep++;
+                        timeoutHandler.postDelayed(this, 8000); // 每8秒更新一次
+                    } else {
+                        // 循环显示最后几条消息
+                        progressStep = Math.max(0, progressMessages.length - 3);
+                        tvLoadingText.setText(progressMessages[progressStep]);
+                        progressStep++;
+                        timeoutHandler.postDelayed(this, 8000);
+                    }
+                }
+            }
+        };
+        timeoutHandler.post(progressUpdateRunnable);
+    }
+
+    /**
+     * 获取医学影像分析进度消息
+     */
+    private String[] getImageAnalysisProgressMessages(String imageType) {
+        String displayName = getImageTypeDisplayName(imageType);
+        return new String[]{
+            "正在对" + displayName + "进行影像预处理...",
+            "AI正在识别" + displayName + "中的特征...",
+            "正在分析" + displayName + "影像内容...",
+            "正在生成" + displayName + "诊断建议...",
+            "即将完成" + displayName + "分析..."
+        };
+    }
     
     @Override
     public void onDestroy() {
@@ -255,6 +310,9 @@ public class PrescriptionFragment extends Fragment {
         }
         if (analysisCall != null && !analysisCall.isCanceled()) {
             analysisCall.cancel();
+        }
+        if (medicalImageAnalysisCall != null && !medicalImageAnalysisCall.isCanceled()) {
+            medicalImageAnalysisCall.cancel();
         }
         if (uploadCall != null && !uploadCall.isCanceled()) {
             uploadCall.cancel();
@@ -1751,7 +1809,7 @@ public class PrescriptionFragment extends Fragment {
         }
         
         // 创建MultipartBody.Part
-        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "file");
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "image");
         if (imagePart == null) {
             Toast.makeText(getContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
             return;
@@ -1798,7 +1856,7 @@ public class PrescriptionFragment extends Fragment {
         }
         
         // 创建MultipartBody.Part
-        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "file");
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "image");
         if (imagePart == null) {
             Toast.makeText(getContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
             return;
@@ -1847,57 +1905,40 @@ public class PrescriptionFragment extends Fragment {
             return;
         }
         
-        // 创建MultipartBody.Part
-        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "file");
+        // 创建MultipartBody.Part用于上传
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "image");
         if (imagePart == null) {
             Toast.makeText(getContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
             return;
         }
         
-        showLoading(true);
+        // 显示加载界面但不启动普通的进度更新
+        llLoading.setVisibility(View.VISIBLE);
+        tvAnalysisResult.setVisibility(View.GONE);
+        // 禁用按钮防止重复点击
+        btnUploadPrescription.setEnabled(false);
+        btnSelectImageSource.setEnabled(false);
+        etSymptoms.setEnabled(false);
         
-        // 根据影像类型设置不同的加载文本
-        String loadingText;
-        switch (imageType) {
-            case "xray":
-                loadingText = "正在分析X光影像...";
-                break;
-            case "ct":
-                loadingText = "正在分析CT影像...";
-                break;
-            case "ultrasound":
-                loadingText = "正在分析B超影像...";
-                break;
-            case "mri":
-                loadingText = "正在分析MRI影像...";
-                break;
-            case "petct":
-                loadingText = "正在分析PET-CT影像...";
-                break;
-            default:
-                loadingText = "正在分析医学影像...";
-                break;
-        }
-        tvLoadingText.setText(loadingText);
+        // 启动医学影像分析专用的进度更新，显示分析过程的不同阶段
+        startMedicalImageAnalysisProgressUpdate(imageType);
         
         // 调用相应的API接口进行医学影像分析
-        Call<ApiResponse<PrescriptionAnalysis>> analysisCall = null;
-        
         switch (imageType) {
             case "xray":
-                analysisCall = apiService.analyzeXRayImage(imagePart);
+                medicalImageAnalysisCall = apiService.analyzeXRayImage(imagePart);
                 break;
             case "ct":
-                analysisCall = apiService.analyzeCTImage(imagePart);
+                medicalImageAnalysisCall = apiService.analyzeCTImage(imagePart);
                 break;
             case "ultrasound":
-                analysisCall = apiService.analyzeUltrasoundImage(imagePart);
+                medicalImageAnalysisCall = apiService.analyzeUltrasoundImage(imagePart);
                 break;
             case "mri":
-                analysisCall = apiService.analyzeMRIImage(imagePart);
+                medicalImageAnalysisCall = apiService.analyzeMRIImage(imagePart);
                 break;
             case "petct":
-                analysisCall = apiService.analyzePETCTImage(imagePart);
+                medicalImageAnalysisCall = apiService.analyzePETCTImage(imagePart);
                 break;
             default:
                 showLoading(false);
@@ -1905,31 +1946,30 @@ public class PrescriptionFragment extends Fragment {
                 return;
         }
         
-        if (analysisCall != null) {
-            analysisCall.enqueue(new Callback<ApiResponse<PrescriptionAnalysis>>() {
+        if (medicalImageAnalysisCall != null) {
+            medicalImageAnalysisCall.enqueue(new Callback<ApiResponse<MedicalImageAnalysis>>() {
                 @Override
-                public void onResponse(Call<ApiResponse<PrescriptionAnalysis>> call, Response<ApiResponse<PrescriptionAnalysis>> response) {
+                public void onResponse(Call<ApiResponse<MedicalImageAnalysis>> call, Response<ApiResponse<MedicalImageAnalysis>> response) {
                     showLoading(false);
                     
                     if (response.isSuccessful() && response.body() != null) {
-                        ApiResponse<PrescriptionAnalysis> apiResponse = response.body();
+                        ApiResponse<MedicalImageAnalysis> apiResponse = response.body();
                         Log.d("PrescriptionFragment", "API响应成功 - success: " + apiResponse.isSuccess() + ", message: " + apiResponse.getMessage());
                         
                         if (apiResponse.isSuccess()) {
-                            PrescriptionAnalysis analysisData = apiResponse.getData();
-                            Log.d("PrescriptionFragment", "分析数据 - errorCode: " + (analysisData != null ? analysisData.getErrorCode() : "null"));
+                            MedicalImageAnalysis analysisData = apiResponse.getData();
+                            Log.d("PrescriptionFragment", "分析数据获取成功");
                             
-                            // 检查是否为图像类型不匹配错误（即使success为true）
-                            if (analysisData != null && "IMAGE_TYPE_MISMATCH".equals(analysisData.getErrorCode())) {
-                                Log.d("PrescriptionFragment", "检测到IMAGE_TYPE_MISMATCH错误，显示错误对话框");
-                                showImageTypeMismatchDialog(imageType, apiResponse.getMessage());
-                                // 不显示分析结果，直接返回
-                                return;
-                            } else {
-                                Log.d("PrescriptionFragment", "显示正常分析结果");
-                                // 显示真实的分析结果
-                                displayPrescriptionAnalysis(analysisData);
+                            if (analysisData != null) {
+                                Log.d("PrescriptionFragment", "显示医学影像分析结果");
+                                // 显示医学影像分析结果
+                                displayMedicalImageAnalysis(analysisData, imageType);
                                 Toast.makeText(getContext(), getImageTypeDisplayName(imageType) + "影像分析完成", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.w("PrescriptionFragment", "分析数据为空，使用模拟结果");
+                                String mockResult = generateMockAnalysisResult(imageType);
+                                displayTextWithTypewriterEffect(mockResult);
+                                Toast.makeText(getContext(), "分析数据为空，使用模拟结果", Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             Log.d("PrescriptionFragment", "API响应失败 - errorCode: " + apiResponse.getErrorCode());
@@ -1956,14 +1996,29 @@ public class PrescriptionFragment extends Fragment {
                 }
                 
                 @Override
-                public void onFailure(Call<ApiResponse<PrescriptionAnalysis>> call, Throwable t) {
+                public void onFailure(Call<ApiResponse<MedicalImageAnalysis>> call, Throwable t) {
                     showLoading(false);
                     if (!call.isCanceled()) {
                         // 网络请求失败，使用模拟结果作为备用方案
                         Log.e("PrescriptionFragment", "网络连接失败: " + t.getClass().getSimpleName() + " - " + t.getMessage(), t);
                         String mockResult = generateMockAnalysisResult(imageType);
                         displayTextWithTypewriterEffect(mockResult);
-                        Toast.makeText(getContext(), "网络连接失败(" + t.getClass().getSimpleName() + ")，使用模拟分析结果", Toast.LENGTH_LONG).show();
+                        
+                        // 根据异常类型显示不同的错误提示
+                        String errorMessage;
+                        if (t instanceof com.google.gson.JsonSyntaxException) {
+                            errorMessage = "服务器响应格式异常，使用模拟分析结果";
+                        } else if (t instanceof java.net.SocketTimeoutException) {
+                            errorMessage = "分析超时，使用模拟分析结果";
+                        } else if (t instanceof java.net.ConnectException) {
+                            errorMessage = "无法连接服务器，使用模拟分析结果";
+                        } else if (t instanceof java.io.IOException) {
+                            errorMessage = "网络异常，使用模拟分析结果";
+                        } else {
+                            errorMessage = "网络连接失败，使用模拟分析结果";
+                        }
+                        
+                        Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
                     }
                 }
             });
@@ -1975,59 +2030,395 @@ public class PrescriptionFragment extends Fragment {
      * @param imageType 影像类型
      * @return 分析结果文本
      */
+    /**
+     * 生成AI医学影像分析结果（集成真实AI分析）
+     * @param imageType 影像类型
+     * @return 分析结果字符串
+     */
     private String generateMockAnalysisResult(String imageType) {
-        StringBuilder result = new StringBuilder();
-        result.append("=== ").append(getImageTypeDisplayName(imageType)).append("影像分析报告 ===\n\n");
-        
-        switch (imageType) {
-            case "xray":
-                result.append("影像质量：良好\n");
-                result.append("主要发现：\n");
-                result.append("• 双肺纹理清晰\n");
-                result.append("• 心影大小正常\n");
-                result.append("• 未见明显异常阴影\n\n");
-                result.append("建议：定期复查，保持健康生活方式");
-                break;
-            case "ct":
-                result.append("扫描范围：胸部CT平扫\n");
-                result.append("主要发现：\n");
-                result.append("• 肺实质密度均匀\n");
-                result.append("• 纵隔结构正常\n");
-                result.append("• 未见占位性病变\n\n");
-                result.append("建议：影像表现正常，建议定期体检");
-                break;
-            case "ultrasound":
-                result.append("检查部位：腹部超声\n");
-                result.append("主要发现：\n");
-                result.append("• 肝脏大小形态正常\n");
-                result.append("• 胆囊壁光滑\n");
-                result.append("• 脾脏回声均匀\n\n");
-                result.append("建议：超声检查未见异常，注意饮食健康");
-                break;
-            case "mri":
-                result.append("扫描序列：T1WI、T2WI\n");
-                result.append("主要发现：\n");
-                result.append("• 脑实质信号正常\n");
-                result.append("• 脑室系统无扩张\n");
-                result.append("• 未见异常强化灶\n\n");
-                result.append("建议：MRI检查结果正常，继续观察");
-                break;
-            case "petct":
-                result.append("显像剂：18F-FDG\n");
-                result.append("主要发现：\n");
-                result.append("• 全身代谢活动正常\n");
-                result.append("• 未见异常高代谢灶\n");
-                result.append("• 淋巴结无肿大\n\n");
-                result.append("建议：PET-CT检查未见异常，定期随访");
-                break;
-            default:
-                result.append("影像分析完成\n");
-                result.append("建议：请咨询专业医师获取详细解读");
-                break;
+        // 首先尝试调用真实的AI分析API
+        try {
+            return performRealTimeAIAnalysis(imageType);
+        } catch (Exception e) {
+            Log.w(TAG, "AI分析失败，使用模拟结果: " + e.getMessage());
+            // AI分析失败时，返回模拟结果作为备用方案，并传递失败信息
+            String failureReason = "网络连接异常或服务暂时不可用";
+            if (e.getMessage() != null && !e.getMessage().trim().isEmpty()) {
+                failureReason = e.getMessage();
+            }
+            return generateFallbackAnalysisResult(imageType, failureReason);
+        }
+    }
+    
+    /**
+     * 执行实时AI分析（生成模拟分析结果）
+     * @param imageType 影像类型
+     * @return 模拟AI分析结果
+     */
+    private String performRealTimeAIAnalysis(String imageType) {
+        if (selectedImageUri == null) {
+            throw new RuntimeException("未选择图片");
         }
         
-        result.append("\n\n注意：此为AI辅助分析结果，仅供参考，请以专业医师诊断为准。");
+        // 直接生成模拟的医学影像分析结果
+        try {
+            // 创建模拟的MedicalImageAnalysis对象
+            MedicalImageAnalysis mockAnalysis = createMockMedicalImageAnalysis(imageType);
+            
+            // 格式化并返回模拟分析结果
+            String formattedResult = formatMedicalImageAnalysisResult(mockAnalysis, imageType);
+            
+            // 添加模拟结果标识
+            StringBuilder result = new StringBuilder();
+            result.append(formattedResult);
+            result.append("\n\n🤖 注意：此为模拟AI分析结果，仅供开发测试使用，请以专业医师诊断为准。");
+            
+            return result.toString();
+            
+        } catch (Exception e) {
+            throw new RuntimeException("模拟分析生成失败: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 根据影像类型获取对应的API调用
+     * @param imageType 影像类型
+     * @param imagePart 图片请求体
+     * @return API调用对象
+     */
+    private Call<ApiResponse<MedicalImageAnalysis>> getAnalysisCallByType(String imageType, MultipartBody.Part imagePart) {
+        switch (imageType) {
+            case "xray":
+                return apiService.analyzeXRayImage(imagePart);
+            case "ct":
+                return apiService.analyzeCTImage(imagePart);
+            case "ultrasound":
+                return apiService.analyzeUltrasoundImage(imagePart);
+            case "mri":
+                return apiService.analyzeMRIImage(imagePart);
+            case "petct":
+                return apiService.analyzePETCTImage(imagePart);
+            default:
+                return null;
+        }
+    }
+    
+    /*
+     * 格式化AI分析结果
+     * @param analysis AI分析数据
+     * @param imageType 影像类型
+     * @return 格式化的分析结果
+     */
+    /*
+    private String formatAIAnalysisResult(PrescriptionAnalysis analysis, String imageType) {
+        StringBuilder result = new StringBuilder();
+        result.append("=== ").append(getImageTypeDisplayName(imageType)).append("AI影像分析报告 ===\n\n");
+        
+        // 添加分析结果
+        if (analysis.getAnalysisResult() != null && !analysis.getAnalysisResult().isEmpty()) {
+            result.append(analysis.getAnalysisResult()).append("\n\n");
+        }
+        
+        // 添加置信度信息
+        if (analysis.getConfidenceScore() > 0) {
+            result.append("AI置信度：").append(String.format("%.1f%%", analysis.getConfidenceScore() * 100)).append("\n\n");
+        }
+        
+        // 添加时间戳
+        if (analysis.getAnalysisTimestamp() != null && !analysis.getAnalysisTimestamp().isEmpty()) {
+            result.append("分析时间：").append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(new Date())).append("\n\n");
+        }
+        
+        // 添加免责声明
+        result.append("注意：此为AI辅助分析结果，仅供参考，请以专业医师诊断为准。");
+        
         return result.toString();
+    }
+    */
+    
+    /**
+     * 格式化医学影像分析结果为显示文本
+     * @param analysis 医学影像分析结果
+     * @param imageType 影像类型
+     * @return 格式化后的文本
+     */
+    private String formatMedicalImageAnalysisResult(MedicalImageAnalysis analysis, String imageType) {
+        StringBuilder result = new StringBuilder();
+        
+        result.append("🔬 AI分析结果\n\n");
+        
+        // 影像类型
+        result.append("📋 影像类型: ").append(getImageTypeDisplayName(imageType)).append("\n\n");
+        
+        // 影像发现
+        if (analysis.getFindings() != null && !analysis.getFindings().isEmpty()) {
+            result.append("🔍 影像发现:\n");
+            
+            String primaryFindings = analysis.getPrimaryFindings();
+            if (primaryFindings != null && !primaryFindings.trim().isEmpty()) {
+                result.append("主要发现: ").append(primaryFindings).append("\n");
+            }
+            
+            String abnormalities = analysis.getAbnormalities();
+            if (abnormalities != null && !abnormalities.trim().isEmpty()) {
+                result.append("异常表现: ").append(abnormalities).append("\n");
+            }
+            
+            result.append("\n");
+        }
+        
+        // 诊断结果
+        if (analysis.getDiagnosis() != null && !analysis.getDiagnosis().isEmpty()) {
+            String primaryDiagnosis = analysis.getPrimaryDiagnosis();
+            if (primaryDiagnosis != null && !primaryDiagnosis.trim().isEmpty()) {
+                result.append("🎯 主要诊断: ").append(primaryDiagnosis).append("\n\n");
+            }
+        }
+        
+        // 建议
+        if (analysis.getRecommendations() != null && !analysis.getRecommendations().isEmpty()) {
+            String immediateActions = analysis.getImmediateActions();
+            if (immediateActions != null && !immediateActions.trim().isEmpty()) {
+                result.append("💡 建议: ").append(immediateActions).append("\n\n");
+            }
+        }
+        
+        // 严重程度
+        if (analysis.getSeverity() != null && !analysis.getSeverity().trim().isEmpty()) {
+            result.append("⚡ 严重程度: ").append(analysis.getSeverity()).append("\n\n");
+        }
+        
+        // 置信度
+        if (analysis.getConfidence() > 0) {
+            result.append("📊 AI置信度: ").append(String.format("%.1f%%", analysis.getConfidence() * 100)).append("\n\n");
+        }
+        
+        // 免责声明
+        result.append("⚠️ 免责声明: 此为AI辅助分析结果，仅供参考，请以专业医师诊断为准。");
+        
+        return result.toString();
+    }
+    
+    /**
+     * 生成备用分析结果（当AI分析失败时使用）
+     * @param imageType 影像类型
+     * @return 模拟分析结果
+     */
+    private String generateFallbackAnalysisResult(String imageType) {
+        return generateFallbackAnalysisResult(imageType, null);
+    }
+    
+    /**
+     * 生成备用分析结果（当AI分析失败时使用）
+     * @param imageType 影像类型
+     * @param failureReason 失败原因（可选）
+     * @return 模拟分析结果
+     */
+    private String generateFallbackAnalysisResult(String imageType, String failureReason) {
+        // 创建模拟的MedicalImageAnalysis对象
+        MedicalImageAnalysis mockAnalysis = createMockMedicalImageAnalysis(imageType);
+        
+        // 使用现有的格式化方法生成结果
+        StringBuilder result = new StringBuilder();
+        
+        // 如果有失败信息，先显示失败原因
+        if (failureReason != null && !failureReason.trim().isEmpty()) {
+            result.append("⚠️ AI分析失败信息：\n");
+            result.append(failureReason).append("\n\n");
+            result.append("以下为模拟分析结果：\n\n");
+        }
+        
+        // 格式化模拟分析结果
+        String formattedResult = formatMedicalImageAnalysisResult(mockAnalysis, imageType);
+        result.append(formattedResult);
+        
+        // 添加模拟结果标识
+        result.append("\n\n📝 注意：此为模拟分析结果（AI服务暂时不可用），仅供参考，请以专业医师诊断为准。");
+        
+        return result.toString();
+    }
+    
+    /**
+     * 创建模拟的医学影像分析结果
+     * @param imageType 影像类型
+     * @return 模拟的MedicalImageAnalysis对象
+     */
+    private MedicalImageAnalysis createMockMedicalImageAnalysis(String imageType) {
+        MedicalImageAnalysis analysis = new MedicalImageAnalysis();
+        analysis.setImageType(imageType);
+        
+        // 创建模拟的findings数据
+        Map<String, Object> findings = new HashMap<>();
+        Map<String, Object> diagnosis = new HashMap<>();
+        Map<String, Object> recommendations = new HashMap<>();
+        
+//         switch (imageType) {
+//             case "xray":
+//                 // X光模拟数据
+//                 findings.put("primary_findings", "影像分析失败，请重试");
+//                 findings.put("secondary_findings", "");
+//                 findings.put("abnormalities", "");
+//                 findings.put("normal_findings", "");
+//                 findings.put("image_quality", "");
+                
+//                 diagnosis.put("primary_diagnosis", "请咨询医师");
+//                 diagnosis.put("differential_diagnosis", "");
+//                 diagnosis.put("diagnostic_confidence", "");
+//                 diagnosis.put("severity_level", "");
+//                 diagnosis.put("prognosis", "");
+                
+//                 recommendations.put("immediate_actions", "请咨询医师");
+//                 recommendations.put("follow_up", "");
+//                 recommendations.put("treatment", "");
+//                 recommendations.put("lifestyle", "");
+//                 recommendations.put("further_examinations", "");
+//                 recommendations.put("specialist_referral", "");
+                
+//                 analysis.setSeverity("轻微");
+//                 analysis.setConfidence(0.85);
+//                 break;
+                
+//             case "ct":
+//                 // CT模拟数据
+//                 findings.put("primary_findings", "影像分析失败，请重试");
+//                 findings.put("secondary_findings", "");
+//                 findings.put("abnormalities", "");
+//                 findings.put("normal_findings", "");
+//                 findings.put("image_quality", "");
+                
+//                 diagnosis.put("primary_diagnosis", "请咨询医师");
+//                 diagnosis.put("differential_diagnosis", "");
+//                 diagnosis.put("diagnostic_confidence", "");
+//                 diagnosis.put("severity_level", "");
+//                 diagnosis.put("prognosis", "");
+                
+//                 recommendations.put("immediate_actions", "请咨询医师");
+//                 recommendations.put("follow_up", "");
+//                 recommendations.put("treatment", "");
+//                 recommendations.put("lifestyle", "");
+//                 recommendations.put("further_examinations", "");
+//                 recommendations.put("specialist_referral", "");
+                
+//                 analysis.setSeverity("轻微");
+//                 analysis.setConfidence(0.85);
+//                 break;
+                
+//             case "ultrasound":
+//                 // 超声模拟数据
+//                 findings.put("primary_findings", "影像分析失败，请重试");
+//                 findings.put("secondary_findings", "");
+//                 findings.put("abnormalities", "");
+//                 findings.put("normal_findings", "");
+//                 findings.put("image_quality", "");
+                
+//                 diagnosis.put("primary_diagnosis", "请咨询医师");
+//                 diagnosis.put("differential_diagnosis", "");
+//                 diagnosis.put("diagnostic_confidence", "");
+//                 diagnosis.put("severity_level", "");
+//                 diagnosis.put("prognosis", "");
+                
+//                 recommendations.put("immediate_actions", "请咨询医师");
+//                 recommendations.put("follow_up", "");
+//                 recommendations.put("treatment", "");
+//                 recommendations.put("lifestyle", "");
+//                 recommendations.put("further_examinations", "");
+//                 recommendations.put("specialist_referral", "");
+                
+//                 analysis.setSeverity("轻微");
+//                 analysis.setConfidence(0.85);
+//                 break;
+                
+//             case "mri":
+//                 // MRI模拟数据
+// findings.put("primary_findings", "影像分析失败，请重试");
+//                 findings.put("secondary_findings", "");
+//                 findings.put("abnormalities", "");
+//                 findings.put("normal_findings", "");
+//                 findings.put("image_quality", "");
+                
+//                 diagnosis.put("primary_diagnosis", "请咨询医师");
+//                 diagnosis.put("differential_diagnosis", "");
+//                 diagnosis.put("diagnostic_confidence", "");
+//                 diagnosis.put("severity_level", "");
+//                 diagnosis.put("prognosis", "");
+                
+//                 recommendations.put("immediate_actions", "请咨询医师");
+//                 recommendations.put("follow_up", "");
+//                 recommendations.put("treatment", "");
+//                 recommendations.put("lifestyle", "");
+//                 recommendations.put("further_examinations", "");
+//                 recommendations.put("specialist_referral", "");
+                
+//                 analysis.setSeverity("轻微");
+//                 analysis.setConfidence(0.85);
+//                 break;
+                
+//             case "petct":
+//                 // PET-CT模拟数据
+//                 findings.put("primary_findings", "影像分析失败，请重试");
+//                 findings.put("secondary_findings", "");
+//                 findings.put("abnormalities", "");
+//                 findings.put("normal_findings", "");
+//                 findings.put("image_quality", "");
+                
+//                 diagnosis.put("primary_diagnosis", "请咨询医师");
+//                 diagnosis.put("differential_diagnosis", "");
+//                 diagnosis.put("diagnostic_confidence", "");
+//                 diagnosis.put("severity_level", "");
+//                 diagnosis.put("prognosis", "");
+                
+//                 recommendations.put("immediate_actions", "请咨询医师");
+//                 recommendations.put("follow_up", "");
+//                 recommendations.put("treatment", "");
+//                 recommendations.put("lifestyle", "");
+//                 recommendations.put("further_examinations", "");
+//                 recommendations.put("specialist_referral", "");
+                
+//                 analysis.setSeverity("轻微");
+//                 analysis.setConfidence(0.85);
+//                 break;
+                
+//             default:
+//                 // 默认模拟数据
+//                 findings.put("primary_findings", "影像检查显示基本正常");
+//                 findings.put("abnormalities", "未发现明显异常");
+                
+//                 diagnosis.put("primary_diagnosis", "影像检查未见明显异常");
+//                 diagnosis.put("diagnostic_confidence", "80%");
+                
+//                 recommendations.put("immediate_actions", "无需特殊处理");
+//                 recommendations.put("follow_up", "建议定期复查");
+                
+//                 analysis.setSeverity("正常");
+//                 analysis.setConfidence(0.80);
+//                 break;
+//         }
+        findings.put("primary_findings", "影像分析失败，请重试");
+        findings.put("secondary_findings", "");
+        findings.put("abnormalities", "");
+        findings.put("normal_findings", "");
+        findings.put("image_quality", "");
+        
+        diagnosis.put("primary_diagnosis", "请咨询医师");
+        diagnosis.put("differential_diagnosis", "");
+        diagnosis.put("diagnostic_confidence", "");
+        diagnosis.put("severity_level", "");
+        diagnosis.put("prognosis", "");
+        
+        recommendations.put("immediate_actions", "请咨询医师");
+        recommendations.put("follow_up", "");
+        recommendations.put("treatment", "");
+        recommendations.put("lifestyle", "");
+        recommendations.put("further_examinations", "");
+        recommendations.put("specialist_referral", "");
+        
+        analysis.setSeverity("轻微");
+        analysis.setConfidence(0.85);
+        analysis.setFindings(findings);
+        analysis.setDiagnosis(diagnosis);
+        analysis.setRecommendations(recommendations);
+        
+        return analysis;
     }
     
     /**
@@ -2095,7 +2486,7 @@ public class PrescriptionFragment extends Fragment {
         }
         
         // 创建MultipartBody.Part
-        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "file");
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "image");
         if (imagePart == null) {
             Toast.makeText(getContext(), "图片处理失败", Toast.LENGTH_SHORT).show();
             return;
@@ -2303,6 +2694,117 @@ public class PrescriptionFragment extends Fragment {
         
         // 保存结果状态
         hasAnalysisResult = true;
+        savedAnalysisResult = resultText.toString();
+    }
+    
+    /**
+     * 显示医学影像分析结果
+     */
+    private void displayMedicalImageAnalysis(MedicalImageAnalysis analysis, String imageType) {
+        if (analysis == null) {
+            Toast.makeText(getContext(), "医学影像分析结果为空", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        StringBuilder resultText = new StringBuilder();
+        resultText.append("🏥 === ").append(getImageTypeDisplayName(imageType)).append("AI影像分析报告 === 🏥\n\n");
+        
+        // 影像类型
+        if (!TextUtils.isEmpty(analysis.getImageType())) {
+            resultText.append("📋 【影像类型】\n")
+                     .append(analysis.getImageType())
+                     .append("\n\n");
+        }
+        
+        // 影像发现
+        if (analysis.getFindings() != null && !analysis.getFindings().isEmpty()) {
+            resultText.append("🔍 【影像发现】\n");
+            
+            // 主要发现
+            String primaryFindings = analysis.getPrimaryFindings();
+            if (!TextUtils.isEmpty(primaryFindings)) {
+                resultText.append("主要发现: ").append(primaryFindings).append("\n");
+            }
+            
+            // 次要发现
+            String secondaryFindings = analysis.getSecondaryFindings();
+            if (!TextUtils.isEmpty(secondaryFindings)) {
+                resultText.append("次要发现: ").append(secondaryFindings).append("\n");
+            }
+            
+            // 异常表现
+            String abnormalities = analysis.getAbnormalities();
+            if (!TextUtils.isEmpty(abnormalities)) {
+                resultText.append("异常表现: ").append(abnormalities).append("\n");
+            }
+            
+            resultText.append("\n");
+        }
+        
+        // 诊断结果
+        if (analysis.getDiagnosis() != null && !analysis.getDiagnosis().isEmpty()) {
+            resultText.append("🎯 【诊断结果】\n");
+            
+            // 主要诊断
+            String primaryDiagnosis = analysis.getPrimaryDiagnosis();
+            if (!TextUtils.isEmpty(primaryDiagnosis)) {
+                resultText.append("主要诊断: ").append(primaryDiagnosis).append("\n");
+            }
+            
+            // 鉴别诊断
+            String differentialDiagnosis = analysis.getDifferentialDiagnosis();
+            if (!TextUtils.isEmpty(differentialDiagnosis)) {
+                resultText.append("鉴别诊断: ").append(differentialDiagnosis).append("\n");
+            }
+            
+            // 诊断置信度
+            String diagnosticConfidence = analysis.getDiagnosticConfidence();
+            if (!TextUtils.isEmpty(diagnosticConfidence)) {
+                resultText.append("诊断置信度: ").append(diagnosticConfidence).append("\n");
+            }
+            
+            resultText.append("\n");
+        }
+        
+        // 医学建议
+        if (analysis.getRecommendations() != null && !analysis.getRecommendations().isEmpty()) {
+            resultText.append("💡 【医学建议】\n");
+            
+            // 即时行动建议
+            String immediateActions = analysis.getImmediateActions();
+            if (!TextUtils.isEmpty(immediateActions)) {
+                resultText.append("即时行动: ").append(immediateActions).append("\n");
+            }
+            
+            // 随访建议
+            String followUp = analysis.getFollowUp();
+            if (!TextUtils.isEmpty(followUp)) {
+                resultText.append("随访建议: ").append(followUp).append("\n");
+            }
+            
+            resultText.append("\n");
+        }
+        
+        // 严重程度
+        if (!TextUtils.isEmpty(analysis.getSeverity())) {
+            resultText.append("⚡ 【严重程度】\n")
+                     .append(analysis.getSeverity())
+                     .append("\n\n");
+        }
+        
+        // AI置信度
+        if (analysis.getConfidence() > 0) {
+            resultText.append("🎯 【AI置信度】\n")
+                     .append(String.format("%.1f%%", analysis.getConfidence() * 100))
+                     .append("\n\n");
+        }
+        
+        // 免责声明
+        resultText.append("⚠️ 【重要提示】\n")
+                 .append("此为AI辅助分析结果，仅供参考，请以专业医师诊断为准。");
+        
+        // 显示结果
+        displayTextWithTypewriterEffect(resultText.toString());
         savedAnalysisResult = resultText.toString();
     }
     

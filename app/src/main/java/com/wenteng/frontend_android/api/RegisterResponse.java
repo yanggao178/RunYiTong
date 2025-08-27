@@ -19,14 +19,11 @@ public class RegisterResponse implements Serializable {
     @SerializedName("phone")
     private String phone;
     
-    @SerializedName("token")
-    private String token;
+    @SerializedName("full_name")
+    private String fullName;
     
-    @SerializedName("register_type")
-    private String registerType;
-    
-    @SerializedName("created_at")
-    private String createdAt;
+    @SerializedName("message")
+    private String message;
     
     public RegisterResponse() {}
     
@@ -62,28 +59,20 @@ public class RegisterResponse implements Serializable {
         this.phone = phone;
     }
     
-    public String getToken() {
-        return token;
+    public String getFullName() {
+        return fullName;
     }
     
-    public void setToken(String token) {
-        this.token = token;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
     
-    public String getRegisterType() {
-        return registerType;
+    public String getMessage() {
+        return message;
     }
     
-    public void setRegisterType(String registerType) {
-        this.registerType = registerType;
-    }
-    
-    public String getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public void setMessage(String message) {
+        this.message = message;
     }
     
     @Override
@@ -93,8 +82,8 @@ public class RegisterResponse implements Serializable {
                 ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
-                ", registerType='" + registerType + '\'' +
-                ", createdAt='" + createdAt + '\'' +
+                ", fullName='" + fullName + '\'' +
+                ", message='" + message + '\'' +
                 '}';
     }
 }

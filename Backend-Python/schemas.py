@@ -204,6 +204,44 @@ class HealthRecord(HealthRecordBase):
     class Config:
         from_attributes = True
 
+# 短信验证码相关模式
+# 短信验证码请求
+class SmsCodeRequest(BaseModel):
+    phone: str
+
+# 短信验证码响应
+class SmsCodeResponse(BaseModel):
+    phone: str
+    message: str = "验证码发送成功"
+    expires_in: int = 300  # 5分钟过期
+    
+    class Config:
+        from_attributes = True
+
+# 用户登录请求
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+# 短信注册请求模式
+class SmsRegisterRequest(BaseModel):
+    username: str
+    phone: str
+    verification_code: str
+    password: str
+
+# 注册响应模式
+class RegisterResponse(BaseModel):
+    user_id: int
+    username: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    full_name: Optional[str] = None
+    message: str = "注册成功"
+    
+    class Config:
+        from_attributes = True
+
 # 分页响应模式
 class PaginatedResponse(BaseModel):
     items: List[dict]

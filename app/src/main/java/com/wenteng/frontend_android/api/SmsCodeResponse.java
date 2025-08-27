@@ -10,17 +10,11 @@ public class SmsCodeResponse implements Serializable {
     @SerializedName("phone")
     private String phone;
     
-    @SerializedName("code_sent")
-    private boolean codeSent;
+    @SerializedName("message")
+    private String message;
     
     @SerializedName("expires_in")
     private int expiresIn;
-    
-    @SerializedName("sent_at")
-    private String sentAt;
-    
-    @SerializedName("retry_after")
-    private int retryAfter;
     
     public SmsCodeResponse() {}
     
@@ -32,12 +26,12 @@ public class SmsCodeResponse implements Serializable {
         this.phone = phone;
     }
     
-    public boolean isCodeSent() {
-        return codeSent;
+    public String getMessage() {
+        return message;
     }
     
-    public void setCodeSent(boolean codeSent) {
-        this.codeSent = codeSent;
+    public void setMessage(String message) {
+        this.message = message;
     }
     
     public int getExpiresIn() {
@@ -48,30 +42,12 @@ public class SmsCodeResponse implements Serializable {
         this.expiresIn = expiresIn;
     }
     
-    public String getSentAt() {
-        return sentAt;
-    }
-    
-    public void setSentAt(String sentAt) {
-        this.sentAt = sentAt;
-    }
-    
-    public int getRetryAfter() {
-        return retryAfter;
-    }
-    
-    public void setRetryAfter(int retryAfter) {
-        this.retryAfter = retryAfter;
-    }
-    
     @Override
     public String toString() {
         return "SmsCodeResponse{" +
                 "phone='" + phone + '\'' +
-                ", codeSent=" + codeSent +
+                ", message='" + message + '\'' +
                 ", expiresIn=" + expiresIn +
-                ", sentAt='" + sentAt + '\'' +
-                ", retryAfter=" + retryAfter +
                 '}';
     }
 }
