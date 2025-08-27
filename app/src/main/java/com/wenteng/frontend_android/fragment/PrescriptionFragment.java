@@ -50,7 +50,21 @@ import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
 import com.wenteng.frontend_android.model.MedicalImageAnalysis;
 import com.wenteng.frontend_android.model.ImageUploadResult;
+import com.wenteng.frontend_android.model.TongueDiagnosisResult;
+import com.wenteng.frontend_android.model.TongueAnalysis;
+import com.wenteng.frontend_android.model.TongueBody;
+import com.wenteng.frontend_android.model.TongueCoating;
+import com.wenteng.frontend_android.model.TCMDiagnosis;
+import com.wenteng.frontend_android.model.TCMRecommendations;
+import com.wenteng.frontend_android.model.FaceDiagnosisResult;
+import com.wenteng.frontend_android.model.FacialAnalysis;
+import com.wenteng.frontend_android.model.Complexion;
+import com.wenteng.frontend_android.model.FacialFeatures;
+import com.wenteng.frontend_android.model.FacialRegions;
+import com.wenteng.frontend_android.model.TCMFaceDiagnosis;
+import com.wenteng.frontend_android.model.TCMFaceRecommendations;
 import com.wenteng.frontend_android.utils.ImageUtils;
+import com.wenteng.frontend_android.utils.NetworkDebugHelper;
 import com.wenteng.frontend_android.dialog.ImageProcessingDialogFragment;
 import com.wenteng.frontend_android.dialog.ImagePickerDialogFragment;
 import com.wenteng.frontend_android.dialog.TestDialogFragment;
@@ -83,6 +97,8 @@ public class PrescriptionFragment extends Fragment {
     private Call<ApiResponse<OCRResult>> ocrCall;
     private Call<ApiResponse<PrescriptionAnalysis>> analysisCall;
     private Call<ApiResponse<MedicalImageAnalysis>> medicalImageAnalysisCall;
+    private Call<ApiResponse<FaceDiagnosisResult>> faceDiagnosisCall;
+    private Call<ApiResponse<TongueDiagnosisResult>> tongueDiagnosisCall;
     private Call<ApiResponse<ImageUploadResult>> uploadCall;
     private Uri selectedImageUri;
     private String imageSource = "unknown"; // 记录图片来源："camera" 或 "gallery"
@@ -127,6 +143,18 @@ public class PrescriptionFragment extends Fragment {
         tvLoadingText = view.findViewById(R.id.tv_loading_text);
         btnSelectImageSource = view.findViewById(R.id.btn_select_image_source);
         btnUploadPrescription = view.findViewById(R.id.btn_upload_prescription);
+        
+        // 初始化AI中医舌面诊按钮
+        TextView tvAiTongueDiagnosis = view.findViewById(R.id.tv_ai_tongue_diagnosis);
+        if (tvAiTongueDiagnosis != null) {
+            tvAiTongueDiagnosis.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // 弹出舌面诊图片来源选择对话框
+                    showTongueDiagnosisImagePickerDialog();
+                }
+            });
+        }
         
         // 初始化历史记录相关控件
         cvHistoryDropdown = view.findViewById(R.id.cv_history_dropdown);
@@ -444,6 +472,12 @@ public class PrescriptionFragment extends Fragment {
         }
         if (medicalImageAnalysisCall != null && !medicalImageAnalysisCall.isCanceled()) {
             medicalImageAnalysisCall.cancel();
+        }
+        if (faceDiagnosisCall != null && !faceDiagnosisCall.isCanceled()) {
+            faceDiagnosisCall.cancel();
+        }
+        if (tongueDiagnosisCall != null && !tongueDiagnosisCall.isCanceled()) {
+            tongueDiagnosisCall.cancel();
         }
         if (uploadCall != null && !uploadCall.isCanceled()) {
             uploadCall.cancel();
@@ -947,6 +981,52 @@ public class PrescriptionFragment extends Fragment {
      * 显示图片选择对话框
      * 使用自定义DialogFragment替代简单的AlertDialog，提供更好的用户体验
      */
+    // 当前舌面诊类型："tongue"表示舌诊，"face"表示面诊
+    private String currentTongueDiagnosisType = null;
+    
+    /**
+     * 显示舌面诊图片选择对话框
+     */
+    private void showTongueDiagnosisImagePickerDialog() {
+        Log.d("PrescriptionFragment", "显示舌面诊图片选择对话框");
+        
+        if (getContext() == null || !isAdded()) {
+            Log.w("PrescriptionFragment", "Fragment状态异常，无法显示对话框");
+            return;
+        }
+        
+        try {
+            TongueDiagnosisPickerDialogFragment dialogFragment = TongueDiagnosisPickerDialogFragment.newInstance();
+            dialogFragment.setOnTongueDiagnosisSelectedListener(new TongueDiagnosisPickerDialogFragment.OnTongueDiagnosisSelectedListener() {
+                @Override
+                public void onTongueDiagnosisSelected() {
+                    Log.d("PrescriptionFragment", "用户选择舌诊");
+                    // 设置当前分析类型为舌诊
+                    currentTongueDiagnosisType = "tongue";
+                    showImagePickerDialog();
+                }
+                
+                @Override
+                public void onFaceDiagnosisSelected() {
+                    Log.d("PrescriptionFragment", "用户选择面诊");
+                    // 设置当前分析类型为面诊
+                    currentTongueDiagnosisType = "face";
+                    showImagePickerDialog();
+                }
+                
+                @Override
+                public void onDialogCancelled() {
+                    Log.d("PrescriptionFragment", "用户取消舌面诊选择");
+                }
+            });
+            
+            dialogFragment.show(getParentFragmentManager(), "TongueDiagnosisPickerDialog");
+        } catch (Exception e) {
+            Log.e("PrescriptionFragment", "显示舌面诊对话框异常: " + e.getMessage(), e);
+            showSafeToast("显示选择对话框失败，请重试");
+        }
+    }
+    
     private void showImagePickerDialog() {
         android.util.Log.d("PrescriptionFragment", "=== 开始显示图片选择对话框 ===");
         android.util.Log.d("PrescriptionFragment", "Fragment状态 - Context: " + (getContext() != null) + ", isAdded: " + isAdded() + ", isDetached: " + isDetached() + ", isRemoving: " + isRemoving());
@@ -2418,7 +2498,7 @@ public class PrescriptionFragment extends Fragment {
 //                 recommendations.put("specialist_referral", "");
                 
 //                 analysis.setSeverity("轻微");
-//                 analysis.setConfidence(0.85);
+//                 analysis.setConfidence(0.85f);
 //                 break;
                 
 //             case "ct":
@@ -2556,12 +2636,736 @@ public class PrescriptionFragment extends Fragment {
         recommendations.put("specialist_referral", "");
         
         analysis.setSeverity("轻微");
-        analysis.setConfidence(0.85);
+        analysis.setConfidence(0.85f);
         analysis.setFindings(findings);
         analysis.setDiagnosis(diagnosis);
         analysis.setRecommendations(recommendations);
         
         return analysis;
+    }
+    
+    /**
+     * 执行中医舌诊分析
+     * 专门处理舌诊图像的AI分析功能
+     */
+    private void performTongueDiagnosis() {
+        Log.d("PrescriptionFragment", "开始执行中医舌诊分析");
+        
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择舌诊图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 创建MultipartBody.Part用于上传舌诊图片
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "image");
+        if (imagePart == null) {
+            Toast.makeText(getContext(), "舌诊图片处理失败", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 显示加载界面
+        llLoading.setVisibility(View.VISIBLE);
+        tvAnalysisResult.setVisibility(View.GONE);
+        // 禁用按钮防止重复点击
+        btnUploadPrescription.setEnabled(false);
+        btnSelectImageSource.setEnabled(false);
+        etSymptoms.setEnabled(false);
+        
+        // 启动中医舌诊专用的进度更新
+        startTongueDiagnosisProgressUpdate();
+        
+        // 调用中医舌诊API接口
+        tongueDiagnosisCall = apiService.analyzeTongueImage(imagePart);
+        
+        if (tongueDiagnosisCall != null) {
+            tongueDiagnosisCall.enqueue(new Callback<ApiResponse<TongueDiagnosisResult>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<TongueDiagnosisResult>> call, Response<ApiResponse<TongueDiagnosisResult>> response) {
+                    showLoading(false);
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse<TongueDiagnosisResult> apiResponse = response.body();
+                        Log.d("PrescriptionFragment", "中医舌诊API响应成功 - success: " + apiResponse.isSuccess() + ", message: " + apiResponse.getMessage());
+                        
+                        if (apiResponse.isSuccess()) {
+                            TongueDiagnosisResult analysisData = apiResponse.getData();
+                            Log.d("PrescriptionFragment", "舌诊分析数据获取成功");
+                            
+                            if (analysisData != null) {
+                                Log.d("PrescriptionFragment", "显示中医舌诊分析结果");
+                                // 显示中医舌诊分析结果
+                                displayTongueDiagnosisResult(analysisData);
+                                Toast.makeText(getContext(), "中医舌诊分析完成", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.w("PrescriptionFragment", "舌诊分析数据为空，使用模拟结果");
+                                String mockResult = generateMockTongueDiagnosisResult();
+                                displayTextWithTypewriterEffect(mockResult);
+                                Toast.makeText(getContext(), "舌诊分析数据为空，使用模拟结果", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Log.d("PrescriptionFragment", "舌诊API响应失败 - errorCode: " + apiResponse.getErrorCode());
+                            // 检查是否为图像类型不匹配错误
+                            if ("IMAGE_TYPE_MISMATCH".equals(apiResponse.getErrorCode())) {
+                                Log.d("PrescriptionFragment", "API级别检测到舌诊图像类型不匹配错误，显示错误对话框");
+                                showImageTypeMismatchDialog("tongue", apiResponse.getMessage());
+                                return;
+                            } else {
+                                // 其他API错误，使用模拟结果作为备用方案
+                                String mockResult = generateMockTongueDiagnosisResult();
+                                displayTextWithTypewriterEffect(mockResult);
+                                Toast.makeText(getContext(), "使用模拟舌诊分析结果: " + apiResponse.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    } else {
+                        // 网络请求失败，使用模拟结果作为备用方案
+                        Log.e("PrescriptionFragment", "舌诊网络请求失败 - HTTP状态码: " + response.code() + ", 消息: " + response.message());
+                        String mockResult = generateMockTongueDiagnosisResult();
+                        displayTextWithTypewriterEffect(mockResult);
+                        Toast.makeText(getContext(), "网络请求失败(" + response.code() + ")，使用模拟舌诊分析结果", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<ApiResponse<TongueDiagnosisResult>> call, Throwable t) {
+                    showLoading(false);
+                    if (!call.isCanceled()) {
+                        // 网络请求失败，使用模拟结果作为备用方案
+                        Log.e("PrescriptionFragment", "舌诊网络连接失败: " + t.getClass().getSimpleName() + " - " + t.getMessage(), t);
+                        String mockResult = generateMockTongueDiagnosisResult();
+                        displayTextWithTypewriterEffect(mockResult);
+                        
+                        // 根据异常类型显示不同的错误提示
+                        String errorMessage;
+                        if (t instanceof com.google.gson.JsonSyntaxException) {
+                            errorMessage = "服务器响应格式异常，使用模拟舌诊分析结果";
+                        } else if (t instanceof java.net.SocketTimeoutException) {
+                            errorMessage = "舌诊分析超时，使用模拟分析结果";
+                        } else if (t instanceof java.net.ConnectException) {
+                            errorMessage = "无法连接服务器，使用模拟舌诊分析结果";
+                        } else if (t instanceof java.io.IOException) {
+                            errorMessage = "网络异常，使用模拟舌诊分析结果";
+                        } else {
+                            errorMessage = "网络连接失败，使用模拟舌诊分析结果";
+                        }
+                        
+                        Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+    }
+    
+    /**
+     * 启动中医舌诊分析专用的进度更新
+     */
+    private void startTongueDiagnosisProgressUpdate() {
+        final String[] progressMessages = {
+            "正在分析舌质颜色...",
+            "正在检测舌苔厚薄...",
+            "正在评估舌体形态...",
+            "正在进行中医辨证...",
+            "正在生成调理建议...",
+            "分析即将完成..."
+        };
+        
+        final int[] currentIndex = {0};
+        
+        Handler handler = new Handler(Looper.getMainLooper());
+        Runnable progressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (llLoading.getVisibility() == View.VISIBLE && currentIndex[0] < progressMessages.length) {
+                    tvLoadingText.setText(progressMessages[currentIndex[0]]);
+                    currentIndex[0]++;
+                    handler.postDelayed(this, 2000); // 每2秒更新一次
+                }
+            }
+        };
+        
+        handler.post(progressRunnable);
+    }
+    
+    /**
+     * 显示中医舌诊分析结果
+     * @param analysisData 舌诊分析数据
+     */
+    private void displayTongueDiagnosisResult(TongueDiagnosisResult analysisData) {
+        String formattedResult = formatTongueDiagnosisResult(analysisData);
+        displayTextWithTypewriterEffect(formattedResult);
+    }
+    
+    /**
+     * 格式化中医舌诊分析结果
+     * @param analysis 舌诊分析数据
+     * @return 格式化后的舌诊报告
+     */
+    private String formatTongueDiagnosisResult(TongueDiagnosisResult analysis) {
+        StringBuilder result = new StringBuilder();
+        
+        result.append("🏥 中医舌诊AI分析报告\n\n");
+        
+        // 舌质分析
+        if (analysis.getTongueAnalysis() != null) {
+            TongueAnalysis tongueAnalysis = analysis.getTongueAnalysis();
+            
+            // 舌质分析
+            if (tongueAnalysis.getTongueBody() != null) {
+                TongueBody tongueBody = tongueAnalysis.getTongueBody();
+                result.append("👅 舌质分析:\n");
+                
+                String tongueColor = tongueBody.getColor() != null ? tongueBody.getColor() : "淡红色";
+                String tongueShape = tongueBody.getShape() != null ? tongueBody.getShape() : "正常";
+                String tongueTexture = tongueBody.getTexture() != null ? tongueBody.getTexture() : "润泽";
+                String tongueMobility = tongueBody.getMobility() != null ? tongueBody.getMobility() : "活动正常";
+                
+                result.append("• 舌色: ").append(tongueColor).append("\n");
+                result.append("• 舌形: ").append(tongueShape).append("\n");
+                result.append("• 舌质: ").append(tongueTexture).append("\n");
+                result.append("• 舌体活动: ").append(tongueMobility).append("\n\n");
+            }
+            
+            // 舌苔分析
+            if (tongueAnalysis.getTongueCoating() != null) {
+                TongueCoating tongueCoating = tongueAnalysis.getTongueCoating();
+                result.append("🔍 舌苔分析:\n");
+                
+                String coatingColor = tongueCoating.getColor() != null ? tongueCoating.getColor() : "薄白苔";
+                String coatingThickness = tongueCoating.getThickness() != null ? tongueCoating.getThickness() : "薄苔";
+                String coatingMoisture = tongueCoating.getMoisture() != null ? tongueCoating.getMoisture() : "润苔";
+                String coatingTexture = tongueCoating.getTexture() != null ? tongueCoating.getTexture() : "均匀分布";
+                
+                result.append("• 苔色: ").append(coatingColor).append("\n");
+                result.append("• 苔质厚薄: ").append(coatingThickness).append("\n");
+                result.append("• 润燥程度: ").append(coatingMoisture).append("\n");
+                result.append("• 苔质性状: ").append(coatingTexture).append("\n\n");
+            }
+        }
+        
+        // 中医诊断
+        if (analysis.getTcmDiagnosis() != null) {
+            TCMDiagnosis tcmDiagnosis = analysis.getTcmDiagnosis();
+            result.append("🎯 中医诊断:\n");
+            
+            String syndromePattern = tcmDiagnosis.getSyndromePattern() != null ? tcmDiagnosis.getSyndromePattern() : "气血调和";
+            String constitutionType = tcmDiagnosis.getConstitutionType() != null ? tcmDiagnosis.getConstitutionType() : "平和质";
+            String organFunction = tcmDiagnosis.getOrganFunction() != null ? tcmDiagnosis.getOrganFunction() : "脏腑功能基本正常";
+            String qiBloodStatus = tcmDiagnosis.getQiBloodStatus() != null ? tcmDiagnosis.getQiBloodStatus() : "气血状态良好";
+            
+            result.append("• 证候类型: ").append(syndromePattern).append("\n");
+            result.append("• 体质类型: ").append(constitutionType).append("\n");
+            result.append("• 脏腑功能: ").append(organFunction).append("\n");
+            result.append("• 气血状态: ").append(qiBloodStatus).append("\n\n");
+        }
+        
+        // 调理建议
+        if (analysis.getRecommendations() != null) {
+            TCMRecommendations recommendations = analysis.getRecommendations();
+            result.append("💡 调理建议:\n");
+            
+            String dietaryTherapy = recommendations.getDietaryTherapy() != null ? recommendations.getDietaryTherapy() : "饮食清淡，营养均衡";
+            String lifestyleAdjustment = recommendations.getLifestyleAdjustment() != null ? recommendations.getLifestyleAdjustment() : "规律作息，适量运动";
+            String herbalSuggestions = recommendations.getHerbalSuggestions() != null ? recommendations.getHerbalSuggestions() : "可咨询中医师";
+            String followUp = recommendations.getFollowUp() != null ? recommendations.getFollowUp() : "建议定期复查";
+            
+            result.append("• 食疗建议: ").append(dietaryTherapy).append("\n");
+            result.append("• 生活调理: ").append(lifestyleAdjustment).append("\n");
+            result.append("• 中药建议: ").append(herbalSuggestions).append("\n");
+            result.append("• 复诊建议: ").append(followUp).append("\n\n");
+        }
+        
+        // 严重程度和置信度
+        if (analysis.getSeverity() != null && !analysis.getSeverity().trim().isEmpty()) {
+            result.append("⚡ 健康程度: ").append(analysis.getSeverity()).append("\n");
+        }
+        
+        if (analysis.getConfidence() > 0) {
+            result.append("📊 AI置信度: ").append(String.format("%.1f%%", analysis.getConfidence() * 100)).append("\n\n");
+        }
+        
+        // 免责声明
+        result.append("⚠️ 免责声明: 此为AI辅助中医舌诊分析结果，仅供参考，请以专业中医师诊断为准。");
+        
+        return result.toString();
+    }
+    
+    /**
+     * 生成模拟的中医舌诊分析结果
+     * @return 模拟舌诊分析结果
+     */
+    private String generateMockTongueDiagnosisResult() {
+        // 创建模拟的舌诊分析数据
+        TongueDiagnosisResult mockAnalysis = createMockTongueDiagnosisAnalysis();
+        
+        // 格式化模拟分析结果
+        String formattedResult = formatTongueDiagnosisResult(mockAnalysis);
+        
+        // 添加模拟结果标识
+        StringBuilder result = new StringBuilder();
+        result.append(formattedResult);
+        result.append("\n\n🤖 注意：此为模拟中医舌诊分析结果（AI服务暂时不可用），仅供开发测试使用，请以专业中医师诊断为准。");
+        
+        return result.toString();
+    }
+    
+    /**
+     * 创建模拟的中医舌诊分析数据
+     * @return 模拟的舌诊分析对象
+     */
+    private TongueDiagnosisResult createMockTongueDiagnosisAnalysis() {
+        TongueDiagnosisResult analysis = new TongueDiagnosisResult();
+        analysis.setImageType("tongue");
+        
+        // 创建舌质分析数据
+        TongueBody tongueBody = new TongueBody();
+        tongueBody.setColor("未显示");
+        tongueBody.setShape("未显示");
+        tongueBody.setTexture("未显示");
+        tongueBody.setMobility("未显示");
+        
+        // 创建舌苔分析数据
+        TongueCoating tongueCoating = new TongueCoating();
+        tongueCoating.setColor("未显示");
+        tongueCoating.setThickness("未显示");
+        tongueCoating.setMoisture("未显示");
+        tongueCoating.setTexture("未显示");
+        
+        // 创建舌诊分析对象
+        TongueAnalysis tongueAnalysis = new TongueAnalysis();
+        tongueAnalysis.setTongueBody(tongueBody);
+        tongueAnalysis.setTongueCoating(tongueCoating);
+        
+        // 创建中医诊断数据
+        TCMDiagnosis tcmDiagnosis = new TCMDiagnosis();
+        tcmDiagnosis.setSyndromePattern("未显示");
+        tcmDiagnosis.setConstitutionType("未显示");
+        tcmDiagnosis.setOrganFunction("未显示");
+        tcmDiagnosis.setQiBloodStatus("未显示");
+        
+        // 创建调理建议数据
+        TCMRecommendations recommendations = new TCMRecommendations();
+        recommendations.setDietaryTherapy("未显示");
+        recommendations.setLifestyleAdjustment("未显示");
+        recommendations.setHerbalSuggestions("未显示");
+        recommendations.setFollowUp("未显示");
+        
+        analysis.setTongueAnalysis(tongueAnalysis);
+        analysis.setTcmDiagnosis(tcmDiagnosis);
+        analysis.setRecommendations(recommendations);
+        analysis.setSeverity("未显示");
+        analysis.setConfidence(0.88f);
+        
+        return analysis;
+    }
+    
+    /**
+     * 从Map中安全获取字符串值
+     * @param map 数据Map
+     * @param key 键名
+     * @param defaultValue 默认值
+     * @return 字符串值
+     */
+    private String getStringFromMap(Map<String, Object> map, String key, String defaultValue) {
+        if (map == null || !map.containsKey(key)) {
+            return defaultValue;
+        }
+        Object value = map.get(key);
+        return value != null ? value.toString() : defaultValue;
+    }
+    
+    /**
+     * 执行中医面诊分析
+     * 专门处理面诊图像的AI分析功能
+     */
+    private void performFaceDiagnosis() {
+        Log.d("PrescriptionFragment", "开始执行中医面诊分析");
+        
+        if (selectedImageUri == null) {
+            Toast.makeText(getContext(), "请先选择面诊图片", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 创建MultipartBody.Part用于上传面诊图片
+        MultipartBody.Part imagePart = ImageUtils.createImagePart(getContext(), selectedImageUri, "image");
+        if (imagePart == null) {
+            Toast.makeText(getContext(), "面诊图片处理失败", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // 添加网络调试功能
+        Log.d("PrescriptionFragment", "=== 开始网络调试测试 ===");
+        NetworkDebugHelper.logThreadInfo();
+        NetworkDebugHelper.logNetworkConfig();
+        
+        // 先进行基本连接测试
+        NetworkDebugHelper.testBasicConnection(new NetworkDebugHelper.DebugCallback() {
+            @Override
+            public void onDebugMessage(String message) {
+                Log.d("PrescriptionFragment", "[调试] " + message);
+            }
+            
+            @Override
+            public void onSuccess(String message) {
+                Log.d("PrescriptionFragment", "[成功] " + message);
+                // 基本连接成功后，进行面诊API测试
+                testFaceDiagnosisWithDebug(imagePart);
+            }
+            
+            @Override
+            public void onError(String message) {
+                Log.e("PrescriptionFragment", "[错误] " + message);
+                // 即使基本连接失败，也尝试面诊API
+                testFaceDiagnosisWithDebug(imagePart);
+            }
+        });
+    }
+    
+    /**
+     * 使用调试功能测试面诊API
+     */
+    private void testFaceDiagnosisWithDebug(MultipartBody.Part imagePart) {
+        Log.d("PrescriptionFragment", "开始面诊API调试测试");
+        
+        NetworkDebugHelper.testFaceDiagnosisConnection(imagePart, new NetworkDebugHelper.DebugCallback() {
+            @Override
+            public void onDebugMessage(String message) {
+                Log.d("PrescriptionFragment", "[面诊调试] " + message);
+            }
+            
+            @Override
+            public void onSuccess(String message) {
+                Log.d("PrescriptionFragment", "[面诊成功] " + message);
+                // 调试成功后，执行原有的面诊逻辑
+                performOriginalFaceDiagnosis(imagePart);
+            }
+            
+            @Override
+            public void onError(String message) {
+                Log.e("PrescriptionFragment", "[面诊错误] " + message);
+                // 调试失败，仍然尝试原有逻辑
+                performOriginalFaceDiagnosis(imagePart);
+            }
+        });
+    }
+    
+    /**
+     * 执行原有的面诊分析逻辑
+     */
+    private void performOriginalFaceDiagnosis(MultipartBody.Part imagePart) {
+        Log.d("PrescriptionFragment", "执行原有面诊分析逻辑");
+        
+        // 显示加载界面
+        llLoading.setVisibility(View.VISIBLE);
+        tvAnalysisResult.setVisibility(View.GONE);
+        // 禁用按钮防止重复点击
+        btnUploadPrescription.setEnabled(false);
+        btnSelectImageSource.setEnabled(false);
+        etSymptoms.setEnabled(false);
+        
+        // 启动中医面诊专用的进度更新
+        startFaceDiagnosisProgressUpdate();
+        
+        // 调用中医面诊API接口
+        faceDiagnosisCall = apiService.analyzeFaceImage(imagePart);
+        
+        if (faceDiagnosisCall != null) {
+            faceDiagnosisCall.enqueue(new Callback<ApiResponse<FaceDiagnosisResult>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<FaceDiagnosisResult>> call, Response<ApiResponse<FaceDiagnosisResult>> response) {
+                    showLoading(false);
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        ApiResponse<FaceDiagnosisResult> apiResponse = response.body();
+                        Log.d("PrescriptionFragment", "中医面诊API响应成功 - success: " + apiResponse.isSuccess() + ", message: " + apiResponse.getMessage());
+                        
+                        if (apiResponse.isSuccess()) {
+                            FaceDiagnosisResult analysisData = apiResponse.getData();
+                            Log.d("PrescriptionFragment", "面诊分析数据获取成功");
+                            
+                            if (analysisData != null) {
+                                Log.d("PrescriptionFragment", "显示中医面诊分析结果");
+                                // 显示中医面诊分析结果
+                                displayFaceDiagnosisResult(analysisData);
+                                Toast.makeText(getContext(), "中医面诊分析完成", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Log.w("PrescriptionFragment", "面诊分析数据为空，使用模拟结果");
+                                String mockResult = generateMockFaceDiagnosisResult();
+                                displayTextWithTypewriterEffect(mockResult);
+                                // Toast.makeText(getContext(), "面诊分析数据为空，使用模拟结果", Toast.LENGTH_SHORT).show();
+                                tvAnalysisResult.setText("分析失败: " + apiResponse.getMessage());
+                                Toast.makeText(getContext(), "分析失败，请重试", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Log.d("PrescriptionFragment", "面诊API响应失败 - errorCode: " + apiResponse.getErrorCode());
+                            // 检查是否为图像类型不匹配错误
+                            if ("IMAGE_TYPE_MISMATCH".equals(apiResponse.getErrorCode())) {
+                                Log.d("PrescriptionFragment", "API级别检测到面诊图像类型不匹配错误，显示错误对话框");
+                                showImageTypeMismatchDialog("face", apiResponse.getMessage());
+                                return;
+                            } else {
+                                // 其他API错误，使用模拟结果作为备用方案
+                                String mockResult = generateMockFaceDiagnosisResult();
+                                displayTextWithTypewriterEffect(mockResult);
+                                Toast.makeText(getContext(), "使用模拟面诊分析结果: " + apiResponse.getMessage(), Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    } else {
+                        // 网络请求失败，使用模拟结果作为备用方案
+                        Log.e("PrescriptionFragment", "面诊网络请求失败 - HTTP状态码: " + response.code() + ", 消息: " + response.message());
+                        String mockResult = generateMockFaceDiagnosisResult();
+                        displayTextWithTypewriterEffect(mockResult);
+                        Toast.makeText(getContext(), "网络请求失败(" + response.code() + ")，使用模拟面诊分析结果", Toast.LENGTH_SHORT).show();
+                    }
+                }
+                
+                @Override
+                public void onFailure(Call<ApiResponse<FaceDiagnosisResult>> call, Throwable t) {
+                    showLoading(false);
+                    if (!call.isCanceled()) {
+                        // 网络请求失败，使用模拟结果作为备用方案
+                        Log.e("PrescriptionFragment", "面诊网络连接失败: " + t.getClass().getSimpleName() + " - " + t.getMessage(), t);
+                        String mockResult = generateMockFaceDiagnosisResult();
+                        displayTextWithTypewriterEffect(mockResult);
+                        
+                        // 根据异常类型显示不同的错误提示
+                        String errorMessage;
+                        if (t instanceof com.google.gson.JsonSyntaxException) {
+                            errorMessage = "服务器响应格式异常，使用模拟面诊分析结果";
+                        } else if (t instanceof java.net.SocketTimeoutException) {
+                            errorMessage = "面诊分析超时，使用模拟分析结果";
+                        } else if (t instanceof java.net.ConnectException) {
+                            errorMessage = "无法连接服务器，使用模拟面诊分析结果";
+                        } else if (t instanceof java.io.IOException) {
+                            errorMessage = "网络异常，使用模拟面诊分析结果";
+                        } else {
+                            errorMessage = "网络连接失败，使用模拟面诊分析结果";
+                        }
+                        
+                        Toast.makeText(getContext(), errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                }
+            });
+        }
+    }
+    
+    /**
+     * 启动中医面诊分析专用的进度更新
+     */
+    private void startFaceDiagnosisProgressUpdate() {
+        final String[] progressMessages = {
+            "正在分析面部气色...",
+            "正在检测五官特征...",
+            "正在评估面部区域...",
+            "正在进行中医辨证...",
+            "正在生成调理建议...",
+            "分析即将完成..."
+        };
+        
+        final int[] currentIndex = {0};
+        
+        Handler handler = new Handler(Looper.getMainLooper());
+        Runnable progressRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (llLoading.getVisibility() == View.VISIBLE && currentIndex[0] < progressMessages.length) {
+                    tvLoadingText.setText(progressMessages[currentIndex[0]]);
+                    currentIndex[0]++;
+                    handler.postDelayed(this, 2000); // 每2秒更新一次
+                }
+            }
+        };
+        
+        handler.post(progressRunnable);
+    }
+    
+    /**
+     * 显示中医面诊分析结果
+     * @param analysisData 面诊分析数据
+     */
+    private void displayFaceDiagnosisResult(FaceDiagnosisResult analysisData) {
+        String formattedResult = formatFaceDiagnosisResult(analysisData);
+        displayTextWithTypewriterEffect(formattedResult);
+    }
+    
+    /**
+     * 格式化中医面诊分析结果
+     * @param analysis 面诊分析数据
+     * @return 格式化后的面诊报告
+     */
+    private String formatFaceDiagnosisResult(FaceDiagnosisResult analysis) {
+        StringBuilder result = new StringBuilder();
+        
+        result.append("🏥 中医面诊AI分析报告\n\n");
+        
+        // 面部分析
+        if (analysis.getFacialAnalysis() != null) {
+            FacialAnalysis facialAnalysis = analysis.getFacialAnalysis();
+            result.append("👤 面部分析:\n");
+            
+            // 面色分析
+            if (facialAnalysis.getComplexion() != null) {
+                Complexion complexion = facialAnalysis.getComplexion();
+                String faceColor = complexion.getColor() != null ? complexion.getColor() : "红润有光泽";
+                String luster = complexion.getLuster() != null ? complexion.getLuster() : "有光泽";
+                String texture = complexion.getTexture() != null ? complexion.getTexture() : "细腻";
+                
+                result.append("• 面色: ").append(faceColor).append("，").append(luster).append("，").append(texture).append("\n");
+            }
+            
+            // 五官特征
+            if (facialAnalysis.getFacialFeatures() != null) {
+                FacialFeatures features = facialAnalysis.getFacialFeatures();
+                String eyeFeatures = features.getEyes() != null ? features.getEyes() : "目光有神";
+                String noseFeatures = features.getNose() != null ? features.getNose() : "鼻梁挺直";
+                String mouthFeatures = features.getMouth() != null ? features.getMouth() : "唇色红润";
+                String earFeatures = features.getEars() != null ? features.getEars() : "耳廓饱满";
+                
+                result.append("• 眼部: ").append(eyeFeatures).append("\n");
+                result.append("• 鼻部: ").append(noseFeatures).append("\n");
+                result.append("• 口唇: ").append(mouthFeatures).append("\n");
+                result.append("• 耳部: ").append(earFeatures).append("\n\n");
+            }
+            
+            // 面部区域分析
+            if (facialAnalysis.getFacialRegions() != null) {
+                FacialRegions regions = facialAnalysis.getFacialRegions();
+                result.append("🔍 面部区域分析:\n");
+                String foreheadArea = regions.getForehead() != null ? regions.getForehead() : "额部光洁";
+                String cheekArea = regions.getCheeks() != null ? regions.getCheeks() : "两颊红润";
+                String chinArea = regions.getChin() != null ? regions.getChin() : "下颌饱满";
+                String templeArea = regions.getTemples() != null ? regions.getTemples() : "太阳穴饱满";
+                
+                result.append("• 额部: ").append(foreheadArea).append("\n");
+                result.append("• 颊部: ").append(cheekArea).append("\n");
+                result.append("• 颏部: ").append(chinArea).append("\n");
+                result.append("• 太阳穴: ").append(templeArea).append("\n\n");
+            }
+        }
+        
+        // 中医诊断
+        if (analysis.getTcmDiagnosis() != null) {
+            TCMFaceDiagnosis diagnosis = analysis.getTcmDiagnosis();
+            result.append("🎯 中医诊断:\n");
+            
+            String syndromePattern = diagnosis.getSyndromePattern() != null ? diagnosis.getSyndromePattern() : "气血充盈";
+            String constitutionType = diagnosis.getConstitutionType() != null ? diagnosis.getConstitutionType() : "平和质";
+            String organFunction = diagnosis.getOrganFunction() != null ? diagnosis.getOrganFunction() : "脏腑功能协调";
+            String qiBloodStatus = diagnosis.getQiBloodStatus() != null ? diagnosis.getQiBloodStatus() : "气血状态良好";
+            
+            result.append("• 证候类型: ").append(syndromePattern).append("\n");
+            result.append("• 体质类型: ").append(constitutionType).append("\n");
+            result.append("• 脏腑功能: ").append(organFunction).append("\n");
+            result.append("• 气血状态: ").append(qiBloodStatus).append("\n\n");
+        }
+        
+        // 调理建议
+        if (analysis.getRecommendations() != null) {
+            TCMFaceRecommendations recommendations = analysis.getRecommendations();
+            result.append("💡 调理建议:\n");
+            
+            String dietaryTherapy = recommendations.getDietaryTherapy() != null ? recommendations.getDietaryTherapy() : "饮食均衡，营养充足";
+            String lifestyleAdjustment = recommendations.getLifestyleAdjustment() != null ? recommendations.getLifestyleAdjustment() : "规律作息，心情愉悦";
+            String herbalSuggestions = recommendations.getHerbalSuggestions() != null ? recommendations.getHerbalSuggestions() : "可适当调理";
+            String acupointMassage = recommendations.getAcupointMassage() != null ? recommendations.getAcupointMassage() : "可按摩相关穴位";
+            
+            result.append("• 食疗建议: ").append(dietaryTherapy).append("\n");
+            result.append("• 生活调理: ").append(lifestyleAdjustment).append("\n");
+            result.append("• 中药建议: ").append(herbalSuggestions).append("\n");
+            result.append("• 穴位按摩: ").append(acupointMassage).append("\n\n");
+        }
+        
+        // 严重程度和置信度
+        if (analysis.getSeverity() != null && !analysis.getSeverity().trim().isEmpty()) {
+            result.append("⚡ 健康程度: ").append(analysis.getSeverity()).append("\n");
+        }
+        
+        if (analysis.getConfidence() > 0) {
+            result.append("📊 AI置信度: ").append(String.format("%.1f%%", analysis.getConfidence() * 100)).append("\n\n");
+        }
+        
+        // 免责声明
+        result.append("⚠️ 免责声明: 此为AI辅助中医面诊分析结果，仅供参考，请以专业中医师诊断为准。");
+        
+        return result.toString();
+    }
+    
+    /**
+     * 生成模拟的中医面诊分析结果
+     * @return 模拟面诊分析结果
+     */
+    private String generateMockFaceDiagnosisResult() {
+        // 创建模拟的面诊分析数据
+        FaceDiagnosisResult mockAnalysis = createMockFaceDiagnosisAnalysis();
+        
+        // 格式化模拟分析结果
+        String formattedResult = formatFaceDiagnosisResult(mockAnalysis);
+        
+        // 添加模拟结果标识
+        StringBuilder result = new StringBuilder();
+        result.append(formattedResult);
+        result.append("\n\n🤖 注意：此为模拟中医面诊分析结果（AI服务暂时不可用），仅供开发测试使用，请以专业中医师诊断为准。");
+        
+        return result.toString();
+    }
+    
+    /**
+     * 创建模拟的中医面诊分析数据
+     * @return 模拟的面诊分析对象
+     */
+    private FaceDiagnosisResult createMockFaceDiagnosisAnalysis() {
+        // 创建面色分析
+        Complexion complexion = new Complexion();
+        complexion.setColor("未显示");
+        complexion.setLuster("未显示");
+        complexion.setTexture("未显示");
+        complexion.setDistribution("未显示");
+        
+        // 创建五官特征分析
+        FacialFeatures facialFeatures = new FacialFeatures();
+        facialFeatures.setEyes("未显示");
+        facialFeatures.setNose("未显示");
+        facialFeatures.setMouth("未显示");
+        facialFeatures.setEars("未显示");
+
+        
+        // 创建面部区域分析
+        FacialRegions facialRegions = new FacialRegions();
+        facialRegions.setForehead("未显示");
+        facialRegions.setCheeks("未显示");
+        facialRegions.setChin("未显示");
+        facialRegions.setTemples("未显示");
+
+        
+        // 创建面部分析
+        FacialAnalysis facialAnalysis = new FacialAnalysis();
+        facialAnalysis.setComplexion(complexion);
+        facialAnalysis.setFacialFeatures(facialFeatures);
+        facialAnalysis.setFacialRegions(facialRegions);
+        
+        // 创建中医诊断
+        TCMFaceDiagnosis tcmDiagnosis = new TCMFaceDiagnosis();
+        tcmDiagnosis.setSyndromePattern("未显示");
+        tcmDiagnosis.setConstitutionType("未显示");
+        tcmDiagnosis.setOrganFunction("未显示");
+        tcmDiagnosis.setQiBloodStatus("未显示");
+        
+        // 创建调理建议
+        TCMFaceRecommendations tcmRecommendations = new TCMFaceRecommendations();
+        tcmRecommendations.setDietaryTherapy("未显示");
+        tcmRecommendations.setLifestyleAdjustment("未显示");
+        tcmRecommendations.setHerbalSuggestions("未显示");
+        tcmRecommendations.setAcupointMassage("未显示");
+
+        
+        // 创建面诊结果
+        FaceDiagnosisResult result = new FaceDiagnosisResult();
+        result.setImageType("中医面诊");
+        result.setFacialAnalysis(facialAnalysis);
+        result.setTcmDiagnosis(tcmDiagnosis);
+        result.setRecommendations(tcmRecommendations);
+        result.setSeverity("健康");
+        result.setConfidence(0.85f);
+        
+        return result;
     }
     
     /**
@@ -2581,6 +3385,10 @@ public class PrescriptionFragment extends Fragment {
                 return "MRI";
             case "petct":
                 return "PET-CT";
+            case "tongue":
+                return "中医舌诊";
+            case "face":
+                return "中医面诊";
             default:
                 return "医学影像";
         }
@@ -3686,6 +4494,7 @@ public class PrescriptionFragment extends Fragment {
     
     /**
      * 处理有效的图片结果
+     * 根据图片类型选择执行面诊或舌诊分析
      */
     private void processValidImageResult(Uri imageUri, String source) {
         Log.d("PrescriptionFragment", "处理有效图片结果: " + imageUri + ", 来源: " + source);
@@ -3694,8 +4503,27 @@ public class PrescriptionFragment extends Fragment {
         selectedImageUri = imageUri;
         imageSource = source;
         
-        // 调用原有的图片处理逻辑
-        handleSelectedImage(imageUri);
+        // 检查是否为舌面诊图片选择
+        if (currentTongueDiagnosisType != null && !currentTongueDiagnosisType.isEmpty()) {
+            Log.d("PrescriptionFragment", "检测到舌面诊类型: " + currentTongueDiagnosisType + ", 直接执行AI分析");
+            
+            // 根据图片类型选择执行相应的诊断分析
+            if ("face".equals(currentTongueDiagnosisType)) {
+                // 执行面诊分析
+                Log.d("PrescriptionFragment", "执行面诊分析");
+                performFaceDiagnosis();
+            } else if("tongue".equals(currentTongueDiagnosisType)) {
+                // 执行舌诊分析
+                Log.d("PrescriptionFragment", "执行舌诊分析");
+                performTongueDiagnosis();
+            } 
+            
+            // 重置舌面诊类型
+            currentTongueDiagnosisType = null;
+        } else {
+            // 调用原有的图片处理逻辑
+            handleSelectedImage(imageUri);
+        }
     }
     
     /**
@@ -3708,4 +4536,6 @@ public class PrescriptionFragment extends Fragment {
             Log.w("PrescriptionFragment", "无法显示Toast，Fragment状态异常: " + message);
         }
     }
+    
+
 }

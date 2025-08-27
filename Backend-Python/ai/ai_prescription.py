@@ -151,6 +151,242 @@ def _get_default_image_analysis(image_type: str) -> Dict[str, Any]:
     }
 
 
+def _get_default_tcm_tongue_analysis() -> Dict[str, Any]:
+    """获取默认的中医舌诊分析结构
+    
+    Returns:
+        Dict[str, Any]: 默认中医舌诊分析数据
+    """
+    return {
+        "image_type": "中医舌诊",
+        "tongue_analysis": {
+            "tongue_body": {
+                "color": "舌象分析失败",
+                "shape": "请重新拍摄",
+                "texture": "图像不清晰",
+                "mobility": "无法判断"
+            },
+            "tongue_coating": {
+                "color": "苔象分析失败",
+                "thickness": "请重新拍摄",
+                "moisture": "图像不清晰",
+                "texture": "无法判断"
+            }
+        },
+        "tcm_diagnosis": {
+            "syndrome_pattern": "舌诊分析失败，请咨询专业中医师",
+            "constitution_type": "无法判断体质类型",
+            "pathological_factors": "需要重新进行舌诊",
+            "organ_systems": "建议面诊确认"
+        },
+        "recommendations": {
+            "dietary_therapy": "请咨询专业中医师获取个性化饮食建议",
+            "lifestyle_adjustment": "建议保持规律作息和适量运动",
+            "herbal_suggestions": "需要专业中医师辨证施治",
+            "follow_up": "建议到中医院进行专业舌诊"
+        },
+        "severity": "未知",
+        "confidence": 0.0
+    }
+
+
+def _get_default_tcm_face_analysis() -> Dict[str, Any]:
+    """获取默认的中医面诊分析结构
+    
+    Returns:
+        Dict[str, Any]: 默认中医面诊分析数据
+    """
+    return {
+        "image_type": "中医面诊",
+        "facial_analysis": {
+            "complexion": {
+                "color": "面诊分析失败",
+                "luster": "请重新拍摄",
+                "texture": "图像不清晰",
+                "distribution": "无法判断"
+            },
+            "facial_features": {
+                "eyes": "眼部分析失败，请重新拍摄",
+                "nose": "鼻部分析失败，图像不清晰",
+                "mouth": "口唇分析失败，无法判断",
+                "ears": "耳部分析失败，请重新拍摄"
+            },
+            "facial_regions": {
+                "forehead": "额部分析失败，请重新拍摄",
+                "cheeks": "面颊分析失败，图像不清晰",
+                "chin": "下颏分析失败，无法判断",
+                "temples": "太阳穴区域分析失败"
+            }
+        },
+        "tcm_diagnosis": {
+            "syndrome_pattern": "面诊分析失败，请咨询专业中医师",
+            "constitution_type": "无法判断体质类型",
+            "organ_function": "需要重新进行面诊",
+            "qi_blood_status": "建议专业中医师诊断"
+        },
+        "recommendations": {
+            "dietary_therapy": "请咨询专业中医师获取个性化饮食建议",
+            "lifestyle_adjustment": "建议保持规律作息和适量运动",
+            "herbal_suggestions": "需要专业中医师辨证施治",
+            "acupoint_massage": "建议到中医院进行专业面诊"
+        },
+        "severity": "未知",
+        "confidence": 0.0
+    }
+
+
+def _format_tcm_tongue_result(result: Dict[str, Any]) -> str:
+    """格式化中医舌诊分析结果为可读文本
+    
+    Args:
+        result: 中医舌诊分析结果字典
+        
+    Returns:
+        str: 格式化后的中医舌诊分析报告
+    """
+    try:
+        tongue_analysis = result.get("tongue_analysis", {})
+        tcm_diagnosis = result.get("tcm_diagnosis", {})
+        recommendations = result.get("recommendations", {})
+        severity = result.get("severity", "未知")
+        confidence = result.get("confidence", 0.0)
+        
+        # 构建舌质分析部分
+        tongue_body = tongue_analysis.get("tongue_body", {})
+        tongue_body_text = f"""舌质分析：
+• 舌质颜色：{tongue_body.get('color', '未知')}
+• 舌体形态：{tongue_body.get('shape', '未知')}
+• 舌质纹理：{tongue_body.get('texture', '未知')}
+• 舌体活动：{tongue_body.get('mobility', '未知')}"""
+        
+        # 构建舌苔分析部分
+        tongue_coating = tongue_analysis.get("tongue_coating", {})
+        tongue_coating_text = f"""舌苔分析：
+• 苔色：{tongue_coating.get('color', '未知')}
+• 苔质厚薄：{tongue_coating.get('thickness', '未知')}
+• 润燥程度：{tongue_coating.get('moisture', '未知')}
+• 苔质性状：{tongue_coating.get('texture', '未知')}"""
+        
+        # 构建中医诊断部分
+        diagnosis_text = f"""中医诊断：
+• 证候类型：{tcm_diagnosis.get('syndrome_pattern', '未知')}
+• 体质判断：{tcm_diagnosis.get('constitution_type', '未知')}
+• 病理因素：{tcm_diagnosis.get('pathological_factors', '未知')}
+• 涉及脏腑：{tcm_diagnosis.get('organ_systems', '未知')}"""
+        
+        # 构建调理建议部分
+        recommendations_text = f"""调理建议：
+• 食疗建议：{recommendations.get('dietary_therapy', '无')}
+• 生活调理：{recommendations.get('lifestyle_adjustment', '无')}
+• 中药调理：{recommendations.get('herbal_suggestions', '无')}
+• 复诊建议：{recommendations.get('follow_up', '无')}"""
+        
+        # 组合完整报告
+        formatted_result = f"""🔍 AI中医舌诊分析报告
+
+{tongue_body_text}
+
+{tongue_coating_text}
+
+{diagnosis_text}
+
+{recommendations_text}
+
+📊 分析评估：
+• 严重程度：{severity}
+• 分析置信度：{confidence:.1%}
+
+⚠️ 重要提示：
+本分析结果仅供参考，不能替代专业中医师的诊断。建议结合其他中医诊法（望、闻、问、切）进行综合判断，如有疑问请咨询专业中医师。"""
+        
+        return formatted_result
+        
+    except Exception as e:
+        logger.error(f"格式化中医舌诊结果失败: {e}")
+        return f"中医舌诊分析完成，请查看详细结果或咨询专业中医师。分析置信度：{result.get('confidence', 0.0):.1%}"
+
+
+def _format_tcm_face_result(result: Dict[str, Any]) -> str:
+    """格式化中医面诊分析结果为可读文本
+    
+    Args:
+        result: 中医面诊分析结果字典
+        
+    Returns:
+        str: 格式化后的中医面诊分析报告
+    """
+    try:
+        facial_analysis = result.get("facial_analysis", {})
+        tcm_diagnosis = result.get("tcm_diagnosis", {})
+        recommendations = result.get("recommendations", {})
+        severity = result.get("severity", "未知")
+        confidence = result.get("confidence", 0.0)
+        
+        # 构建面色分析部分
+        complexion = facial_analysis.get("complexion", {})
+        complexion_text = f"""👁️ 面色分析：
+• 面色：{complexion.get('color', '未知')}
+• 光泽度：{complexion.get('luster', '未知')}
+• 皮肤质地：{complexion.get('texture', '未知')}
+• 色泽分布：{complexion.get('distribution', '未知')}"""
+        
+        # 构建五官特征分析部分
+        facial_features = facial_analysis.get("facial_features", {})
+        features_text = f"""👀 五官特征：
+• 眼部：{facial_features.get('eyes', '未知')}
+• 鼻部：{facial_features.get('nose', '未知')}
+• 口唇：{facial_features.get('mouth', '未知')}
+• 耳部：{facial_features.get('ears', '未知')}"""
+        
+        # 构建面部区域分析部分
+        facial_regions = facial_analysis.get("facial_regions", {})
+        regions_text = f"""🗺️ 面部区域：
+• 额部（心肺）：{facial_regions.get('forehead', '未知')}
+• 面颊（脾胃）：{facial_regions.get('cheeks', '未知')}
+• 下颏（肾）：{facial_regions.get('chin', '未知')}
+• 太阳穴：{facial_regions.get('temples', '未知')}"""
+        
+        # 构建中医诊断部分
+        diagnosis_text = f"""🩺 中医诊断：
+• 证候类型：{tcm_diagnosis.get('syndrome_pattern', '未知')}
+• 体质判断：{tcm_diagnosis.get('constitution_type', '未知')}
+• 脏腑功能：{tcm_diagnosis.get('organ_function', '未知')}
+• 气血状态：{tcm_diagnosis.get('qi_blood_status', '未知')}"""
+        
+        # 构建调理建议部分
+        recommendations_text = f"""💡 调理建议：
+• 食疗建议：{recommendations.get('dietary_therapy', '无')}
+• 生活调理：{recommendations.get('lifestyle_adjustment', '无')}
+• 中药建议：{recommendations.get('herbal_suggestions', '无')}
+• 穴位按摩：{recommendations.get('acupoint_massage', '无')}"""
+        
+        # 组合完整报告
+        formatted_result = f"""🔍 AI中医面诊分析报告
+
+{complexion_text}
+
+{features_text}
+
+{regions_text}
+
+{diagnosis_text}
+
+{recommendations_text}
+
+📊 分析评估：
+• 严重程度：{severity}
+• 分析置信度：{confidence:.1%}
+
+⚠️ 重要提示：
+本分析结果仅供参考，不能替代专业中医师的诊断。建议结合其他中医诊法（望、闻、问、切）进行综合判断，如有疑问请咨询专业中医师。"""
+        
+        return formatted_result
+        
+    except Exception as e:
+        logger.error(f"格式化中医面诊结果失败: {e}")
+        return f"中医面诊分析完成，请查看详细结果或咨询专业中医师。分析置信度：{result.get('confidence', 0.0):.1%}"
+
+
 def _validate_input(symptoms: str, patient_info: Optional[Dict[str, Any]]) -> None:
     """验证输入参数
     
@@ -289,7 +525,136 @@ def _build_image_analysis_prompt(patient_context: str, image_type: str) -> str:
     Returns:
         str: 医学影像分析提示词
     """
-    return f"""# 医学影像分析
+    # 为中医舌诊和面诊提供专门的提示词
+    if image_type == "中医舌诊":
+        return f"""# 中医舌诊分析
+
+## 患者信息
+{patient_context}
+**诊断类型**: 中医舌诊
+
+## 任务要求
+请作为专业的中医舌诊专家，分析提供的舌象图片，并返回JSON格式的详细中医舌诊分析结果。
+
+## 舌诊分析要点
+1. **舌质分析**: 舌体颜色、形态、大小、厚薄、老嫩
+2. **舌苔分析**: 苔色、苔质、厚薄、润燥、腐腻
+3. **舌态分析**: 舌体运动、伸缩、颤动等
+4. **中医辨证**: 根据舌象特征进行中医证候分析
+5. **体质判断**: 评估患者体质类型
+
+## 输出格式
+严格按照以下JSON结构返回：
+
+{{
+    "image_type": "中医舌诊",
+    "tongue_analysis": {{
+        "tongue_body": {{
+            "color": "舌质颜色（淡红/红/深红/紫等）",
+            "shape": "舌体形态（正常/胖大/瘦薄等）",
+            "texture": "舌质纹理（嫩/老等）",
+            "mobility": "舌体活动度"
+        }},
+        "tongue_coating": {{
+            "color": "苔色（白/黄/灰/黑等）",
+            "thickness": "苔质厚薄（薄/厚等）",
+            "moisture": "润燥程度（润/燥等）",
+            "texture": "苔质性状（腻/腐等）"
+        }}
+    }},
+    "tcm_diagnosis": {{
+        "syndrome_pattern": "主要证候类型",
+        "constitution_type": "体质类型判断",
+        "pathological_factors": "病理因素分析",
+        "organ_systems": "涉及脏腑系统"
+    }},
+    "recommendations": {{
+        "dietary_therapy": "食疗建议",
+        "lifestyle_adjustment": "生活调理",
+        "herbal_suggestions": "中药调理方向",
+        "follow_up": "复诊建议"
+    }},
+    "severity": "轻度/中度/重度",
+    "confidence": 0.85
+}}
+
+## 专业要求
+1. **中医理论**: 严格按照中医舌诊理论进行分析
+2. **客观描述**: 基于舌象特征进行客观分析
+3. **辨证论治**: 结合舌象进行中医辨证
+4. **实用建议**: 提供可操作的中医调理建议
+
+请基于提供的舌象图片进行专业的中医舌诊分析。"""
+    
+    elif image_type == "中医面诊":
+        return f"""# 中医面诊分析
+
+## 患者信息
+{patient_context}
+**诊断类型**: 中医面诊
+
+## 任务要求
+请作为专业的中医面诊专家，分析提供的面部图片，并返回JSON格式的详细中医面诊分析结果。
+
+## 面诊分析要点
+1. **面色分析**: 面部气色、光泽、色调变化
+2. **五官分析**: 眼、鼻、口、耳的形态和色泽
+3. **面部形态**: 面部轮廓、肌肉状态、皮肤质地
+4. **中医辨证**: 根据面部特征进行中医证候分析
+5. **脏腑反映**: 面部区域对应的脏腑功能状态
+
+## 输出格式
+严格按照以下JSON结构返回：
+
+{{
+    "image_type": "中医面诊",
+    "facial_analysis": {{
+        "complexion": {{
+            "color": "面色（红润/苍白/萎黄/青紫等）",
+            "luster": "光泽度（有神/无神等）",
+            "texture": "皮肤质地",
+            "distribution": "色泽分布特点"
+        }},
+        "facial_features": {{
+            "eyes": "眼部特征分析",
+            "nose": "鼻部特征分析",
+            "mouth": "口唇特征分析",
+            "ears": "耳部特征分析"
+        }},
+        "facial_regions": {{
+            "forehead": "额部对应心肺功能",
+            "cheeks": "面颊对应脾胃功能",
+            "chin": "下颏对应肾功能",
+            "temples": "太阳穴区域分析"
+        }}
+    }},
+    "tcm_diagnosis": {{
+        "syndrome_pattern": "主要证候类型",
+        "constitution_type": "体质类型判断",
+        "organ_function": "脏腑功能状态",
+        "qi_blood_status": "气血状态评估"
+    }},
+    "recommendations": {{
+        "dietary_therapy": "食疗建议",
+        "lifestyle_adjustment": "生活调理",
+        "herbal_suggestions": "中药调理方向",
+        "acupoint_massage": "穴位按摩建议"
+    }},
+    "severity": "轻度/中度/重度",
+    "confidence": 0.85
+}}
+
+## 专业要求
+1. **中医理论**: 严格按照中医面诊理论进行分析
+2. **整体观念**: 结合面部整体特征进行分析
+3. **辨证论治**: 结合面诊进行中医辨证
+4. **实用建议**: 提供可操作的中医调理建议
+
+请基于提供的面部图片进行专业的中医面诊分析。"""
+    
+    else:
+        # 原有的西医影像分析提示词
+        return f"""# 医学影像分析
 
 ## 患者信息
 {patient_context}
@@ -777,7 +1142,7 @@ def analyze_medical_image_dashscope(
     image_type: str,
     patient_info: Optional[Dict[str, Any]] = None,
     api_key: Optional[str] = None,
-    model: str = "qwen-vl-max",
+    model: str = "qwen-vl-plus",
     max_tokens: int = 4000,
     max_retries: int = 3
 ) -> MedicalImageAnalysis:
@@ -1023,6 +1388,392 @@ def analyze_medical_image_dashscope(
         severity=default_data["severity"],
         confidence=default_data["confidence"]
     )
+
+
+def analyze_tcm_tongue_diagnosis_dashscope(
+    image_path: str,
+    patient_info: Optional[Dict[str, Any]] = None,
+    api_key: Optional[str] = None,
+    model: str = "qwen-vl-plus",
+    max_tokens: int = 4000,
+    max_retries: int = 3
+) -> Dict[str, Any]:
+    """
+    使用阿里云灵积（DashScope）API进行AI中医舌诊分析
+    
+    Args:
+        image_path (str): 舌象图像文件路径
+        patient_info (dict, optional): 患者基本信息
+        api_key (str, optional): DashScope API密钥
+        model (str): 使用的视觉模型 (qwen-vl-plus, qwen-vl-max)
+        max_tokens (int): 最大输出长度
+        max_retries (int): 最大重试次数
+    
+    Returns:
+        Dict[str, Any]: 包含中医舌诊分析结果的字典
+    
+    Raises:
+        ValueError: 当输入参数无效时
+        Exception: 当API调用失败或数据解析错误时
+    """
+    # 验证图像文件路径
+    if not image_path or not isinstance(image_path, str):
+        raise ValueError("舌象图像路径不能为空")
+    
+    if not os.path.exists(image_path):
+        raise ValueError(f"舌象图像文件不存在: {image_path}")
+
+    extension = os.path.splitext(image_path)[1]
+    if extension not in ['.jpg', '.jpeg', '.png']:
+        raise ValueError("仅支持JPG/JPEG/PNG舌象图像文件")
+    
+    # 读取图像文件并转换为Base64
+    try:
+        with open(image_path, "rb") as image_file:
+            image_data = base64.b64encode(image_file.read()).decode('utf-8')
+        logger.info(f"成功读取舌象图像文件: {image_path}")
+    except Exception as e:
+        raise ValueError(f"读取舌象图像文件失败: {str(e)}")
+    
+    # 获取API密钥
+    if api_key is None:
+        api_key = os.getenv('DASHSCOPE_API_KEY')
+        if not api_key:
+            raise ValueError("请设置DASHSCOPE_API_KEY环境变量或提供api_key参数")
+    
+    logger.info("开始使用DashScope进行AI中医舌诊分析...")
+    
+    # 重试机制
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"第{attempt + 1}次尝试中医舌诊分析")
+            
+            # 构建患者上下文
+            patient_context = ""
+            if patient_info:
+                patient_context = (
+                    f"患者信息: 年龄{patient_info.get('age', '未知')}岁，"
+                    f"性别{patient_info.get('gender', '未知')}，"
+                    f"主要症状: {patient_info.get('symptoms', '无')}，"
+                    f"病史: {patient_info.get('medical_history', '无')}"
+                )
+            
+            # 构建中医舌诊专用提示词
+            prompt = _build_image_analysis_prompt(patient_context, "中医舌诊")
+            
+            # 创建DashScope客户端
+            client = OpenAI(
+                api_key=api_key,
+                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+            )
+
+            # 调用DashScope API进行中医舌诊分析
+            completion = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": [{"type": "text", "text": "你是一名资深的中医舌诊专家，精通中医舌诊理论和实践。请基于中医理论客观、准确地分析舌象，并以JSON格式返回专业的中医舌诊结果。"}],
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/{extension[1:]};base64,{image_data}"
+                                },
+                            },
+                            {"type": "text", "text": prompt},
+                        ],
+                    },
+                ],
+                temperature=0.1,  # 降低随机性，提高分析准确性
+                max_tokens=max_tokens,
+                response_format={"type": "json_object"},
+                timeout=120
+            )
+            
+            # 获取AI响应内容
+            ai_content = completion.choices[0].message.content
+            logger.info(f"DashScope中医舌诊AI响应长度: {len(ai_content)} 字符")
+            
+            # 尝试解析JSON
+            try:
+                result = json.loads(ai_content)
+                logger.info("中医舌诊JSON解析成功")
+            except json.JSONDecodeError as json_error:
+                logger.warning(f"中医舌诊JSON解析失败: {json_error}，尝试修复")
+                
+                # 使用清理函数修复JSON
+                try:
+                    cleaned_content = _clean_json_content(ai_content)
+                    result = json.loads(cleaned_content)
+                    logger.info("中医舌诊JSON修复成功")
+                except Exception as repair_error:
+                    logger.error(f"中医舌诊JSON修复失败: {repair_error}")
+                    if attempt == max_retries - 1:  # 最后一次尝试
+                        result = _get_default_tcm_tongue_analysis()
+                    else:
+                        continue  # 重试
+            
+            # 返回中医舌诊分析结果
+            return {
+                # "success": True,
+                "image_type": "中医舌诊",
+                "tongue_analysis": result.get("tongue_analysis", {}),
+                "tcm_diagnosis": result.get("tcm_diagnosis", {}),
+                "recommendations": result.get("recommendations", {}),
+                "severity": result.get("severity", "未知"),
+                "confidence": float(result.get("confidence", 0.0)),
+                # "formatted_result": _format_tcm_tongue_result(result)
+            }
+                    
+        except Exception as e:
+            logger.error(f"第{attempt + 1}次中医舌诊分析尝试失败: {e}")
+            
+            # 根据异常类型提供更具体的错误信息
+            error_type = type(e).__name__
+            error_msg = str(e).lower()
+            
+            if "timeout" in error_msg or "timed out" in error_msg:
+                specific_error = f"网络请求超时: {str(e)}"
+            elif "connection" in error_msg or "network" in error_msg:
+                specific_error = f"网络连接失败: {str(e)}"
+            elif "api" in error_msg or "unauthorized" in error_msg or "401" in error_msg:
+                specific_error = f"API认证失败: {str(e)}"
+            elif "rate limit" in error_msg or "429" in error_msg:
+                specific_error = f"API调用频率限制: {str(e)}"
+            elif "500" in error_msg or "502" in error_msg or "503" in error_msg:
+                specific_error = f"服务器错误: {str(e)}"
+            else:
+                specific_error = f"未知错误: {str(e)}"
+            
+            if attempt == max_retries - 1:  # 最后一次尝试
+                logger.warning("所有中医舌诊分析重试都失败，返回默认分析结果")
+                default_data = _get_default_tcm_tongue_analysis()
+                return {
+                    "success": False,
+                    "error": f"DashScope中医舌诊分析失败，已重试{max_retries}次。{specific_error}",
+                    "image_type": "中医舌诊",
+                    "tongue_analysis": default_data["tongue_analysis"],
+                    "tcm_diagnosis": default_data["tcm_diagnosis"],
+                    "recommendations": default_data["recommendations"],
+                    "severity": default_data["severity"],
+                    "confidence": default_data["confidence"],
+                    "formatted_result": _format_tcm_tongue_result(default_data)
+                }
+            else:
+                logger.warning(f"第{attempt + 1}次尝试失败，将重试: {specific_error}")
+                continue  # 重试
+    
+    # 如果所有重试都失败，返回默认分析结果
+    logger.warning("所有中医舌诊分析重试都失败，返回默认分析结果")
+    default_data = _get_default_tcm_tongue_analysis()
+    return {
+        "success": False,
+        "error": "中医舌诊分析失败",
+        "image_type": "中医舌诊",
+        "tongue_analysis": default_data["tongue_analysis"],
+        "tcm_diagnosis": default_data["tcm_diagnosis"],
+        "recommendations": default_data["recommendations"],
+        "severity": default_data["severity"],
+        "confidence": default_data["confidence"],
+        "formatted_result": _format_tcm_tongue_result(default_data)
+    }
+
+
+def analyze_tcm_face_diagnosis_dashscope(
+    image_path: str,
+    patient_info: Optional[Dict[str, Any]] = None,
+    api_key: Optional[str] = None,
+    model: str = "qwen-vl-plus",
+    max_tokens: int = 4000,
+    max_retries: int = 3
+) -> Dict[str, Any]:
+    """
+    使用阿里云灵积（DashScope）API进行AI中医面诊分析
+    
+    Args:
+        image_path (str): 面部图像文件路径
+        patient_info (dict, optional): 患者基本信息
+        api_key (str, optional): DashScope API密钥
+        model (str): 使用的视觉模型 (qwen-vl-plus, qwen-vl-max)
+        max_tokens (int): 最大输出长度
+        max_retries (int): 最大重试次数
+    
+    Returns:
+        Dict[str, Any]: 包含中医面诊分析结果的字典
+    
+    Raises:
+        ValueError: 当输入参数无效时
+        Exception: 当API调用失败或数据解析错误时
+    """
+    # 验证图像文件路径
+    if not image_path or not isinstance(image_path, str):
+        raise ValueError("面部图像路径不能为空")
+    
+    if not os.path.exists(image_path):
+        raise ValueError(f"面部图像文件不存在: {image_path}")
+
+    extension = os.path.splitext(image_path)[1]
+    if extension not in ['.jpg', '.jpeg', '.png']:
+        raise ValueError("仅支持JPG/JPEG/PNG面部图像文件")
+    
+    # 读取图像文件并转换为Base64
+    try:
+        with open(image_path, "rb") as image_file:
+            image_data = base64.b64encode(image_file.read()).decode('utf-8')
+        logger.info(f"成功读取面部图像文件: {image_path}")
+    except Exception as e:
+        raise ValueError(f"读取面部图像文件失败: {str(e)}")
+    
+    # 获取API密钥
+    if api_key is None:
+        api_key = os.getenv('DASHSCOPE_API_KEY')
+        if not api_key:
+            raise ValueError("请设置DASHSCOPE_API_KEY环境变量或提供api_key参数")
+    
+    logger.info("开始使用DashScope进行AI中医面诊分析...")
+    
+    # 重试机制
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"第{attempt + 1}次尝试中医面诊分析")
+            
+            # 构建患者上下文
+            patient_context = ""
+            if patient_info:
+                patient_context = (
+                    f"患者信息: 年龄{patient_info.get('age', '未知')}岁，"
+                    f"性别{patient_info.get('gender', '未知')}，"
+                    f"主要症状: {patient_info.get('symptoms', '无')}，"
+                    f"病史: {patient_info.get('medical_history', '无')}"
+                )
+            
+            # 构建中医面诊专用提示词
+            prompt = _build_image_analysis_prompt(patient_context, "中医面诊")
+            
+            # 创建DashScope客户端
+            client = OpenAI(
+                api_key=api_key,
+                base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+            )
+
+            # 调用DashScope API进行中医面诊分析
+            completion = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": [{"type": "text", "text": "你是一名资深的中医面诊专家，精通中医面诊理论和实践。请基于中医理论客观、准确地分析面部特征，并以JSON格式返回专业的中医面诊结果。"}],
+                    },
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/{extension[1:]};base64,{image_data}"
+                                },
+                            },
+                            {"type": "text", "text": prompt},
+                        ],
+                    },
+                ],
+                temperature=0.1,  # 降低随机性，提高分析准确性
+                max_tokens=max_tokens,
+                response_format={"type": "json_object"},
+                timeout=120
+            )
+            
+            # 获取AI响应内容
+            ai_content = completion.choices[0].message.content
+            logger.info(f"DashScope中医面诊AI响应长度: {len(ai_content)} 字符")
+            
+            # 尝试解析JSON
+            try:
+                result = json.loads(ai_content)
+                logger.info("中医面诊JSON解析成功")
+            except json.JSONDecodeError as json_error:
+                logger.warning(f"中医面诊JSON解析失败: {json_error}，尝试修复")
+                
+                # 使用清理函数修复JSON
+                try:
+                    cleaned_content = _clean_json_content(ai_content)
+                    result = json.loads(cleaned_content)
+                    logger.info("中医面诊JSON修复成功")
+                except Exception as repair_error:
+                    logger.error(f"中医面诊JSON修复失败: {repair_error}")
+                    if attempt == max_retries - 1:  # 最后一次尝试
+                        result = _get_default_tcm_face_analysis()
+                    else:
+                        continue  # 重试
+            
+            # 返回中医面诊分析结果
+            return {
+                # "success": True,
+                "image_type": "中医面诊",
+                "facial_analysis": result.get("facial_analysis", {}),
+                "tcm_diagnosis": result.get("tcm_diagnosis", {}),
+                "recommendations": result.get("recommendations", {}),
+                "severity": result.get("severity", "未知"),
+                "confidence": float(result.get("confidence", 0.0)),
+                # "formatted_result": _format_tcm_face_result(result)
+            }
+                    
+        except Exception as e:
+            logger.error(f"第{attempt + 1}次中医面诊分析尝试失败: {e}")
+            
+            # 根据异常类型提供更具体的错误信息
+            error_type = type(e).__name__
+            error_msg = str(e).lower()
+            
+            if "timeout" in error_msg or "timed out" in error_msg:
+                specific_error = f"网络请求超时: {str(e)}"
+            elif "connection" in error_msg or "network" in error_msg:
+                specific_error = f"网络连接失败: {str(e)}"
+            elif "api" in error_msg or "unauthorized" in error_msg or "401" in error_msg:
+                specific_error = f"API认证失败: {str(e)}"
+            elif "rate limit" in error_msg or "429" in error_msg:
+                specific_error = f"API调用频率限制: {str(e)}"
+            elif "500" in error_msg or "502" in error_msg or "503" in error_msg:
+                specific_error = f"服务器错误: {str(e)}"
+            else:
+                specific_error = f"未知错误: {str(e)}"
+            
+            if attempt == max_retries - 1:  # 最后一次尝试
+                logger.warning("所有中医面诊分析重试都失败，返回默认分析结果")
+                default_data = _get_default_tcm_face_analysis()
+                return {
+                    "success": False,
+                    "error": f"DashScope中医面诊分析失败，已重试{max_retries}次。{specific_error}",
+                    "image_type": "中医面诊",
+                    "facial_analysis": default_data["facial_analysis"],
+                    "tcm_diagnosis": default_data["tcm_diagnosis"],
+                    "recommendations": default_data["recommendations"],
+                    "severity": default_data["severity"],
+                    "confidence": default_data["confidence"],
+                    "formatted_result": _format_tcm_face_result(default_data)
+                }
+            else:
+                logger.warning(f"第{attempt + 1}次尝试失败，将重试: {specific_error}")
+                continue  # 重试
+    
+    # 如果所有重试都失败，返回默认分析结果
+    logger.warning("所有中医面诊分析重试都失败，返回默认分析结果")
+    default_data = _get_default_tcm_face_analysis()
+    return {
+        "success": False,
+        "error": "中医面诊分析失败",
+        "image_type": "中医面诊",
+        "facial_analysis": default_data["facial_analysis"],
+        "tcm_diagnosis": default_data["tcm_diagnosis"],
+        "recommendations": default_data["recommendations"],
+        "severity": default_data["severity"],
+        "confidence": default_data["confidence"],
+        "formatted_result": _format_tcm_face_result(default_data)
+    }
 
 
 def analyze_medical_image_dashscope_simple(

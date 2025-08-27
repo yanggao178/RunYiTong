@@ -10,6 +10,7 @@ import com.wenteng.frontend_android.fragment.PrescriptionFragment;
 import com.wenteng.frontend_android.fragment.ProductFragment;
 import com.wenteng.frontend_android.fragment.ProfileFragment;
 import com.wenteng.frontend_android.fragment.RegistrationFragment;
+
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.utils.OverlayPermissionManager;
@@ -167,6 +168,8 @@ public class MainActivity extends AppCompatActivity {
         transaction.add(R.id.frame_layout, profileFragment);
         transaction.hide(profileFragment);
         
+
+        
         // 立即提交事务
         transaction.commitNow();
         
@@ -300,6 +303,7 @@ public class MainActivity extends AppCompatActivity {
                 return healthFragment;
             case FRAGMENT_PROFILE:
                 return profileFragment;
+
             default:
                 return null;
         }
@@ -323,6 +327,7 @@ public class MainActivity extends AppCompatActivity {
             menuItemId = R.id.nav_health;
         } else if (fragment == profileFragment) {
             menuItemId = R.id.nav_profile;
+
         }
         
         bottomNavigationView.setSelectedItemId(menuItemId);

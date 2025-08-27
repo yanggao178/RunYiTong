@@ -41,13 +41,17 @@ try:
     from ai.ai_prescription import (
         analyze_medical_image_dashscope,
         analyze_medical_image_dashscope_simple,
-        format_image_analysis_result
+        format_image_analysis_result,
+        analyze_tcm_tongue_diagnosis_dashscope,
+        analyze_tcm_face_diagnosis_dashscope
     )
 except ImportError as e:
     logger.warning(f"DashScope医学影像分析模块导入失败: {e}")
     analyze_medical_image_dashscope = None
     analyze_medical_image_dashscope_simple = None
     format_image_analysis_result = None
+    analyze_tcm_tongue_diagnosis_dashscope = None
+    analyze_tcm_face_diagnosis_dashscope = None
 
 router = APIRouter()
 
@@ -268,6 +272,164 @@ async def analyze_petct_image(image: UploadFile = File(...)):
     logger.info(f"⚛️ PET-CT影像分析端点被调用，文件: {image.filename}")
     return await analyze_medical_image(image, "petct")
 
+@router.post("/analyze-tongue")
+async def analyze_tcm_tongue_diagnosis(image: UploadFile = File(...)):
+    """AI中医舌诊专业分析"""
+    logger.info(f"🏥 AI中医舌诊端点被调用，文件: {image.filename}")
+    
+    try:
+        # 验证文件类型
+        if not image.content_type or not image.content_type.startswith('image/'):
+            logger.error(f"无效的文件类型: {image.content_type}")
+            return {
+                "success": False,
+                "message": "请上传有效的图片文件",
+                "data": None
+            }
+        
+        # 检查文件大小（限制为10MB）
+        content = await image.read()
+        if len(content) > 10 * 1024 * 1024:
+            logger.error(f"文件过大: {len(content)} bytes")
+            return {
+                "success": False,
+                "message": "图片文件大小不能超过10MB",
+                "error_code": "FILE_TOO_LARGE",
+                "data": None
+            }
+        
+        # 重置文件指针
+        await image.seek(0)
+        
+        # 检查网络连接
+        network_ok = await check_network_connection()
+        if not network_ok:
+            logger.warning("网络连接异常，返回模拟分析结果")
+            return generate_mock_tcm_tongue_analysis()
+        
+        # 检查AI功能是否可用
+        if analyze_tcm_tongue_diagnosis_dashscope is None:
+            logger.warning("AI中医舌诊功能不可用，返回模拟分析结果")
+            return generate_mock_tcm_tongue_analysis()
+        
+        try:
+            # 保存临时图像文件
+            extension = os.path.splitext(image.filename)[1]
+            temp_image_path = f"temp_tongue_{uuid.uuid4().hex}{extension}"
+            with open(temp_image_path, "wb") as temp_file:
+                temp_file.write(content)
+            
+            try:
+                logger.info("开始AI中医舌诊分析...")
+                # 调用专门的中医舌诊分析函数
+                ai_result = analyze_tcm_tongue_diagnosis_dashscope(
+                    image_path=temp_image_path
+                )
+                
+                logger.info("AI中医舌诊分析成功")
+                return {
+                    "success": True,
+                    "message": "AI中医舌诊分析完成",
+                    "data": ai_result
+                }
+                
+            finally:
+                # 清理临时文件
+                if os.path.exists(temp_image_path):
+                    os.remove(temp_image_path)
+            
+        except Exception as ai_error:
+            logger.error(f"AI中医舌诊分析失败: {ai_error}")
+            # AI分析失败时返回模拟结果
+            return generate_mock_tcm_tongue_analysis()
+        
+    except Exception as e:
+        logger.error(f"中医舌诊分析异常: {e}")
+        return {
+            "success": False,
+            "message": f"舌诊分析失败: {str(e)}",
+            "data": None
+        }
+
+@router.post("/analyze-face")
+async def analyze_face_image(image: UploadFile = File(...)):
+    """中医面诊AI分析"""
+    logger.info(f"⚛️ 中医面诊分析端点被调用，文件: {image.filename}")
+    
+    try:
+        # 验证文件类型
+        if not image.content_type or not image.content_type.startswith('image/'):
+            logger.error(f"无效的文件类型: {image.content_type}")
+            return {
+                "success": False,
+                "message": "请上传有效的图片文件",
+                "data": None
+            }
+        
+        # 检查文件大小（限制为10MB）
+        content = await image.read()
+        if len(content) > 10 * 1024 * 1024:
+            logger.error(f"文件过大: {len(content)} bytes")
+            return {
+                "success": False,
+                "message": "图片文件大小不能超过10MB",
+                "error_code": "FILE_TOO_LARGE",
+                "data": None
+            }
+        
+        # 重置文件指针
+        await image.seek(0)
+        
+        # 检查网络连接
+        network_ok = await check_network_connection()
+        if not network_ok:
+            logger.warning("网络连接异常，返回模拟分析结果")
+            return generate_mock_tcm_face_analysis()
+        
+        # 检查AI功能是否可用
+        if analyze_tcm_face_diagnosis_dashscope is None:
+            logger.warning("AI中医面诊功能不可用，返回模拟分析结果")
+            return generate_mock_tcm_face_analysis()
+        
+        try:
+            # 保存临时图像文件
+            extension = os.path.splitext(image.filename)[1]
+            temp_image_path = f"temp_face_{uuid.uuid4().hex}{extension}"
+            with open(temp_image_path, "wb") as temp_file:
+                temp_file.write(content)
+            
+            try:
+                logger.info("开始AI中医面诊分析...")
+                # 调用专门的中医面诊分析函数
+                ai_result = analyze_tcm_face_diagnosis_dashscope(
+                    image_path=temp_image_path
+                )
+                
+                logger.info("AI中医面诊分析成功")
+                logger.info(f"{ai_result}")
+                return {
+                    "success": True,
+                    "message": "AI中医面诊分析完成",
+                    "data": ai_result
+                }
+                
+            finally:
+                # 清理临时文件
+                if os.path.exists(temp_image_path):
+                    os.remove(temp_image_path)
+            
+        except Exception as ai_error:
+            logger.error(f"AI中医面诊分析失败: {ai_error}")
+            # AI分析失败时返回模拟结果
+            return generate_mock_tcm_face_analysis()
+        
+    except Exception as e:
+        logger.error(f"中医面诊分析异常: {e}")
+        return {
+            "success": False,
+            "message": f"面诊分析失败: {str(e)}",
+            "data": None
+        }    
 
 async def analyze_medical_image(image: UploadFile, image_type: str):
     """通用医学影像AI分析函数"""
@@ -334,7 +496,9 @@ async def analyze_medical_image(image: UploadFile, image_type: str):
                     "ct": "CT", 
                     "ultrasound": "Ultrasound",
                     "mri": "MRI",
-                    "petct": "PET-CT"
+                    "petct": "PET-CT",
+                    "tongue": "中医舌诊",
+                    "face": "中医面诊"
                 }
                 backend_image_type = image_type_mapping.get(image_type, image_type)
                 
@@ -392,6 +556,92 @@ async def analyze_medical_image(image: UploadFile, image_type: str):
             "data": None
         }
 
+
+def generate_mock_tcm_tongue_analysis():
+    """生成模拟的中医舌诊分析结果"""
+    mock_analysis = {
+        "image_type": "中医舌诊",
+        "tongue_analysis": {
+            "tongue_body": {
+                "color": "未显示",
+                "shape": "未显示",
+                "texture": "未显示",
+                "mobility": "未显示"
+            },
+            "tongue_coating": {
+                "color": "未显示",
+                "thickness": "未显示",
+                "moisture": "未显示",
+                "texture": "未显示"
+            }
+        },
+        "tcm_diagnosis": {
+            "syndrome_pattern": "未显示",
+            "constitution_type": "未显示",
+            "pathological_factors": "未显示",
+            "organ_systems": "未显示"
+        },
+        "recommendations": {
+            "dietary_therapy": "未显示",
+            "lifestyle_adjustment": "未显示",
+            "herbal_suggestions": "未显示",
+            "follow_up": "复诊建议"
+        },
+        "severity": "未显示",
+        "confidence": 0.85
+    }
+    
+    return {
+        "success": True,
+        "message": "模拟中医舌诊分析完成",
+        "data": mock_analysis
+    }
+
+def generate_mock_tcm_face_analysis():
+    """生成模拟的中医面诊分析结果"""
+    mock_analysis = {
+        "image_type": "中医面诊",
+        "facial_analysis": {
+            "complexion": {
+                "color_tone": "未显示",
+                "luster": "未显示",
+                "texture": "未显示",
+                "moisture": "未显示"
+            },
+            "facial_features": {
+                "eyes": "未显示",
+                "nose": "未显示",
+                "mouth": "未显示",
+                "ears": "未显示"
+            },
+            "facial_regions": {
+                "forehead": "未显示",
+                "cheeks": "未显示",
+                "chin": "未显示",
+                "temples": "未显示"
+            }
+        },
+        "tcm_diagnosis": {
+            "syndrome_pattern": "未显示",
+            "constitution_type": "未显示",
+            "organ_function": "未显示",
+            "qi_blood_status": "未显示"
+        },
+        "recommendations": {
+            "dietary_therapy": "未显示",
+            "lifestyle_adjustment": "未显示",
+            "herbal_suggestions": "未显示",
+            "acupoint_massage": "未显示"
+        },
+        "severity": "未显示",
+        "confidence": 0.85
+    }
+    
+    return {
+        "success": True,
+        "message": "模拟中医面诊分析完成",
+        "data": mock_analysis
+    }
 
 def generate_mock_medical_analysis(image_type: str):
     """生成模拟的医学影像分析结果"""
@@ -474,7 +724,9 @@ def get_image_type_name(image_type: str) -> str:
         "ct": "CT",
         "ultrasound": "B超",
         "mri": "MRI",
-        "petct": "PET-CT"
+        "petct": "PET-CT",
+        "tongue": "中医舌诊",
+        "face": "中医面诊"
     }
     return type_names.get(image_type, "未知类型")
 

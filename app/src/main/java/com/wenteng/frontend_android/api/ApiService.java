@@ -8,6 +8,8 @@ import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
 import com.wenteng.frontend_android.model.MedicalImageAnalysis;
 import com.wenteng.frontend_android.model.ImageUploadResult;
+import com.wenteng.frontend_android.model.TongueDiagnosisResult;
+import com.wenteng.frontend_android.model.FaceDiagnosisResult;
 import com.wenteng.frontend_android.model.Department;
 import com.wenteng.frontend_android.model.PaymentOrderRequest;
 import com.wenteng.frontend_android.model.PaymentOrderResponse;
@@ -179,6 +181,24 @@ public interface ApiService {
     Call<ApiResponse<MedicalImageAnalysis>> analyzePETCTImage(@Part MultipartBody.Part image);
     
     /**
+     * 中医舌诊智能分析
+     * @param image 舌诊图片文件
+     * @return 舌诊分析结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/analyze-tongue")
+    Call<ApiResponse<TongueDiagnosisResult>> analyzeTongueImage(@Part MultipartBody.Part image);
+    
+    /**
+     * 中医面诊智能分析
+     * @param image 面诊图片文件
+     * @return 面诊分析结果
+     */
+    @Multipart
+    @POST("api/v1/prescriptions/analyze-face")
+    Call<ApiResponse<FaceDiagnosisResult>> analyzeFaceImage(@Part MultipartBody.Part image);
+    
+    /**
      * 获取科室列表
      * @return 科室列表响应
      */
@@ -311,4 +331,11 @@ public interface ApiService {
     Call<ApiResponse<PaymentOrderResponse>> createWechatOrder(
         @Body PaymentOrderRequest request
     );
+    
+    /**
+     * 健康检查端点
+     * @return 健康检查响应
+     */
+    @GET("api/v1/prescriptions/health")
+    Call<Object> healthCheck();
 }
