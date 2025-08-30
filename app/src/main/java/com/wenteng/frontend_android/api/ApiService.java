@@ -11,14 +11,20 @@ import com.wenteng.frontend_android.model.ImageUploadResult;
 import com.wenteng.frontend_android.model.TongueDiagnosisResult;
 import com.wenteng.frontend_android.model.FaceDiagnosisResult;
 import com.wenteng.frontend_android.model.Department;
+import com.wenteng.frontend_android.model.Appointment;
+import com.wenteng.frontend_android.model.Prescription;
+import com.wenteng.frontend_android.model.PrescriptionItem;
 import com.wenteng.frontend_android.model.PaymentOrderRequest;
 import com.wenteng.frontend_android.model.PaymentOrderResponse;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.DELETE;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
+import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.Multipart;
@@ -241,6 +247,48 @@ public interface ApiService {
     Call<List<Department>> getDepartmentsByHospital(@Path("hospital_id") int hospitalId);
     
     /**
+     * 获取用户预约列表
+     * @param userId 用户ID
+     * @param skip 跳过数量
+     * @param limit 限制数量
+     * @return 预约列表响应
+     */
+    @GET("api/v1/appointments/user/{user_id}")
+    Call<ApiResponse<AppointmentListResponse>> getUserAppointments(
+        @Path("user_id") int userId,
+        @Query("skip") int skip,
+        @Query("limit") int limit
+    );
+    
+    /**
+     * 创建新预约
+     * @param appointment 预约信息
+     * @return 创建结果响应
+     */
+    @POST("api/v1/appointments/")
+    Call<ApiResponse<Appointment>> createAppointment(@Body AppointmentCreate appointment);
+    
+    /**
+     * 更新预约状态
+     * @param appointmentId 预约ID
+     * @param status 新状态
+     * @return 更新结果响应
+     */
+    @PUT("api/v1/appointments/{appointment_id}/status")
+    Call<ApiResponse<Appointment>> updateAppointmentStatus(
+        @Path("appointment_id") int appointmentId,
+        @Query("status") String status
+    );
+    
+    /**
+     * 取消预约
+     * @param appointmentId 预约ID
+     * @return 取消结果响应
+     */
+    @DELETE("api/v1/appointments/{appointment_id}")
+    Call<ApiResponse<Object>> cancelAppointment(@Path("appointment_id") int appointmentId);
+    
+    /**
      * 用户密码注册
      * @param request 注册请求对象
      * @return 注册结果响应
@@ -301,13 +349,23 @@ public interface ApiService {
     
     /**
      * 用户登录
+     * @param loginRequest 登录请求对象
+     * @return 登录结果响应
+     */
+    @POST("api/v1/users/login")
+    Call<ApiResponse<LoginResponse>> loginUser(
+        @Body LoginRequest loginRequest
+    );
+
+    /**
+     * 用户登录（兼容旧版本表单格式）
      * @param username 用户名
      * @param password 密码
      * @return 登录结果响应
      */
     @FormUrlEncoded
-    @POST("api/v1/users/login")
-    Call<ApiResponse<LoginResponse>> loginUser(
+    @POST("api/v1/users/login-form")
+    Call<ApiResponse<LoginResponse>> loginUserForm(
         @Field("username") String username,
         @Field("password") String password
     );
@@ -338,4 +396,48 @@ public interface ApiService {
      */
     @GET("api/v1/prescriptions/health")
     Call<Object> healthCheck();
+    
+    // ==================== 处方相关接口 ====================
+    
+    /**
+     * 获取用户处方列表
+     * @param userId 用户ID
+     * @return 处方列表响应
+     */
+    @GET("api/v1/prescriptions/user/{userId}")
+    Call<ApiResponse<List<Prescription>>> getUserPrescriptions(
+        @Path("userId") int userId
+    );
+    
+    /**
+     * 根据处方ID获取处方详情
+     * @param prescriptionId 处方ID
+     * @return 处方详情响应
+     */
+    @GET("api/v1/prescriptions/{prescriptionId}")
+    Call<ApiResponse<Prescription>> getPrescriptionById(
+        @Path("prescriptionId") int prescriptionId
+    );
+    
+    /**
+     * 获取处方项目列表
+     * @param prescriptionId 处方ID
+     * @return 处方项目列表响应
+     */
+    @GET("api/v1/prescriptions/{prescriptionId}/items")
+    Call<ApiResponse<List<PrescriptionItem>>> getPrescriptionItems(
+        @Path("prescriptionId") int prescriptionId
+    );
+    
+    /**
+     * 更新处方状态
+     * @param prescriptionId 处方ID
+     * @param status 新状态
+     * @return 更新结果响应
+     */
+    @PUT("api/v1/prescriptions/{prescriptionId}/status")
+    Call<ApiResponse<String>> updatePrescriptionStatus(
+        @Path("prescriptionId") int prescriptionId,
+        @Field("status") String status
+    );
 }

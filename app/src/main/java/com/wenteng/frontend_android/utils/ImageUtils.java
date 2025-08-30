@@ -388,7 +388,7 @@ public class ImageUtils {
             long fileSize = getImageSize(context, imageUri);
             String fileSizeStr = formatFileSize(fileSize);
             
-            return String.format("尺寸: %dx%d\n大小: %s\n格式: %s", 
+            return String.format("尺寸: %dx%d" + System.lineSeparator() + "大小: %s" + System.lineSeparator() + "格式: %s", 
                 options.outWidth, options.outHeight, fileSizeStr, options.outMimeType);
                 
         } catch (IOException e) {

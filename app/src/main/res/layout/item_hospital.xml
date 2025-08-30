@@ -27,7 +27,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_hospital"
-                android:tint="@color/primary_color"
+                app:tint="@color/primary_color"
                 android:layout_marginEnd="8dp" />
 
             <TextView
@@ -64,7 +64,7 @@
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@drawable/ic_location"
-                android:tint="@color/text_secondary"
+                app:tint="@color/text_secondary"
                 android:layout_marginEnd="4dp" />
 
             <TextView
@@ -91,7 +91,7 @@
                 android:layout_width="16dp"
                 android:layout_height="16dp"
                 android:src="@drawable/ic_phone"
-                android:tint="@color/text_secondary"
+                app:tint="@color/text_secondary"
                 android:layout_marginEnd="4dp" />
 
             <TextView

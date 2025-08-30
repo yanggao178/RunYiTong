@@ -113,7 +113,7 @@
                     android:layout_height="24dp"
                     android:layout_marginEnd="12dp"
                     android:src="@drawable/ic_info"
-                    android:tint="@color/gradient_start" />
+                    app:tint="@color/gradient_start" />
 
                 <TextView
                     android:id="@+id/page_info_text"
@@ -164,7 +164,7 @@
                         android:layout_height="28dp"
                         android:layout_marginEnd="12dp"
                         android:src="@drawable/ic_download"
-                        android:tint="@color/gradient_start" />
+                        app:tint="@color/gradient_start" />
                         
                     <TextView
                         android:layout_width="match_parent"

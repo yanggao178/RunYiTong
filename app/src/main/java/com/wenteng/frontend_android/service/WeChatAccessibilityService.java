@@ -413,11 +413,11 @@ public class WeChatAccessibilityService extends AccessibilityService {
             
             // 内容
             TextView contentView = new TextView(this);
-            String message = "已打开微信，请按以下步骤搜索：\n\n" +
-                    "1. 点击顶部搜索框\n" +
-                    "2. 输入：" + hospitalName + "\n" +
-                    "3. 点击搜索按钮\n" +
-                    "4. 选择'公众号'标签\n" +
+            String message = "已打开微信，请按以下步骤搜索：" + System.lineSeparator() + System.lineSeparator() +
+                    "1. 点击顶部搜索框" + System.lineSeparator() +
+                    "2. 输入：" + hospitalName + System.lineSeparator() +
+                    "3. 点击搜索按钮" + System.lineSeparator() +
+                    "4. 选择'公众号'标签" + System.lineSeparator() +
                     "5. 点击对应的医院公众号";
             contentView.setText(message);
             contentView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);

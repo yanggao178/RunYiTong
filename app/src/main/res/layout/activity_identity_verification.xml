@@ -20,7 +20,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_arrow_forward"
-            android:tint="@android:color/white"
+            app:tint="@android:color/white"
             android:padding="12dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:contentDescription="返回" />
@@ -74,7 +74,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@drawable/ic_info"
-                        android:tint="@color/primary_color"
+                        app:tint="@color/primary_color"
                         android:layout_marginRight="12dp" />
 
                     <TextView
@@ -191,7 +191,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_security"
-                    android:tint="#7F8C8D"
+                    app:tint="#7F8C8D"
                     android:layout_marginRight="8dp" />
 
                 <TextView

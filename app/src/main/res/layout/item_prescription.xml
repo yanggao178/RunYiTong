@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:backgroundTint="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 处方头部信息 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <!-- 处方图标 -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="2dp"
+                android:backgroundTint="@color/primary_color">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_my_prescriptions"
+                    app:tint="@android:color/white"
+                    android:contentDescription="处方" />
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- 处方基本信息 -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_prescription_id"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="处方编号: #001"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="#2C3E50" />
+
+                <TextView
+                    android:id="@+id/tv_prescription_date"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2024-01-15"
+                    android:textSize="12sp"
+                    android:textColor="#7F8C8D"
+                    android:layout_marginTop="2dp" />
+
+            </LinearLayout>
+
+            <!-- 处方状态 -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                android:backgroundTint="#E8F5E8">
+
+                <TextView
+                    android:id="@+id/tv_prescription_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="有效"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="#27AE60"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp" />
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+        <!-- 医生和医院信息 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="医生: "
+                android:textSize="12sp"
+                android:textColor="#7F8C8D" />
+
+            <TextView
+                android:id="@+id/tv_doctor_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="张医生"
+                android:textSize="12sp"
+                android:textColor="#2C3E50" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="医院: "
+                android:textSize="12sp"
+                android:textColor="#7F8C8D" />
+
+            <TextView
+                android:id="@+id/tv_hospital_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="中医院"
+                android:textSize="12sp"
+                android:textColor="#2C3E50" />
+
+        </LinearLayout>
+
+        <!-- 诊断信息 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="诊断: "
+                android:textSize="12sp"
+                android:textColor="#7F8C8D" />
+
+            <TextView
+                android:id="@+id/tv_diagnosis"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="感冒"
+                android:textSize="12sp"
+                android:textColor="#2C3E50" />
+
+        </LinearLayout>
+
+        <!-- 总金额 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="总金额: "
+                android:textSize="12sp"
+                android:textColor="#7F8C8D" />
+
+            <TextView
+                android:id="@+id/tv_total_amount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="¥128.50"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#E74C3C" />
+
+        </LinearLayout>
+
+        <!-- 操作按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btn_view_details"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="查看详情"
+                android:textSize="10sp"
+                android:background="@drawable/button_enhanced_primary"
+                android:textColor="@android:color/white"
+                android:paddingHorizontal="12dp"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btn_update_status"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="更新状态"
+                android:textSize="10sp"
+                android:background="@drawable/button_secondary"
+                android:textColor="@android:color/white"
+                android:paddingHorizontal="12dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

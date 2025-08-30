@@ -455,7 +455,7 @@ public class BookDetailActivity extends AppCompatActivity {
                             Paragraph title = new Paragraph(book.getName(), titleFont);
                             title.setAlignment(Element.ALIGN_CENTER);
                             document.add(title);
-                            document.add(new Paragraph("\n"));
+                            document.add(new Paragraph(System.lineSeparator()));
                             Log.d(TAG, "Title added to PDF");
                             
                             // 添加作者信息
@@ -592,14 +592,14 @@ public class BookDetailActivity extends AppCompatActivity {
     private String getBookContent(String bookName) {
         switch (bookName) {
             case "伤寒杂病论":
-                return "《伤寒杂病论》\n\n" +
-                        "作者：张仲景\n\n" +
-                        "序言\n" +
-                        "《伤寒杂病论》是东汉末年张仲景所著的中医经典著作，被誉为'医圣之书'。本书系统地阐述了外感热病和内科杂病的辨证论治规律，奠定了中医临床医学的基础。\n\n" +
-                        "第一章 伤寒论概述\n" +
-                        "伤寒者，外感风寒之邪，内伤脏腑之病也。其病机变化复杂，症状表现多样。张仲景根据病邪传变规律，将伤寒病分为六经辨证：太阳病、阳明病、少阳病、太阴病、少阴病、厥阴病。\n\n" +
-                        "太阳病篇\n" +
-                        "太阳之为病，脉浮，头项强痛而恶寒。太阳病，发热，汗出，恶风，脉缓者，名为中风。太阳病，或已发热，或未发热，必恶寒，体痛，呕逆，脉阴阳俱紧者，名为伤寒。\n\n" +
+                return "《伤寒杂病论》" + System.lineSeparator() + System.lineSeparator() +
+                        "作者：张仲景" + System.lineSeparator() + System.lineSeparator() +
+                        "序言" + System.lineSeparator() +
+                        "《伤寒杂病论》是东汉末年张仲景所著的中医经典著作，被誉为'医圣之书'。本书系统地阐述了外感热病和内科杂病的辨证论治规律，奠定了中医临床医学的基础。" + System.lineSeparator() + System.lineSeparator() +
+                        "第一章 伤寒论概述" + System.lineSeparator() +
+                        "伤寒者，外感风寒之邪，内伤脏腑之病也。其病机变化复杂，症状表现多样。张仲景根据病邪传变规律，将伤寒病分为六经辨证：太阳病、阳明病、少阳病、太阴病、少阴病、厥阴病。" + System.lineSeparator() + System.lineSeparator() +
+                        "太阳病篇" + System.lineSeparator() +
+                        "太阳之为病，脉浮，头项强痛而恶寒。太阳病，发热，汗出，恶风，脉缓者，名为中风。太阳病，或已发热，或未发热，必恶寒，体痛，呕逆，脉阴阳俱紧者，名为伤寒。" + System.lineSeparator() + System.lineSeparator() +
                         "桂枝汤方：桂枝三两，芍药三两，甘草二两，生姜三两，大枣十二枚。上五味，以水七升，微火煮取三升，去滓，适寒温，服一升。服已须臾，啜热稀粥一升余，以助药力，温覆令一时许，遍身漐漐微似有汗者益佳。\n\n" +
                         "麻黄汤方：麻黄三两，桂枝二两，甘草一两，杏仁七十个。上四味，以水九升，先煮麻黄，减二升，去上沫，内诸药，煮取二升半，去滓，温服八合。覆取微似汗，不须啜粥。\n\n" +
                         "阳明病篇\n" +
@@ -691,14 +691,14 @@ public class BookDetailActivity extends AppCompatActivity {
                         "君臣佐使：方剂配伍的基本原则。君药主治，臣药辅助，佐药调和，使药引经。";
             
             default:
-                return "本书是一本关于中医的专业书籍，包含了丰富的理论知识和实践经验。\n\n" +
-                        "主要内容包括：\n" +
-                        "• 中医基础理论\n" +
-                        "• 诊断方法\n" +
-                        "• 治疗原则\n" +
-                        "• 药物应用\n" +
-                        "• 临床实践\n\n" +
-                        "本书内容详实，理论与实践相结合，是学习中医的重要参考资料。通过系统学习，可以深入了解中医的精髓，掌握中医诊疗的基本方法和技能。\n\n" +
+                return "本书是一本关于中医的专业书籍，包含了丰富的理论知识和实践经验。" + System.lineSeparator() + System.lineSeparator() +
+                        "主要内容包括：" + System.lineSeparator() +
+                        "• 中医基础理论" + System.lineSeparator() +
+                        "• 诊断方法" + System.lineSeparator() +
+                        "• 治疗原则" + System.lineSeparator() +
+                        "• 药物应用" + System.lineSeparator() +
+                        "• 临床实践" + System.lineSeparator() + System.lineSeparator() +
+                        "本书内容详实，理论与实践相结合，是学习中医的重要参考资料。通过系统学习，可以深入了解中医的精髓，掌握中医诊疗的基本方法和技能。" + System.lineSeparator() + System.lineSeparator() +
                         "下载时间: " + new java.util.Date().toString();
         }
     }
@@ -873,17 +873,17 @@ public class BookDetailActivity extends AppCompatActivity {
                         document.add(title);
                         
                         // 添加空行
-                        document.add(new Paragraph("\n\n"));
+                        document.add(new Paragraph(System.lineSeparator() + System.lineSeparator()));
                         
                         // 添加内容
-                        String contentText = "这是 " + bookName + " 的示例内容。\n\n" +
-                                "本书是一本关于中医的专业书籍，包含了丰富的理论知识和实践经验。\n\n" +
-                                "主要内容包括：\n" +
-                                "• 中医基础理论\n" +
-                                "• 诊断方法\n" +
-                                "• 治疗原则\n" +
-                                "• 药物应用\n" +
-                                "• 临床实践\n\n" +
+                        String contentText = "这是 " + bookName + " 的示例内容。" + System.lineSeparator() + System.lineSeparator() +
+                                "本书是一本关于中医的专业书籍，包含了丰富的理论知识和实践经验。" + System.lineSeparator() + System.lineSeparator() +
+                                "主要内容包括：" + System.lineSeparator() +
+                                "• 中医基础理论" + System.lineSeparator() +
+                                "• 诊断方法" + System.lineSeparator() +
+                                "• 治疗原则" + System.lineSeparator() +
+                                "• 药物应用" + System.lineSeparator() +
+                                "• 临床实践" + System.lineSeparator() + System.lineSeparator() +
                                 "创建时间: " + new java.util.Date().toString();
                         Paragraph content = new Paragraph(contentText, normalFont);
                         document.add(content);

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- 震动效果 -->
+    <translate
+        android:duration="100"
+        android:fromXDelta="-10dp"
+        android:toXDelta="10dp"
+        android:repeatCount="3"
+        android:repeatMode="reverse"
+        android:interpolator="@android:anim/cycle_interpolator" />
+    
+    <!-- 渐入效果 -->
+    <alpha
+        android:duration="300"
+        android:fromAlpha="0.0"
+        android:toAlpha="1.0"
+        android:interpolator="@android:anim/decelerate_interpolator" />
+        
+</set>

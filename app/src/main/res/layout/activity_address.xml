@@ -44,7 +44,7 @@
                         android:layout_width="80dp"
                         android:layout_height="80dp"
                         android:src="@drawable/ic_location"
-                        android:tint="#BDC3C7"
+                        app:tint="#BDC3C7"
                         android:layout_marginBottom="16dp" />
 
                     <TextView

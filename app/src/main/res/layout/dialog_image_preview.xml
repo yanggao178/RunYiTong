@@ -20,7 +20,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_preview"
-            android:tint="@android:color/white"
+            app:tint="@android:color/white"
             android:layout_marginEnd="12dp"
             android:contentDescription="图片预览" />
 
@@ -38,7 +38,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_close"
-            android:tint="@android:color/white"
+            app:tint="@android:color/white"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
             android:contentDescription="关闭" />

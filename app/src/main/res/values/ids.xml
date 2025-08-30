@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 动画相关的资源ID -->
+    <item name="loading_animator" type="id" />
+    <item name="error_indicator" type="id" />
+    <item name="success_indicator" type="id" />
+    <item name="focus_animator" type="id" />
+    
+    <!-- 用户体验相关的资源ID -->
+    <item name="password_strength_indicator" type="id" />
+    <item name="validation_status" type="id" />
+    <item name="login_attempt_counter" type="id" />
+</resources>

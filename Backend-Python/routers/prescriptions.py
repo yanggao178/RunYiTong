@@ -284,6 +284,7 @@ async def analyze_tcm_tongue_diagnosis(image: UploadFile = File(...)):
             return {
                 "success": False,
                 "message": "请上传有效的图片文件",
+                "error_code": "IMAGE_TYPE_MISMATCH",
                 "data": None
             }
         
@@ -323,7 +324,8 @@ async def analyze_tcm_tongue_diagnosis(image: UploadFile = File(...)):
                 logger.info("开始AI中医舌诊分析...")
                 # 调用专门的中医舌诊分析函数
                 ai_result = analyze_tcm_tongue_diagnosis_dashscope(
-                    image_path=temp_image_path
+                    image_path=temp_image_path,
+                    image_type="舌诊"
                 )
                 
                 logger.info("AI中医舌诊分析成功")
@@ -332,7 +334,18 @@ async def analyze_tcm_tongue_diagnosis(image: UploadFile = File(...)):
                     "message": "AI中医舌诊分析完成",
                     "data": ai_result
                 }
-                
+            except Exception as e:
+                error_str = str(e)
+                if "IMAGE_TYPE_MISMATCH" in error_str:
+                    logger.warning(f"图像类型不匹配: {error_str}")
+                    return {
+                        "success": False,
+                        "message": "上传的图像类型与请求的分析类型不匹配",
+                        "error_code": "IMAGE_TYPE_MISMATCH",
+                        "data": None
+                    }
+                else:
+                    return generate_mock_tcm_tongue_analysis()
             finally:
                 # 清理临时文件
                 if os.path.exists(temp_image_path):
@@ -340,9 +353,8 @@ async def analyze_tcm_tongue_diagnosis(image: UploadFile = File(...)):
             
         except Exception as ai_error:
             logger.error(f"AI中医舌诊分析失败: {ai_error}")
-            # AI分析失败时返回模拟结果
             return generate_mock_tcm_tongue_analysis()
-        
+
     except Exception as e:
         logger.error(f"中医舌诊分析异常: {e}")
         return {
@@ -363,6 +375,7 @@ async def analyze_face_image(image: UploadFile = File(...)):
             return {
                 "success": False,
                 "message": "请上传有效的图片文件",
+                "error_code": "IMAGE_TYPE_MISMATCH",
                 "data": None
             }
         
@@ -402,7 +415,8 @@ async def analyze_face_image(image: UploadFile = File(...)):
                 logger.info("开始AI中医面诊分析...")
                 # 调用专门的中医面诊分析函数
                 ai_result = analyze_tcm_face_diagnosis_dashscope(
-                    image_path=temp_image_path
+                    image_path=temp_image_path,
+                    image_type="面诊"
                 )
                 
                 logger.info("AI中医面诊分析成功")
@@ -412,7 +426,18 @@ async def analyze_face_image(image: UploadFile = File(...)):
                     "message": "AI中医面诊分析完成",
                     "data": ai_result
                 }
-                
+            except Exception as e:
+                error_str = str(e)
+                if "IMAGE_TYPE_MISMATCH" in error_str:
+                    logger.warning(f"图像类型不匹配: {error_str}")
+                    return {
+                        "success": False,
+                        "message": "上传的图像类型与请求的分析类型不匹配",
+                        "error_code": "IMAGE_TYPE_MISMATCH",
+                        "data": None
+                    }
+                else:
+                    return generate_mock_tcm_face_analysis()
             finally:
                 # 清理临时文件
                 if os.path.exists(temp_image_path):
@@ -440,6 +465,7 @@ async def analyze_medical_image(image: UploadFile, image_type: str):
             return {
                 "success": False,
                 "message": "请上传有效的图片文件",
+                "error_code": "IMAGE_TYPE_MISMATCH",
                 "data": None
             }
         
@@ -507,6 +533,19 @@ async def analyze_medical_image(image: UploadFile, image_type: str):
                     image_type=backend_image_type,
                     patient_info=None
                 )
+            except Exception as e:
+                # 检查是否为图像类型不匹配错误
+                error_str = str(e)
+                if "IMAGE_TYPE_MISMATCH" in error_str:
+                    logger.warning(f"图像类型不匹配: {error_str}")
+                    return {
+                        "success": False,
+                        "message": "上传的图像类型与请求的分析类型不匹配",
+                        "error_code": "IMAGE_TYPE_MISMATCH",
+                        "data": None
+                    }
+                else:
+                    return generate_mock_medical_analysis()
             finally:
                 # 清理临时文件
                 if os.path.exists(temp_image_path):
@@ -545,7 +584,8 @@ async def analyze_medical_image(image: UploadFile, image_type: str):
             
         except Exception as ai_error:
             logger.error(f"AI分析失败: {ai_error}")
-            # AI分析失败时返回模拟结果
+            
+            # 其他AI分析失败时返回模拟结果
             return generate_mock_medical_analysis(image_type)
         
     except Exception as e:

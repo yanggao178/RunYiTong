@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:backgroundTint="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- 头部信息 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <!-- 状态指示器 -->
+            <View
+                android:id="@+id/view_status_indicator"
+                android:layout_width="4dp"
+                android:layout_height="40dp"
+                android:background="@color/primary_color"
+                android:layout_marginEnd="12dp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- 医生和医院信息 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:id="@+id/tv_doctor_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="李医生"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="#2C3E50"
+                        tools:text="李医生" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=" · "
+                        android:textSize="14sp"
+                        android:textColor="#7F8C8D" />
+
+                    <TextView
+                        android:id="@+id/tv_department_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="内科"
+                        android:textSize="14sp"
+                        android:textColor="#7F8C8D"
+                        tools:text="内科" />
+
+                </LinearLayout>
+
+                <!-- 医院名称 -->
+                <TextView
+                    android:id="@+id/tv_hospital_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="市人民医院"
+                    android:textSize="12sp"
+                    android:textColor="#95A5A6"
+                    android:layout_marginTop="2dp"
+                    tools:text="市人民医院" />
+
+            </LinearLayout>
+
+            <!-- 预约状态 -->
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="已确认"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:background="@drawable/bg_status_confirmed"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                tools:text="已确认" />
+
+        </LinearLayout>
+
+        <!-- 预约时间信息 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_calendar"
+                app:tint="@color/primary_color"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tv_appointment_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2024-01-20"
+                android:textSize="14sp"
+                android:textColor="#34495E"
+                android:layout_marginEnd="16dp"
+                tools:text="2024-01-20" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_time"
+                app:tint="@color/primary_color"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tv_appointment_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="09:00-09:30"
+                android:textSize="14sp"
+                android:textColor="#34495E"
+                tools:text="09:00-09:30" />
+
+        </LinearLayout>
+
+        <!-- 患者信息 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_person"
+                app:tint="@color/primary_color"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tv_patient_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="张三"
+                android:textSize="14sp"
+                android:textColor="#34495E"
+                android:layout_marginEnd="16dp"
+                tools:text="张三" />
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_phone"
+                app:tint="@color/primary_color"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tv_patient_phone"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="138****1234"
+                android:textSize="14sp"
+                android:textColor="#34495E"
+                tools:text="138****1234" />
+
+        </LinearLayout>
+
+        <!-- 症状描述 -->
+        <LinearLayout
+            android:id="@+id/layout_symptoms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="top"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_symptoms"
+                app:tint="@color/primary_color"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="2dp" />
+
+            <TextView
+                android:id="@+id/tv_symptoms"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="头痛、发热"
+                android:textSize="14sp"
+                android:textColor="#7F8C8D"
+                android:lineSpacingExtra="2dp"
+                tools:text="头痛、发热" />
+
+        </LinearLayout>
+
+        <!-- 分割线 -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#ECEFF1"
+            android:layout_marginBottom="12dp" />
+
+        <!-- 底部操作按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <!-- 查看详情按钮 -->
+            <TextView
+                android:id="@+id/btn_view_details"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="查看详情"
+                android:textSize="12sp"
+                android:textColor="@color/primary_color"
+                android:background="@drawable/bg_button_outline"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:layout_marginEnd="8dp"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- 取消预约按钮 -->
+            <TextView
+                android:id="@+id/btn_cancel_appointment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="取消预约"
+                android:textSize="12sp"
+                android:textColor="#E74C3C"
+                android:background="@drawable/bg_button_outline_red"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

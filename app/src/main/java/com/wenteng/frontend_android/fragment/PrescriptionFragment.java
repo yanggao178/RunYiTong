@@ -64,7 +64,7 @@ import com.wenteng.frontend_android.model.FacialRegions;
 import com.wenteng.frontend_android.model.TCMFaceDiagnosis;
 import com.wenteng.frontend_android.model.TCMFaceRecommendations;
 import com.wenteng.frontend_android.utils.ImageUtils;
-import com.wenteng.frontend_android.utils.NetworkDebugHelper;
+
 import com.wenteng.frontend_android.dialog.ImageProcessingDialogFragment;
 import com.wenteng.frontend_android.dialog.ImagePickerDialogFragment;
 import com.wenteng.frontend_android.dialog.TestDialogFragment;
@@ -359,7 +359,7 @@ public class PrescriptionFragment extends Fragment {
             
             // 开始动态更新进度提示
             progressStep = 0;
-            startProgressUpdate();
+           // startProgressUpdate();
         } else {
             llLoading.setVisibility(View.GONE);
             tvAnalysisResult.setVisibility(View.VISIBLE);
@@ -369,7 +369,7 @@ public class PrescriptionFragment extends Fragment {
             etSymptoms.setEnabled(true);
             
             // 停止进度更新
-            stopProgressUpdate();
+         //   stopProgressUpdate();
         }
     }
     
@@ -2144,7 +2144,7 @@ public class PrescriptionFragment extends Fragment {
         etSymptoms.setEnabled(false);
         
         // 启动医学影像分析专用的进度更新，显示分析过程的不同阶段
-        startMedicalImageAnalysisProgressUpdate(imageType);
+//        startMedicalImageAnalysisProgressUpdate(imageType);
         
         // 调用相应的API接口进行医学影像分析
         switch (imageType) {
@@ -2672,7 +2672,7 @@ public class PrescriptionFragment extends Fragment {
         etSymptoms.setEnabled(false);
         
         // 启动中医舌诊专用的进度更新
-        startTongueDiagnosisProgressUpdate();
+//        startTongueDiagnosisProgressUpdate();
         
         // 调用中医舌诊API接口
         tongueDiagnosisCall = apiService.analyzeTongueImage(imagePart);
@@ -2991,68 +2991,6 @@ public class PrescriptionFragment extends Fragment {
             return;
         }
         
-        // 添加网络调试功能
-        Log.d("PrescriptionFragment", "=== 开始网络调试测试 ===");
-        NetworkDebugHelper.logThreadInfo();
-        NetworkDebugHelper.logNetworkConfig();
-        
-        // 先进行基本连接测试
-        NetworkDebugHelper.testBasicConnection(new NetworkDebugHelper.DebugCallback() {
-            @Override
-            public void onDebugMessage(String message) {
-                Log.d("PrescriptionFragment", "[调试] " + message);
-            }
-            
-            @Override
-            public void onSuccess(String message) {
-                Log.d("PrescriptionFragment", "[成功] " + message);
-                // 基本连接成功后，进行面诊API测试
-                testFaceDiagnosisWithDebug(imagePart);
-            }
-            
-            @Override
-            public void onError(String message) {
-                Log.e("PrescriptionFragment", "[错误] " + message);
-                // 即使基本连接失败，也尝试面诊API
-                testFaceDiagnosisWithDebug(imagePart);
-            }
-        });
-    }
-    
-    /**
-     * 使用调试功能测试面诊API
-     */
-    private void testFaceDiagnosisWithDebug(MultipartBody.Part imagePart) {
-        Log.d("PrescriptionFragment", "开始面诊API调试测试");
-        
-        NetworkDebugHelper.testFaceDiagnosisConnection(imagePart, new NetworkDebugHelper.DebugCallback() {
-            @Override
-            public void onDebugMessage(String message) {
-                Log.d("PrescriptionFragment", "[面诊调试] " + message);
-            }
-            
-            @Override
-            public void onSuccess(String message) {
-                Log.d("PrescriptionFragment", "[面诊成功] " + message);
-                // 调试成功后，执行原有的面诊逻辑
-                performOriginalFaceDiagnosis(imagePart);
-            }
-            
-            @Override
-            public void onError(String message) {
-                Log.e("PrescriptionFragment", "[面诊错误] " + message);
-                // 调试失败，仍然尝试原有逻辑
-                performOriginalFaceDiagnosis(imagePart);
-            }
-        });
-    }
-    
-    /**
-     * 执行原有的面诊分析逻辑
-     */
-    private void performOriginalFaceDiagnosis(MultipartBody.Part imagePart) {
-        Log.d("PrescriptionFragment", "执行原有面诊分析逻辑");
-        
         // 显示加载界面
         llLoading.setVisibility(View.VISIBLE);
         tvAnalysisResult.setVisibility(View.GONE);
@@ -3062,7 +3000,7 @@ public class PrescriptionFragment extends Fragment {
         etSymptoms.setEnabled(false);
         
         // 启动中医面诊专用的进度更新
-        startFaceDiagnosisProgressUpdate();
+//        startFaceDiagnosisProgressUpdate();
         
         // 调用中医面诊API接口
         faceDiagnosisCall = apiService.analyzeFaceImage(imagePart);
@@ -3090,9 +3028,7 @@ public class PrescriptionFragment extends Fragment {
                                 Log.w("PrescriptionFragment", "面诊分析数据为空，使用模拟结果");
                                 String mockResult = generateMockFaceDiagnosisResult();
                                 displayTextWithTypewriterEffect(mockResult);
-                                // Toast.makeText(getContext(), "面诊分析数据为空，使用模拟结果", Toast.LENGTH_SHORT).show();
-                                tvAnalysisResult.setText("分析失败: " + apiResponse.getMessage());
-                                Toast.makeText(getContext(), "分析失败，请重试", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getContext(), "面诊分析数据为空，使用模拟结果", Toast.LENGTH_SHORT).show();
                             }
                         } else {
                             Log.d("PrescriptionFragment", "面诊API响应失败 - errorCode: " + apiResponse.getErrorCode());
@@ -3134,6 +3070,9 @@ public class PrescriptionFragment extends Fragment {
                             errorMessage = "面诊分析超时，使用模拟分析结果";
                         } else if (t instanceof java.net.ConnectException) {
                             errorMessage = "无法连接服务器，使用模拟面诊分析结果";
+
+    
+
                         } else if (t instanceof java.io.IOException) {
                             errorMessage = "网络异常，使用模拟面诊分析结果";
                         } else {

@@ -67,7 +67,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_location"
-                            android:tint="@color/primary_color"
+                            app:tint="@color/primary_color"
                             android:layout_marginRight="16dp" />
 
                         <LinearLayout
@@ -97,7 +97,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_arrow_right"
-                            android:tint="#BDC3C7" />
+                            app:tint="#BDC3C7" />
 
                     </LinearLayout>
 
@@ -115,7 +115,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_security"
-                            android:tint="@color/primary_color"
+                            app:tint="@color/primary_color"
                             android:layout_marginRight="16dp" />
 
                         <LinearLayout
@@ -145,7 +145,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_arrow_right"
-                            android:tint="#BDC3C7" />
+                            app:tint="#BDC3C7" />
 
                     </LinearLayout>
 
@@ -195,7 +195,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_verified"
-                            android:tint="@color/primary_color"
+                            app:tint="@color/primary_color"
                             android:layout_marginRight="16dp" />
 
                         <LinearLayout
@@ -225,7 +225,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_arrow_right"
-                            android:tint="#BDC3C7" />
+                            app:tint="#BDC3C7" />
 
                     </LinearLayout>
 
@@ -243,7 +243,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_payment"
-                            android:tint="@color/primary_color"
+                            app:tint="@color/primary_color"
                             android:layout_marginRight="16dp" />
 
                         <LinearLayout
@@ -273,7 +273,7 @@
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_arrow_right"
-                            android:tint="#BDC3C7" />
+                            app:tint="#BDC3C7" />
 
                     </LinearLayout>
 
@@ -321,7 +321,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_info"
-                            android:tint="@color/primary_color"
+                            app:tint="@color/primary_color"
                             android:layout_marginRight="16dp" />
 
                         <LinearLayout
@@ -367,7 +367,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_preview"
-                            android:tint="@color/primary_color"
+                            app:tint="@color/primary_color"
                             android:layout_marginRight="16dp" />
 
                         <LinearLayout
@@ -412,7 +412,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_cloud_upload"
-                            android:tint="@color/primary_color"
+                            app:tint="@color/primary_color"
                             android:layout_marginRight="16dp" />
 
                         <LinearLayout
@@ -497,7 +497,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:src="@drawable/ic_info"
-                                android:tint="@color/primary_color"
+                                app:tint="@color/primary_color"
                                 android:layout_marginRight="16dp" />
 
                             <LinearLayout
@@ -528,7 +528,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_arrow_right"
-                                android:tint="#BDC3C7" />
+                                app:tint="#BDC3C7" />
 
                         </LinearLayout>
 
@@ -555,7 +555,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:src="@drawable/ic_person"
-                                android:tint="@color/primary_color"
+                                app:tint="@color/primary_color"
                                 android:layout_marginRight="16dp" />
 
                             <LinearLayout
@@ -585,7 +585,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_arrow_right"
-                                android:tint="#BDC3C7" />
+                                app:tint="#BDC3C7" />
 
                         </LinearLayout>
 
@@ -611,7 +611,7 @@
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
                                 android:src="@drawable/ic_phone"
-                                android:tint="@color/primary_color"
+                                app:tint="@color/primary_color"
                                 android:layout_marginRight="16dp" />
 
                             <LinearLayout
@@ -641,7 +641,7 @@
                                 android:layout_width="20dp"
                                 android:layout_height="20dp"
                                 android:src="@drawable/ic_arrow_right"
-                                android:tint="#BDC3C7" />
+                                app:tint="#BDC3C7" />
 
                         </LinearLayout>
 

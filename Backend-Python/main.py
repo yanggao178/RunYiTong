@@ -5,6 +5,7 @@ import uvicorn
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 import os
+# import pydevd_pycharm
 
 # 加载环境变量
 load_dotenv()
@@ -12,6 +13,7 @@ load_dotenv()
 # 导入路由
 from routers import products, books, prescriptions, appointments, users, payments
 from database import engine, Base
+
 
 # 创建数据库表
 @asynccontextmanager
@@ -56,6 +58,9 @@ async def root():
 @app.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+# import pdb; pdb.set_trace()
+# pydevd_pycharm.settrace('192.168.0.5', port=8000, stdout_to_server=True, stderr_to_server=True)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

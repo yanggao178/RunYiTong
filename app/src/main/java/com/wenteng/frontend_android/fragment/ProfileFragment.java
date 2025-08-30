@@ -18,11 +18,13 @@ import com.wenteng.frontend_android.activity.LoginActivity;
 import com.wenteng.frontend_android.utils.DiagnosticUtils;
 import com.wenteng.frontend_android.activity.OrderActivity;
 import com.wenteng.frontend_android.activity.SettingsActivity;
+import com.wenteng.frontend_android.activity.MyAppointmentsActivity;
+import com.wenteng.frontend_android.activity.MyPrescriptionsActivity;
 
 public class ProfileFragment extends Fragment {
 
     private Button btnExpressOrders, btnLogin, btnLogout;
-    private CardView cardSettings;
+    private CardView cardSettings, cardMyAppointments, cardMyPrescriptions;
     private TextView tvUsername, tvWelcome;
     private SharedPreferences sharedPreferences;
     
@@ -49,6 +51,8 @@ public class ProfileFragment extends Fragment {
         cardSettings = view.findViewById(R.id.card_settings);
         tvUsername = view.findViewById(R.id.tv_username);
         tvWelcome = view.findViewById(R.id.tv_welcome);
+        cardMyAppointments = view.findViewById(R.id.card_my_appointments);
+        cardMyPrescriptions = view.findViewById(R.id.card_my_prescriptions);
         
         // 初始化SharedPreferences
         if (getActivity() != null) {
@@ -64,6 +68,12 @@ public class ProfileFragment extends Fragment {
         }
         if (cardSettings == null) {
             android.util.Log.e("ProfileFragment", "cardSettings not found in layout");
+        }
+        if (cardMyAppointments == null) {
+            android.util.Log.e("ProfileFragment", "cardMyAppointments not found in layout");
+        }
+        if (cardMyPrescriptions == null) {
+            android.util.Log.e("ProfileFragment", "cardMyPrescriptions not found in layout");
         }
         
         updateLoginStatus();
@@ -160,6 +170,56 @@ public class ProfileFragment extends Fragment {
                             Toast.makeText(getContext(), "无法打开设置页面，请重试", Toast.LENGTH_SHORT).show();
                         }
                     }
+                }
+            });
+        }
+        
+        // 我的预约点击事件
+        if (cardMyAppointments != null) {
+            cardMyAppointments.setOnClickListener(v -> {
+                if (getActivity() == null || getActivity().isFinishing()) {
+                    return;
+                }
+                
+                if (!getLoginState()) {
+                    // 显示登录对话框
+                    showLoginDialog();
+                    return;
+                }
+                
+                try {
+                    Intent intent = new Intent(getActivity(), MyAppointmentsActivity.class);
+                    startActivity(intent);
+                    android.util.Log.d("ProfileFragment", "启动MyAppointmentsActivity");
+                } catch (Exception e) {
+                    android.util.Log.e("ProfileFragment", "启动MyAppointmentsActivity失败: " + e.getMessage(), e);
+                    Toast.makeText(getActivity(), "无法打开预约页面，请重试", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        
+        // 我的处方点击事件
+        if (cardMyPrescriptions != null) {
+            cardMyPrescriptions.setOnClickListener(v -> {
+                if (getActivity() == null || getActivity().isFinishing()) {
+                    return;
+                }
+                
+                if (!getLoginState()) {
+                    // 显示登录对话框
+                    showLoginDialog();
+                    return;
+                }
+                
+                try {
+                    Intent intent = new Intent(getActivity(), MyPrescriptionsActivity.class);
+                    startActivity(intent);
+                    android.util.Log.d("ProfileFragment", "启动MyPrescriptionsActivity");
+                    Toast.makeText(getActivity(), "启动我的处方成功", Toast.LENGTH_SHORT).show();
+
+                } catch (Exception e) {
+                    android.util.Log.e("ProfileFragment", "启动MyPrescriptionsActivity失败: " + e.getMessage(), e);
+                    Toast.makeText(getActivity(), "无法打开处方页面，请重试", Toast.LENGTH_SHORT).show();
                 }
             });
         }

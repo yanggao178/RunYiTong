@@ -20,7 +20,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_edit"
-            android:tint="@android:color/white"
+            app:tint="@android:color/white"
             android:layout_marginEnd="12dp"
             android:contentDescription="图片编辑" />
 
@@ -38,7 +38,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_close"
-            android:tint="@android:color/white"
+            app:tint="@android:color/white"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
             android:contentDescription="关闭" />
@@ -89,7 +89,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_rotate_right"
-                        android:tint="@color/colorPrimary"
+                        app:tint="@color/colorPrimary"
                         android:layout_marginBottom="4dp"
                         android:contentDescription="顺时针旋转" />
 
@@ -126,7 +126,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_rotate_left"
-                        android:tint="@color/colorPrimary"
+                        app:tint="@color/colorPrimary"
                         android:layout_marginBottom="4dp"
                         android:contentDescription="逆时针旋转" />
 
@@ -181,7 +181,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_flip_horizontal"
-                        android:tint="@color/colorPrimary"
+                        app:tint="@color/colorPrimary"
                         android:layout_marginBottom="4dp"
                         android:contentDescription="水平翻转" />
 
@@ -218,7 +218,7 @@
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/ic_flip_vertical"
-                        android:tint="@color/colorPrimary"
+                        app:tint="@color/colorPrimary"
                         android:layout_marginBottom="4dp"
                         android:contentDescription="垂直翻转" />
 
@@ -266,7 +266,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_info"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     android:layout_marginEnd="16dp"
                     android:contentDescription="详细信息" />
 
@@ -297,7 +297,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_arrow_right"
-                    android:tint="@color/text_secondary"
+                    app:tint="@color/text_secondary"
                     android:contentDescription="查看" />
 
             </LinearLayout>

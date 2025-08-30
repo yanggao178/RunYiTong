@@ -28,7 +28,7 @@
                 android:layout_height="100dp"
                 android:layout_gravity="center"
                 android:src="@drawable/ic_profile"
-                android:tint="@color/gradient_start"
+                app:tint="@color/gradient_start"
                 android:contentDescription="应用Logo" />
 
         </androidx.cardview.widget.CardView>

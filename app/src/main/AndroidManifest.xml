@@ -117,6 +117,16 @@
             android:exported="false"
             android:screenOrientation="portrait" />
             
+        <activity
+            android:name=".activity.MyAppointmentsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.MyPrescriptionsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
         <!-- 微信支付回调Activity -->
         <activity
             android:name=".wxapi.WXPayEntryActivity"

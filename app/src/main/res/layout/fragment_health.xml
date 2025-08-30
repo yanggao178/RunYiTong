@@ -27,7 +27,7 @@
                 android:layout_height="28dp"
                 android:src="@drawable/ic_book"
                 android:layout_marginEnd="12dp"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -89,7 +89,7 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_chinese_medicine"
                     android:layout_marginEnd="8dp"
-                    android:tint="@color/tradtional_chinese" />
+                    app:tint="@color/tradtional_chinese" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -134,7 +134,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_search"
-                    android:tint="@color/tradtional_chinese"
+                    app:tint="@color/tradtional_chinese"
                     android:layout_marginEnd="8dp" />
 
                 <EditText
@@ -157,7 +157,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_close"
-                    android:tint="#95A5A6"
+                    app:tint="#95A5A6"
                     android:visibility="gone"
                     android:layout_marginStart="8dp" />
 
@@ -205,7 +205,7 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_western_medicine"
                     android:layout_marginEnd="8dp"
-                    android:tint="@color/western_medicine" />
+                    app:tint="@color/western_medicine" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -250,7 +250,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:src="@drawable/ic_search"
-                    android:tint="@color/western_medicine"
+                    app:tint="@color/western_medicine"
                     android:layout_marginEnd="8dp" />
 
                 <EditText
@@ -273,7 +273,7 @@
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:src="@drawable/ic_close"
-                    android:tint="#95A5A6"
+                    app:tint="#95A5A6"
                     android:visibility="gone"
                     android:layout_marginStart="8dp" />
 

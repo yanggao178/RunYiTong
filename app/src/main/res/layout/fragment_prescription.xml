@@ -27,7 +27,7 @@
                 android:layout_height="32dp"
                 android:src="@drawable/ic_prescription"
                 android:layout_marginEnd="12dp"
-                android:tint="@color/white" />
+                app:tint="@color/white" />
                 
             <TextView
                     android:id="@+id/tv_title"
@@ -86,7 +86,7 @@
                     android:layout_height="20dp"
                     android:src="@drawable/ic_info"
                     android:layout_marginEnd="8dp"
-                    android:tint="@color/primary_color" />
+                    app:tint="@color/primary_color" />
                     
                 <TextView
                     android:layout_width="wrap_content"
@@ -117,7 +117,7 @@
                     android:id="@+id/tv_analysis_result"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="💡 请输入症状描述，点击上传按钮或按回车键进行AI分析\n\n🔍 您可以：\n• 详细描述您的症状\n• 上传处方图片进行识别\n• 获得专业的中医建议"
+                    android:text="💡 请输入症状描述，点击上传按钮或按回车键进行AI分析\n\n🔍 您可以：\n• 详细描述您的症状\n• 上传医学影像进行识别\n• 获得专业的中医建议"
                     android:textSize="13sp"
                     android:textColor="#555555"
                     android:lineSpacingExtra="6dp"
@@ -188,7 +188,7 @@
                     android:layout_height="18dp"
                     android:src="@drawable/ic_edit"
                     android:layout_marginEnd="8dp"
-                    android:tint="@color/primary_color" />
+                    app:tint="@color/primary_color" />
                     
                 <TextView
                     android:layout_width="wrap_content"
@@ -236,7 +236,7 @@
                         android:src="@drawable/ic_image"
                         android:background="@drawable/button_circle"
                         android:backgroundTint="@color/primary_color"
-                        android:tint="@color/white"
+                        app:tint="@color/white"
                         android:contentDescription="选择图片来源" />
 
                     <ImageButton
@@ -247,7 +247,7 @@
                         android:src="@drawable/ic_upload"
                         android:background="@drawable/button_circle"
                         android:backgroundTint="#4CAF50"
-                        android:tint="@color/white"
+                        app:tint="@color/white"
                         android:contentDescription="上传处方图片" />
                 </LinearLayout>
                 

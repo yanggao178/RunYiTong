@@ -27,7 +27,7 @@
                 android:layout_height="28dp"
                 android:src="@drawable/ic_shopping_cart"
                 android:layout_marginEnd="12dp"
-                android:tint="@android:color/white" />
+                app:tint="@android:color/white" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -88,7 +88,7 @@
                     android:layout_height="20dp"
                     android:src="@drawable/ic_search"
                     android:layout_marginEnd="8dp"
-                    android:tint="@color/primary_color" />
+                    app:tint="@color/primary_color" />
 
                 <TextView
                     android:layout_width="wrap_content"

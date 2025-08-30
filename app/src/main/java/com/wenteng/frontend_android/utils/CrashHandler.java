@@ -63,7 +63,7 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
             saveCrashInfoToFile(crashInfo);
             
             // 记录到系统日志
-            Log.e(TAG, "Crash info saved: \n" + crashInfo);
+            Log.e(TAG, "Crash info saved: " + System.lineSeparator() + crashInfo);
             
         } catch (Exception e) {
             Log.e(TAG, "Error handling crash", e);
@@ -83,27 +83,27 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         
         // 时间戳
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        sb.append("Crash Time: ").append(dateFormat.format(new Date())).append("\n");
-        sb.append("\n");
+        sb.append("Crash Time: ").append(dateFormat.format(new Date())).append(System.lineSeparator());
+        sb.append(System.lineSeparator());
         
         // 应用信息
         try {
             PackageManager pm = context.getPackageManager();
             PackageInfo pi = pm.getPackageInfo(context.getPackageName(), PackageManager.GET_ACTIVITIES);
-            sb.append("App Version: ").append(pi.versionName).append(" (").append(pi.versionCode).append(")\n");
-            sb.append("Package Name: ").append(pi.packageName).append("\n");
+            sb.append("App Version: ").append(pi.versionName).append(" (").append(pi.versionCode).append(")").append(System.lineSeparator());
+            sb.append("Package Name: ").append(pi.packageName).append(System.lineSeparator());
         } catch (Exception e) {
-            sb.append("App Info: Unable to collect\n");
+            sb.append("App Info: Unable to collect").append(System.lineSeparator());
         }
-        sb.append("\n");
+        sb.append(System.lineSeparator());
         
         // 设备信息
-        sb.append("Device Info:\n");
-        sb.append("Brand: ").append(Build.BRAND).append("\n");
-        sb.append("Model: ").append(Build.MODEL).append("\n");
-        sb.append("Device: ").append(Build.DEVICE).append("\n");
-        sb.append("Android Version: ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")\n");
-        sb.append("\n");
+        sb.append("Device Info:").append(System.lineSeparator());
+        sb.append("Brand: ").append(Build.BRAND).append(System.lineSeparator());
+        sb.append("Model: ").append(Build.MODEL).append(System.lineSeparator());
+        sb.append("Device: ").append(Build.DEVICE).append(System.lineSeparator());
+        sb.append("Android Version: ").append(Build.VERSION.RELEASE).append(" (API ").append(Build.VERSION.SDK_INT).append(")").append(System.lineSeparator());
+        sb.append(System.lineSeparator());
         
         // 内存信息
         Runtime runtime = Runtime.getRuntime();
@@ -112,16 +112,16 @@ public class CrashHandler implements Thread.UncaughtExceptionHandler {
         long usedMemory = totalMemory - freeMemory;
         long maxMemory = runtime.maxMemory();
         
-        sb.append("Memory Info:\n");
-        sb.append("Used: ").append(usedMemory / 1024 / 1024).append("MB\n");
-        sb.append("Free: ").append(freeMemory / 1024 / 1024).append("MB\n");
-        sb.append("Total: ").append(totalMemory / 1024 / 1024).append("MB\n");
-        sb.append("Max: ").append(maxMemory / 1024 / 1024).append("MB\n");
-        sb.append("Usage: ").append(String.format("%.1f%%", (usedMemory * 100.0 / maxMemory))).append("\n");
-        sb.append("\n");
+        sb.append("Memory Info:").append(System.lineSeparator());
+        sb.append("Used: ").append(usedMemory / 1024 / 1024).append("MB").append(System.lineSeparator());
+        sb.append("Free: ").append(freeMemory / 1024 / 1024).append("MB").append(System.lineSeparator());
+        sb.append("Total: ").append(totalMemory / 1024 / 1024).append("MB").append(System.lineSeparator());
+        sb.append("Max: ").append(maxMemory / 1024 / 1024).append("MB").append(System.lineSeparator());
+        sb.append("Usage: ").append(String.format("%.1f%%", (usedMemory * 100.0 / maxMemory))).append(System.lineSeparator());
+        sb.append(System.lineSeparator());
         
         // 异常堆栈
-        sb.append("Exception Stack Trace:\n");
+        sb.append("Exception Stack Trace:").append(System.lineSeparator());
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
         ex.printStackTrace(pw);

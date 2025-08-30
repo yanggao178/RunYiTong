@@ -161,6 +161,7 @@
 
             <!-- 我的预约 -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/card_my_appointments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
@@ -187,7 +188,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_my_appointments"
-                            android:tint="@android:color/white"
+                            app:tint="@android:color/white"
                             android:contentDescription="我的预约" />
 
                     </androidx.cardview.widget.CardView>
@@ -215,7 +216,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_arrow_right"
-                        android:tint="#BDC3C7" />
+                        app:tint="#BDC3C7" />
 
                 </LinearLayout>
 
@@ -223,6 +224,7 @@
 
             <!-- 我的处方 -->
             <androidx.cardview.widget.CardView
+                android:id="@+id/card_my_prescriptions"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
@@ -249,7 +251,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_my_prescriptions"
-                            android:tint="@android:color/white"
+                            app:tint="@android:color/white"
                             android:contentDescription="我的处方" />
 
                     </androidx.cardview.widget.CardView>
@@ -277,7 +279,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_arrow_right"
-                        android:tint="#BDC3C7" />
+                        app:tint="#BDC3C7" />
 
                 </LinearLayout>
 
@@ -311,7 +313,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_health_record"
-                            android:tint="@android:color/white"
+                            app:tint="@android:color/white"
                             android:contentDescription="健康档案" />
 
                     </androidx.cardview.widget.CardView>
@@ -339,7 +341,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_arrow_right"
-                        android:tint="#BDC3C7" />
+                        app:tint="#BDC3C7" />
 
                 </LinearLayout>
 
@@ -406,7 +408,7 @@
                             android:layout_height="24dp"
                             android:layout_gravity="center"
                             android:src="@drawable/ic_settings"
-                            android:tint="@android:color/white"
+                            app:tint="@android:color/white"
                             android:contentDescription="应用设置" />
 
                     </androidx.cardview.widget.CardView>
@@ -434,7 +436,7 @@
                         android:layout_width="20dp"
                         android:layout_height="20dp"
                         android:src="@drawable/ic_arrow_right"
-                        android:tint="#BDC3C7" />
+                        app:tint="#BDC3C7" />
 
                 </LinearLayout>
 

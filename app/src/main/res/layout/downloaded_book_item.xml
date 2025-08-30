@@ -18,7 +18,7 @@
         android:layout_marginEnd="16dp"
         android:src="@drawable/ic_book_placeholder"
         android:scaleType="centerInside"
-        android:tint="@color/gradient_start" />
+        app:tint="@color/gradient_start" />
 
     <!-- 书籍信息 -->
     <LinearLayout
@@ -72,7 +72,7 @@
             android:layout_height="32dp"
             android:layout_marginEnd="8dp"
             android:src="@android:drawable/ic_menu_delete"
-            android:tint="@android:color/holo_red_dark"
+            app:tint="@android:color/holo_red_dark"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
             android:clickable="true"
@@ -84,7 +84,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_arrow_forward"
-            android:tint="@color/text_secondary" />
+            app:tint="@color/text_secondary" />
 
     </LinearLayout>
 

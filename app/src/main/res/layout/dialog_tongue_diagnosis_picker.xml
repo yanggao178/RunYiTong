@@ -19,7 +19,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_medical_diagnosis"
-            android:tint="@color/primary_color"
+            app:tint="@color/primary_color"
             android:layout_marginEnd="12dp" />
 
         <TextView
@@ -66,7 +66,7 @@
                     android:src="@drawable/ic_tongue_diagnosis"
                     android:background="@drawable/circle_background_primary"
                     android:padding="12dp"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     android:layout_marginEnd="16dp" />
 
                 <LinearLayout
@@ -97,7 +97,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_arrow_forward"
-                    android:tint="@color/text_secondary" />
+                    app:tint="@color/text_secondary" />
 
             </LinearLayout>
 
@@ -128,7 +128,7 @@
                     android:src="@drawable/ic_face_diagnosis"
                     android:background="@drawable/circle_background_secondary"
                     android:padding="12dp"
-                    android:tint="@android:color/white"
+                    app:tint="@android:color/white"
                     android:layout_marginEnd="16dp" />
 
                 <LinearLayout
@@ -159,7 +159,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/ic_arrow_forward"
-                    android:tint="@color/text_secondary" />
+                    app:tint="@color/text_secondary" />
 
             </LinearLayout>
 

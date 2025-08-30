@@ -421,7 +421,7 @@ def _validate_image_input(image_data: str, image_type: str, patient_info: Option
     if not image_data or not image_data.strip():
         raise ValueError("图像数据不能为空")
     
-    valid_image_types = ['X-ray', 'CT', 'MRI', 'Ultrasound', 'PET-CT']
+    valid_image_types = ['X-ray', 'CT', 'MRI', 'Ultrasound', 'PET-CT', '中医舌诊', '中医面诊']
     if image_type not in valid_image_types:
         raise ValueError(f"不支持的影像类型: {image_type}，支持的类型: {', '.join(valid_image_types)}")
     
@@ -433,6 +433,166 @@ def _validate_image_input(image_data: str, image_type: str, patient_info: Option
         base64.b64decode(image_data)
     except Exception:
         raise ValueError("图像数据格式无效，必须是有效的Base64编码")
+
+
+def _detect_image_content_type(image_data: str, api_key: str, extension: str) -> str:
+    """使用AI模型检测图像内容类型
+    
+    Args:
+        image_data: Base64编码的图像数据
+        api_key: DashScope API密钥
+        
+    Returns:
+        str: 检测到的图像类型
+        
+    Raises:
+        ValueError: 当检测失败时
+    """
+    try:
+        logger.info("开始使用AI模型检测图像内容类型...")
+        
+        # 创建OpenAI客户端
+        client = OpenAI(
+            api_key=api_key,
+            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
+        )
+        
+        # 构建图像类型检测提示词
+        detection_prompt = """请分析这张医学影像图片，判断其类型。
+        
+可能的类型包括：
+- X-ray（X光片）
+- CT（CT扫描）
+- MRI（核磁共振）
+- Ultrasound（超声）
+- PET-CT（正电子发射计算机断层扫描）
+- 中医舌诊（舌头图片）
+- 中医面诊（面部图片）
+
+请仅返回最匹配的类型名称，不要包含其他解释。"""
+        
+        # 调用AI模型进行图像内容检测
+        completion = client.chat.completions.create(
+            model="qwen-vl-max",
+            messages=[
+                {
+                    "role": "system",
+                    "content": [{
+                        "type": "text", 
+                        "text": "你是一个专业的医学影像识别专家，能够准确识别各种医学影像类型。"
+                    }],
+                },
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/{extension[1:]};base64,{image_data}"
+                            },
+                        },
+                        {"type": "text", "text": detection_prompt},
+                    ],
+                },
+            ],
+            temperature=0.1,
+            max_tokens=50,
+            timeout=30
+        )
+        
+        # 获取检测结果
+        detected_type = completion.choices[0].message.content.strip()
+        logger.info(f"AI检测到的图像类型: {detected_type}")
+        
+        # 标准化检测结果
+        detected_type_lower = detected_type.lower()
+        if "x-ray" in detected_type_lower or "xray" in detected_type_lower or "x光" in detected_type:
+            return "X-ray"
+        elif "ct" in detected_type_lower and "pet" not in detected_type_lower:
+            return "CT"
+        elif "mri" in detected_type_lower or "核磁" in detected_type:
+            return "MRI"
+        elif "ultrasound" in detected_type_lower or "超声" in detected_type:
+            return "Ultrasound"
+        elif "pet-ct" in detected_type_lower or "pet" in detected_type_lower:
+            return "PET-CT"
+        elif "舌" in detected_type or "tongue" in detected_type_lower:
+            return "中医舌诊"
+        elif "面" in detected_type or "face" in detected_type_lower:
+            return "中医面诊"
+        else:
+            logger.warning(f"无法识别的图像类型: {detected_type}，返回原始结果")
+            return detected_type
+            
+    except Exception as e:
+        logger.error(f"图像内容类型检测失败: {e}")
+        # 检测失败时返回通用类型，让后续验证处理
+        return "Unknown"
+
+
+def _validate_image_type_match(detected_type: str, requested_type: str) -> bool:
+    """验证检测到的图像类型是否与请求的分析类型匹配
+    
+    Args:
+        detected_type: AI检测到的图像类型
+        requested_type: 用户请求的分析类型
+        
+    Returns:
+        bool: 如果类型匹配返回True，否则返回False
+    """
+    logger.info(f"验证图像类型匹配: 检测类型='{detected_type}', 请求类型='{requested_type}'")
+    
+    # 如果检测失败，允许继续（避免因检测问题阻止正常分析）
+    if detected_type == "Unknown":
+        logger.warning("图像类型检测失败，跳过类型验证")
+        return False
+    
+    # 直接匹配
+    if detected_type == requested_type:
+        return True
+    
+    # 模糊匹配规则
+    detected_lower = detected_type.lower()
+    requested_lower = requested_type.lower()
+    
+    # X-ray相关匹配
+    if ("x-ray" in detected_lower or "xray" in detected_lower) and \
+       ("x-ray" in requested_lower or "xray" in requested_lower):
+        return True
+    
+    # CT相关匹配（排除PET-CT）
+    if "ct" in detected_lower and "pet" not in detected_lower and \
+       "ct" in requested_lower and "pet" not in requested_lower:
+        return True
+    
+    # PET-CT匹配
+    if ("pet-ct" in detected_lower or "pet" in detected_lower) and \
+       ("pet-ct" in requested_lower or "pet" in requested_lower):
+        return True
+    
+    # MRI匹配
+    if ("mri" in detected_lower or "核磁" in detected_type) and \
+       ("mri" in requested_lower or "核磁" in requested_type):
+        return True
+    
+    # 超声匹配
+    if ("ultrasound" in detected_lower or "超声" in detected_type) and \
+       ("ultrasound" in requested_lower or "超声" in requested_type):
+        return True
+    
+    # 中医舌诊匹配
+    if ("中医舌诊" in detected_type or "tongue" in detected_lower) and \
+       ("舌诊" in requested_type or "tongue" in requested_lower):
+        return True
+    
+    # 中医面诊匹配
+    if ("中医面诊" in detected_type or "face" in detected_lower) and \
+       ("面诊" in requested_type or "face" in requested_lower):
+        return True
+    
+    # 如果没有匹配，返回False
+    logger.warning(f"图像类型不匹配: 检测到'{detected_type}'，请求'{requested_type}'")
+    return False
 
 
 def _build_optimized_prompt(patient_context: str, symptoms: str) -> str:
@@ -1142,7 +1302,7 @@ def analyze_medical_image_dashscope(
     image_type: str,
     patient_info: Optional[Dict[str, Any]] = None,
     api_key: Optional[str] = None,
-    model: str = "qwen-vl-plus",
+    model: str = "qwen-vl-max",
     max_tokens: int = 4000,
     max_retries: int = 3
 ) -> MedicalImageAnalysis:
@@ -1193,6 +1353,18 @@ def analyze_medical_image_dashscope(
             raise ValueError("请设置DASHSCOPE_API_KEY环境变量或提供api_key参数")
     
     logger.info(f"开始使用DashScope分析{image_type}医学影像...")
+    
+    # 图像内容类型检测
+    logger.info("开始检测图像内容类型...")
+    detected_type = _detect_image_content_type(image_data, api_key,extension)
+    
+    # 验证图像类型是否匹配
+    if not _validate_image_type_match(detected_type, image_type):
+        error_msg = f"图像类型不匹配：检测到的类型为'{detected_type}'，但请求分析类型为'{image_type}'"
+        logger.error(error_msg)
+        raise ValueError(f"IMAGE_TYPE_MISMATCH:{error_msg}")
+    
+    logger.info(f"图像类型验证通过：检测类型'{detected_type}'匹配请求类型'{image_type}'")
     
     # # DashScope API配置
     # url = "https://dashscope.aliyuncs.com/api/v1/services/aigc/multimodal-generation/generation"
@@ -1392,9 +1564,10 @@ def analyze_medical_image_dashscope(
 
 def analyze_tcm_tongue_diagnosis_dashscope(
     image_path: str,
+    image_type: str,
     patient_info: Optional[Dict[str, Any]] = None,
     api_key: Optional[str] = None,
-    model: str = "qwen-vl-plus",
+    model: str = "qwen-vl-max",
     max_tokens: int = 4000,
     max_retries: int = 3
 ) -> Dict[str, Any]:
@@ -1442,6 +1615,16 @@ def analyze_tcm_tongue_diagnosis_dashscope(
             raise ValueError("请设置DASHSCOPE_API_KEY环境变量或提供api_key参数")
     
     logger.info("开始使用DashScope进行AI中医舌诊分析...")
+
+    # 图像内容类型检测
+    logger.info("开始检测图像内容类型...")
+    detected_type = _detect_image_content_type(image_data, api_key,extension)
+    
+    # 验证图像类型是否匹配
+    if not _validate_image_type_match(detected_type, image_type):
+       error_msg = f"图像类型不匹配：检测到的类型为'{detected_type}'，但请求分析类型为'{image_type}'"
+       logger.error(f"IMAGE_TYPE_MISMATCH:{error_msg}")
+       raise ValueError(f"IMAGE_TYPE_MISMATCH:{error_msg}")
     
     # 重试机制
     for attempt in range(max_retries):
@@ -1585,9 +1768,10 @@ def analyze_tcm_tongue_diagnosis_dashscope(
 
 def analyze_tcm_face_diagnosis_dashscope(
     image_path: str,
+    image_type: str,
     patient_info: Optional[Dict[str, Any]] = None,
     api_key: Optional[str] = None,
-    model: str = "qwen-vl-plus",
+    model: str = "qwen-vl-max",
     max_tokens: int = 4000,
     max_retries: int = 3
 ) -> Dict[str, Any]:
@@ -1635,6 +1819,16 @@ def analyze_tcm_face_diagnosis_dashscope(
             raise ValueError("请设置DASHSCOPE_API_KEY环境变量或提供api_key参数")
     
     logger.info("开始使用DashScope进行AI中医面诊分析...")
+
+     # 图像内容类型检测
+    logger.info("开始检测图像内容类型...")
+    detected_type = _detect_image_content_type(image_data, api_key,extension)
+    
+    # 验证图像类型是否匹配
+    if not _validate_image_type_match(detected_type, image_type):
+       error_msg = f"图像类型不匹配：检测到的类型为'{detected_type}'，但请求分析类型为'{image_type}'"
+       logger.error(f"IMAGE_TYPE_MISMATCH:{error_msg}")
+       raise ValueError(f"IMAGE_TYPE_MISMATCH:{error_msg}")
     
     # 重试机制
     for attempt in range(max_retries):

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="28dp"
+    android:background="@drawable/dialog_background"
+    android:elevation="16dp">
+
+    <!-- 标题区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="32dp">
+        
+        <!-- 手机图标 -->
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_phone"
+            android:tint="@color/gradient_start"
+            android:layout_marginEnd="12dp" />
+        
+        <!-- 标题文字 -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="手机验证码登录"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:letterSpacing="0.05" />
+            
+    </LinearLayout>
+
+    <!-- 手机号输入 -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_phone_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        app:boxBackgroundMode="filled"
+        app:boxBackgroundColor="@color/input_background"
+        app:boxCornerRadiusTopStart="24dp"
+        app:boxCornerRadiusTopEnd="24dp"
+        app:boxCornerRadiusBottomStart="24dp"
+        app:boxCornerRadiusBottomEnd="24dp"
+        app:startIconDrawable="@drawable/ic_phone"
+        app:startIconTint="@color/gradient_start"
+        app:hintTextColor="@color/text_hint"
+        app:boxStrokeColor="@color/gradient_start"
+        app:boxStrokeWidth="2dp"
+        app:boxStrokeWidthFocused="4dp"
+        app:hintAnimationEnabled="true"
+        app:helperText="请输入11位手机号码"
+        app:helperTextTextColor="@color/text_hint"
+        app:counterEnabled="true"
+        app:counterMaxLength="11">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_phone_dialog"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:hint="手机号"
+            android:inputType="phone"
+            android:maxLength="11"
+            android:textSize="17sp"
+            android:textColor="@color/text_primary"
+            android:paddingVertical="18dp"
+            android:fontFamily="sans-serif-medium" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 验证码输入区域 -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp">
+
+        <!-- 验证码输入框 -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_verification_code_dialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_toStartOf="@+id/layout_send_code_container"
+            android:layout_marginEnd="16dp"
+            app:boxBackgroundMode="filled"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxCornerRadiusTopStart="24dp"
+            app:boxCornerRadiusTopEnd="24dp"
+            app:boxCornerRadiusBottomStart="24dp"
+            app:boxCornerRadiusBottomEnd="24dp"
+            app:startIconDrawable="@drawable/ic_lock_open"
+            app:startIconTint="@color/gradient_start"
+            app:hintTextColor="@color/text_hint"
+            app:boxStrokeColor="@color/gradient_start"
+            app:boxStrokeWidth="2dp"
+            app:boxStrokeWidthFocused="4dp"
+            app:hintAnimationEnabled="true"
+
+            app:helperText="点击此处输入6位验证码"
+            app:helperTextTextColor="@color/text_hint"
+            app:counterEnabled="true"
+            app:counterMaxLength="6"
+            app:endIconMode="custom"
+            app:endIconDrawable="@drawable/ic_send"
+            app:endIconTint="@color/gradient_start">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_verification_code_dialog"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:hint="点击输入验证码"
+                android:inputType="number"
+                android:maxLength="6"
+                android:textSize="17sp"
+                android:textColor="@color/text_primary"
+                android:paddingVertical="18dp"
+                android:fontFamily="sans-serif-medium"
+                android:letterSpacing="0.2" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 发送验证码按钮容器 -->
+        <LinearLayout
+            android:id="@+id/layout_send_code_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:alpha="0">
+
+            <!-- 发送验证码文字提示 -->
+            <TextView
+                android:id="@+id/tv_send_code_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="发送验证码"
+                android:textColor="@color/gradient_start"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="8dp"
+                android:padding="8dp"
+                android:background="@drawable/ripple_effect"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <!-- 发送验证码按钮 -->
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="wrap_content"
+                    android:layout_height="56dp"
+                    app:cardCornerRadius="28dp"
+                    app:cardElevation="12dp"
+                    android:backgroundTint="@color/gradient_start"
+                    app:cardUseCompatPadding="true">
+
+                    <Button
+                        android:id="@+id/btn_send_code_dialog"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:text="发送"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:background="@android:color/transparent"
+                        android:paddingHorizontal="24dp"
+                        android:minWidth="80dp"
+                        android:minHeight="0dp"
+                        android:letterSpacing="0.08"
+ />
+
+                </androidx.cardview.widget.CardView>
+
+                <!-- 发送验证码加载指示器 -->
+                <ProgressBar
+                    android:id="@+id/pb_send_code_loading_dialog"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_centerInParent="true"
+                    android:visibility="gone"
+                    android:indeterminateTint="@color/white" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+    <!-- 按钮区域 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingHorizontal="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel_dialog"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            android:text="取消"
+            android:textColor="@color/text_secondary"
+            android:textSize="17sp"
+            android:fontFamily="sans-serif-medium"
+            app:backgroundTint="@android:color/transparent"
+            app:strokeColor="@color/gradient_start"
+            app:strokeWidth="2dp"
+            app:cornerRadius="28dp"
+            app:rippleColor="@color/gradient_start"
+            android:letterSpacing="0.05"
+            app:elevation="2dp" />
+
+        <com.google.android.material.button.MaterialButton
+             android:id="@+id/btn_login_dialog"
+             android:layout_width="0dp"
+             android:layout_height="56dp"
+             android:layout_weight="1"
+             android:layout_marginStart="12dp"
+             android:text="登录"
+             android:textColor="@android:color/white"
+             android:textSize="17sp"
+             android:fontFamily="sans-serif-medium"
+             app:backgroundTint="@color/gradient_start"
+             app:cornerRadius="28dp"
+             app:rippleColor="@android:color/white"
+             android:letterSpacing="0.05"
+             app:elevation="4dp" />
+
+        <ProgressBar
+            android:id="@+id/pb_login_loading_dialog"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="-120dp"
+            android:visibility="gone"
+            android:indeterminateTint="@color/white" />
+
+    </LinearLayout>
+
+</LinearLayout>

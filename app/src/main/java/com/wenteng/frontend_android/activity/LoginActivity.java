@@ -1,8 +1,12 @@
 package com.wenteng.frontend_android.activity;
 
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -15,10 +19,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.google.android.material.textfield.TextInputLayout;
 import com.wenteng.frontend_android.MainActivity;
@@ -26,7 +32,14 @@ import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiResponse;
 import com.wenteng.frontend_android.api.ApiService;
+import com.wenteng.frontend_android.api.LoginRequest;
 import com.wenteng.frontend_android.api.LoginResponse;
+import com.wenteng.frontend_android.utils.UXEnhancementUtils;
+import com.wenteng.frontend_android.utils.ValidationManager;
+import com.wenteng.frontend_android.utils.SecurityManager;
+import com.wenteng.frontend_android.utils.ErrorHandlingManager;
+import com.wenteng.frontend_android.utils.PerformanceManager;
+import com.wenteng.frontend_android.utils.AccessibilityManager;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -35,7 +48,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private EditText etUsername, etPassword, etPhone, etVerificationCode;
     private TextInputLayout tilUsername, tilPassword, tilPhone, tilVerificationCode;
-    private Button btnLogin, btnRegister, btnSendCode;
+    private Button btnLogin, btnRegister, btnSendCode, btnSmsLogin;
     private TextView tvForgotPassword;
     private boolean isCodeSent = false;
     private int countdown = 60;
@@ -48,12 +61,24 @@ public class LoginActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "user_login_state";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_USERNAME = "username";
+    
+    // 安全管理器
+    private SecurityManager securityManager;
+    
+    // 性能监控
+    private PerformanceManager.PageLoadMonitor pageLoadMonitor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         Log.d("LoginActivity", "onCreate started");
+        
+        // 启动性能监控
+        pageLoadMonitor = new PerformanceManager.PageLoadMonitor("LoginActivity");
+        
+        // 优化Activity内存使用
+        PerformanceManager.optimizeActivityMemory(this);
         
         // 检查Activity状态
         if (isFinishing() || isDestroyed()) {
@@ -67,64 +92,340 @@ public class LoginActivity extends AppCompatActivity {
         // 直接初始化视图，不使用try-catch包装
         initViewsRobust();
         
+        // 强制检查按钮初始化状态，确保手机验证码登录按钮能正常工作
+        forceSmsLoginButtonSetup();
+        
+        // 标记页面加载完成
+        if (pageLoadMonitor != null) {
+            pageLoadMonitor.onPageLoadComplete();
+        }
+        
         Log.d("LoginActivity", "onCreate completed successfully");
     }
     
+    /**
+     * 强制检查手机验证码登录按钮的初始化状态，确保其能正常工作
+     */
+    private void forceSmsLoginButtonSetup() {
+        Log.d("LoginActivity", "=== 强制检查SMS登录按钮设置 ===");
+        
+        try {
+            // 直接通过findViewById获取按钮
+            Button smsLoginButton = findViewById(R.id.btn_sms_login);
+            
+            if (smsLoginButton != null) {
+                Log.d("LoginActivity", "SMS登录按钮找到了！✓");
+                Log.d("LoginActivity", "Visibility: " + 
+                    (smsLoginButton.getVisibility() == View.VISIBLE ? "VISIBLE" : 
+                     smsLoginButton.getVisibility() == View.GONE ? "GONE" : "INVISIBLE"));
+                Log.d("LoginActivity", "Enabled: " + smsLoginButton.isEnabled());
+                Log.d("LoginActivity", "Clickable: " + smsLoginButton.isClickable());
+                
+                // 如果按钮被隐藏或禁用，强制启用它
+                if (smsLoginButton.getVisibility() != View.VISIBLE) {
+                    Log.w("LoginActivity", "按钮被隐藏，强制显示");
+                    smsLoginButton.setVisibility(View.VISIBLE);
+                }
+                
+                if (!smsLoginButton.isEnabled()) {
+                    Log.w("LoginActivity", "按钮被禁用，强制启用");
+                    smsLoginButton.setEnabled(true);
+                }
+                
+                if (!smsLoginButton.isClickable()) {
+                    Log.w("LoginActivity", "按钮不可点击，强制设置为可点击");
+                    smsLoginButton.setClickable(true);
+                }
+                
+                // 强制设置点击监听器
+                smsLoginButton.setOnClickListener(v -> {
+                    Log.d("LoginActivity", "手机验证码登录按钮被点击！");
+                    Toast.makeText(LoginActivity.this, "打开手机验证码登录对话框", Toast.LENGTH_SHORT).show();
+                    showSmsLoginDialog();
+                });
+                
+                // 更新成员变量
+                btnSmsLogin = smsLoginButton;
+                
+                Log.d("LoginActivity", "SMS登录按钮设置完成！✓");
+                
+            } else {
+                Log.e("LoginActivity", "SMS登录按钮不存在！✗");
+                Log.e("LoginActivity", "布局文件中可能缺少 R.id.btn_sms_login");
+            }
+            
+        } catch (Exception e) {
+            Log.e("LoginActivity", "SMS登录按钮设置出错: " + e.getMessage(), e);
+        }
+        
+        Log.d("LoginActivity", "=== SMS登录按钮检查完成 ===");
+    }
+    
+    /**
+     * 根据activity_login.xml布局文件初始化所有视图组件
+     * 包括输入框、按钮、加载指示器等UI元素的初始化和配置
+     */
     private void initViewsRobust() {
-        Log.d("LoginActivity", "Starting robust view initialization...");
+        Log.d("LoginActivity", "Starting robust view initialization based on activity_login.xml...");
         
         // 初始化SharedPreferences
         sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         
-        // 初始化TextInputLayout - 使用安全的方式
-        tilUsername = findViewById(R.id.til_username);
-        tilPassword = findViewById(R.id.til_password);
-        tilPhone = findViewById(R.id.til_phone);
-        tilVerificationCode = findViewById(R.id.til_verification_code);
+        // 初始化安全管理器
+        securityManager = new SecurityManager(this);
         
-        // 初始化EditText
-        etUsername = findViewById(R.id.et_username);
-        etPassword = findViewById(R.id.et_password);
-        etPhone = findViewById(R.id.et_phone);
-        etVerificationCode = findViewById(R.id.et_verification_code);
+        // 初始化TextInputLayout容器 - 基于activity_login.xml中实际存在的组件
+        tilUsername = findViewById(R.id.til_username);           // 用户名输入框容器
+        tilPassword = findViewById(R.id.til_password);           // 密码输入框容器
         
-        // 初始化按钮
-        btnLogin = findViewById(R.id.btn_login);
-        btnRegister = findViewById(R.id.btn_register);
-        btnSendCode = findViewById(R.id.btn_send_code);
-        tvForgotPassword = findViewById(R.id.tv_forgot_password);
+        // 初始化EditText输入框 - 对应XML中的TextInputEditText
+        etUsername = findViewById(R.id.et_username);             // 用户名输入框
+        etPassword = findViewById(R.id.et_password);             // 密码输入框
+        
+        // 初始化按钮组件 - 基于XML中的Button定义
+        btnLogin = findViewById(R.id.btn_login);                // 主登录按钮
+        btnSmsLogin = findViewById(R.id.btn_sms_login);          // 手机验证码登录按钮
+        btnRegister = findViewById(R.id.btn_register);          // 注册按钮
+        
+        // 初始化其他UI组件
+        tvForgotPassword = findViewById(R.id.tv_forgot_password); // 忘记密码文本
         
         // 初始化加载指示器
-        pbLoginLoading = findViewById(R.id.pb_login_loading);
-        pbSendCodeLoading = findViewById(R.id.pb_send_code_loading);
+        pbLoginLoading = findViewById(R.id.pb_login_loading);     // 登录加载动画
         
-        // 记录视图初始化状态，但不抛出异常
-        if (tilUsername == null) Log.w("LoginActivity", "til_username not found");
-        if (tilPassword == null) Log.w("LoginActivity", "til_password not found");
-        if (etUsername == null) Log.w("LoginActivity", "et_username not found");
-        if (etPassword == null) Log.w("LoginActivity", "et_password not found");
-        if (btnLogin == null) Log.w("LoginActivity", "btn_login not found");
+        // 初始化容器组件（可选，用于动画或布局控制）
+        CardView logoArea = findViewById(R.id.logo_area);        // Logo区域
+        CardView formContainer = findViewById(R.id.form_container); // 表单容器
+        RelativeLayout buttonContainer = findViewById(R.id.button_container); // 按钮容器
         
-        // 设置监听器 - 只有在视图存在时才设置
-        if (btnLogin != null && btnRegister != null) {
-            setupClickListeners();
+        // 注意：以下组件在activity_login.xml中不存在，设置为null以避免空指针异常
+        tilPhone = null;                                      // SMS登录对话框中使用
+        tilVerificationCode = null;                           // SMS登录对话框中使用
+        etPhone = null;                                       // SMS登录对话框中使用
+        etVerificationCode = null;                            // SMS登录对话框中使用
+        btnSendCode = null;                                   // SMS登录对话框中使用
+        pbSendCodeLoading = null;                             // SMS登录对话框中使用
+        
+        // 记录关键视图的初始化状态
+        logViewInitializationStatus();
+        
+        // 设置事件监听器 - 确保视图存在后再设置
+        setupEventListeners();
+        
+        // 设置输入验证（只为主要输入框）
+        setupMainInputValidation();
+        
+        // 设置UI动画效果
+        setupUIAnimations();
+        
+        // 处理从其他Activity传来的参数
+        handleIntentExtras();
+        
+        Log.d("LoginActivity", "Robust view initialization completed successfully");
+    }
+    
+    /**
+     * 记录视图初始化状态，用于调试
+     */
+    private void logViewInitializationStatus() {
+        Log.d("LoginActivity", "=== View Initialization Status (Based on activity_login.xml) ===");
+        
+        // 主要输入组件（在布局文件中存在）
+        Log.d("LoginActivity", "tilUsername: " + (tilUsername != null ? "✓" : "✗"));
+        Log.d("LoginActivity", "tilPassword: " + (tilPassword != null ? "✓" : "✗"));
+        Log.d("LoginActivity", "etUsername: " + (etUsername != null ? "✓" : "✗"));
+        Log.d("LoginActivity", "etPassword: " + (etPassword != null ? "✓" : "✗"));
+        
+        // 按钮组件（在布局文件中存在）
+        Log.d("LoginActivity", "btnLogin: " + (btnLogin != null ? "✓" : "✗"));
+        Log.d("LoginActivity", "btnSmsLogin: " + (btnSmsLogin != null ? "✓ (ID: R.id.btn_sms_login)" : "✗ (ID: R.id.btn_sms_login not found)"));
+        Log.d("LoginActivity", "btnRegister: " + (btnRegister != null ? "✓" : "✗"));
+        
+        // 其他UI组件（在布局文件中存在）
+        Log.d("LoginActivity", "tvForgotPassword: " + (tvForgotPassword != null ? "✓" : "✗"));
+        Log.d("LoginActivity", "pbLoginLoading: " + (pbLoginLoading != null ? "✓" : "✗"));
+        
+        // SMS相关组件（预期不在主布局中存在，只在对话框中使用）
+        Log.d("LoginActivity", "tilPhone: " + (tilPhone != null ? "✓" : "✗ (Expected - SMS dialog only)"));
+        Log.d("LoginActivity", "tilVerificationCode: " + (tilVerificationCode != null ? "✓" : "✗ (Expected - SMS dialog only)"));
+        Log.d("LoginActivity", "etPhone: " + (etPhone != null ? "✓" : "✗ (Expected - SMS dialog only)"));
+        Log.d("LoginActivity", "etVerificationCode: " + (etVerificationCode != null ? "✓" : "✗ (Expected - SMS dialog only)"));
+        Log.d("LoginActivity", "btnSendCode: " + (btnSendCode != null ? "✓" : "✗ (Expected - SMS dialog only)"));
+        Log.d("LoginActivity", "pbSendCodeLoading: " + (pbSendCodeLoading != null ? "✓" : "✗ (Expected - SMS dialog only)"));
+        
+        // 验证布局文件中的按钮是否可用
+        try {
+            View smsLoginView = findViewById(R.id.btn_sms_login);
+            Log.d("LoginActivity", "Direct findViewById for btn_sms_login: " + (smsLoginView != null ? "✓" : "✗"));
+            if (smsLoginView != null) {
+                Log.d("LoginActivity", "btn_sms_login visibility: " + 
+                    (smsLoginView.getVisibility() == View.VISIBLE ? "VISIBLE" : 
+                     smsLoginView.getVisibility() == View.GONE ? "GONE" : "INVISIBLE"));
+                Log.d("LoginActivity", "btn_sms_login enabled: " + smsLoginView.isEnabled());
+            }
+        } catch (Exception e) {
+            Log.e("LoginActivity", "Error checking btn_sms_login directly: " + e.getMessage());
         }
         
-        if (etUsername != null && etPassword != null && etPhone != null && etVerificationCode != null) {
-            setupInputValidation();
+        Log.d("LoginActivity", "=================================");
+    }
+    
+    /**
+     * 设置所有事件监听器
+     */
+    private void setupEventListeners() {
+        // 设置按钮点击监听器 - 每个按钮单独检查，不要求全部存在
+        setupClickListeners();
+        
+        // 设置忘记密码点击事件
+        if (tvForgotPassword != null) {
+            tvForgotPassword.setOnClickListener(v -> handleForgotPassword());
+        }
+    }
+    
+    /**
+     * 设置输入验证逻辑
+     */
+    private void setupInputValidation() {
+        // 主要输入框验证（用户名和密码）
+        if (etUsername != null && etPassword != null) {
+            setupMainInputValidation();
         }
         
-        // 设置焦点动画 - 可选功能
+        // 设置输入框聚焦动画
+        setupInputFocusAnimations();
+        
+        // 注意：SMS相关输入框在主布局中不存在，只在对话框中使用
+        // 所以不需要在这里设置 SMS 输入验证
+    }
+    
+    /**
+     * 设置UI动画效果
+     */
+    private void setupUIAnimations() {
         try {
             setupInputFocusAnimations();
         } catch (Exception e) {
-            Log.w("LoginActivity", "Failed to setup focus animations, continuing without them", e);
+            Log.w("LoginActivity", "Failed to setup UI animations, continuing without them", e);
+        }
+    }
+    
+    /**
+     * 处理忘记密码点击事件
+     */
+    private void handleForgotPassword() {
+        // TODO: 实现忘记密码功能
+        Toast.makeText(this, "忘记密码功能开发中...", Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * 设置主要输入框（用户名和密码）的验证逻辑
+     */
+    private void setupMainInputValidation() {
+        // 用户名输入框验证
+        if (etUsername != null) {
+            etUsername.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    // 清除之前的错误提示
+                    if (tilUsername != null) {
+                        UXEnhancementUtils.clearError(tilUsername);
+                    }
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {
+                    String username = s.toString().trim();
+                    if (!TextUtils.isEmpty(username)) {
+                        validateUsername(username);
+                    }
+                }
+            });
         }
         
-        // 处理从注册页面传来的参数
-        handleIntentExtras();
+        // 密码输入框验证
+        if (etPassword != null) {
+            etPassword.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    // 清除之前的错误提示
+                    if (tilPassword != null) {
+                        UXEnhancementUtils.clearError(tilPassword);
+                    }
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {
+                    String password = s.toString().trim();
+                    if (!TextUtils.isEmpty(password)) {
+                        validatePassword(password);
+                    }
+                }
+            });
+        }
         
-        Log.d("LoginActivity", "Robust view initialization completed");
+        Log.d("LoginActivity", "Main input validation setup completed");
+    }
+    
+    /**
+     * 设置SMS登录相关输入框的验证逻辑
+     */
+    private void setupSmsInputValidation() {
+        // 手机号输入框验证
+        if (etPhone != null) {
+            etPhone.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    // 清除之前的错误提示
+                    if (tilPhone != null) {
+                        tilPhone.setError(null);
+                    }
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {
+                    String phone = s.toString().trim();
+                    if (!TextUtils.isEmpty(phone)) {
+                        validatePhone(phone);
+                    }
+                }
+            });
+        }
+        
+        // 验证码输入框验证
+        if (etVerificationCode != null) {
+            etVerificationCode.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                
+                @Override
+                public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    // 清除之前的错误提示
+                    if (tilVerificationCode != null) {
+                        tilVerificationCode.setError(null);
+                    }
+                }
+                
+                @Override
+                public void afterTextChanged(Editable s) {
+                    String code = s.toString().trim();
+                    if (!TextUtils.isEmpty(code)) {
+                        validateVerificationCode(code);
+                    }
+                }
+            });
+        }
+        
+        Log.d("LoginActivity", "SMS input validation setup completed");
     }
     
     /**
@@ -141,7 +442,7 @@ public class LoginActivity extends AppCompatActivity {
                 String phone = intent.getStringExtra("phone");
                 
                 Log.d("LoginActivity", "Intent参数 - username: " + username + ", phone: " + phone);
-                Log.d("LoginActivity", "输入框状态 - etUsername: " + (etUsername != null ? "存在" : "为空") + ", etPhone: " + (etPhone != null ? "存在" : "为空"));
+                Log.d("LoginActivity", "输入框状态 - etUsername: " + (etUsername != null ? "存在" : "为空"));
                 
                 if (!TextUtils.isEmpty(username)) {
                     if (etUsername != null) {
@@ -157,16 +458,10 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d("LoginActivity", "用户名参数为空或null");
                 }
                 
+                // 注意：手机号参数在主布局中没有对应的输入框
+                // 只在SMS对话框中才有etPhone，所以这里只记录日志
                 if (!TextUtils.isEmpty(phone)) {
-                    if (etPhone != null) {
-                        etPhone.setText(phone);
-                        etPhone.setEnabled(true);
-                        etPhone.setFocusable(true);
-                        etPhone.setFocusableInTouchMode(true);
-                        Log.d("LoginActivity", "成功设置手机号: " + phone);
-                    } else {
-                        Log.w("LoginActivity", "etPhone为空，无法设置手机号: " + phone);
-                    }
+                    Log.d("LoginActivity", "手机号参数: " + phone + " (将用于SMS登录对话框)");
                 } else {
                     Log.d("LoginActivity", "手机号参数为空或null");
                 }
@@ -198,21 +493,41 @@ public class LoginActivity extends AppCompatActivity {
                 etPassword.setFocusableInTouchMode(true);
             }
             
-            if (etPhone != null) {
-                etPhone.setEnabled(true);
-                etPhone.setFocusable(true);
-                etPhone.setFocusableInTouchMode(true);
-            }
+            // 注意：etPhone 和 etVerificationCode 在主布局中不存在，
+            // 只在SMS登录对话框中使用，所以这里不需要处理
             
-            if (etVerificationCode != null) {
-                etVerificationCode.setEnabled(true);
-                etVerificationCode.setFocusable(true);
-                etVerificationCode.setFocusableInTouchMode(true);
-            }
-            
-            Log.d("LoginActivity", "所有输入框已启用");
+            Log.d("LoginActivity", "所有主要输入框已启用");
         } catch (Exception e) {
             Log.w("LoginActivity", "启用输入框时出错", e);
+        }
+    }
+    
+    /**
+     * 设置输入框聚焦动画
+     */
+    private void setupInputFocusAnimations() {
+        // 用户名输入框聚焦动画
+        if (etUsername != null && tilUsername != null) {
+            etUsername.setOnFocusChangeListener((v, hasFocus) -> {
+                UXEnhancementUtils.handleInputFocusAnimation(tilUsername, hasFocus);
+                if (hasFocus) {
+                    UXEnhancementUtils.setInputBackgroundState(etUsername, "focused");
+                } else {
+                    UXEnhancementUtils.setInputBackgroundState(etUsername, "normal");
+                }
+            });
+        }
+        
+        // 密码输入框聚焦动画
+        if (etPassword != null && tilPassword != null) {
+            etPassword.setOnFocusChangeListener((v, hasFocus) -> {
+                UXEnhancementUtils.handleInputFocusAnimation(tilPassword, hasFocus);
+                if (hasFocus) {
+                    UXEnhancementUtils.setInputBackgroundState(etPassword, "focused");
+                } else {
+                    UXEnhancementUtils.setInputBackgroundState(etPassword, "normal");
+                }
+            });
         }
     }
     
@@ -434,12 +749,19 @@ public class LoginActivity extends AppCompatActivity {
             btnLogin = findViewById(R.id.btn_login);
             btnRegister = findViewById(R.id.btn_register);
             btnSendCode = findViewById(R.id.btn_send_code);
+            btnSmsLogin = findViewById(R.id.btn_sms_login);
             tvForgotPassword = findViewById(R.id.tv_forgot_password);
             
             // 检查关键按钮是否找到
             if (btnLogin == null) {
                 throw new RuntimeException("Login button not found");
             }
+            
+            if (btnSmsLogin == null) {
+                Log.e("LoginActivity", "btn_sms_login not found in layout");
+                throw new RuntimeException("SMS Login button not found - ID: btn_sms_login");
+            }
+            Log.d("LoginActivity", "btn_sms_login found successfully");
             
             // Initialize loading indicators
             pbLoginLoading = findViewById(R.id.pb_login_loading);
@@ -456,83 +778,16 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
     
-    private void setupInputValidation() {
-        // 用户名实时验证
-        etUsername.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (tilUsername != null) {
-                    tilUsername.setError(null);
-                }
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {
-                validateUsername(s.toString());
-            }
-        });
-        
-        // 密码实时验证
-        etPassword.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (tilPassword != null) {
-                    tilPassword.setError(null);
-                }
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {
-                validatePassword(s.toString());
-            }
-        });
-        
-        // 手机号实时验证
-        etPhone.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (tilPhone != null) {
-                    tilPhone.setError(null);
-                }
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {
-                validatePhone(s.toString());
-            }
-        });
-        
-        // 验证码实时验证
-        etVerificationCode.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-            
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (tilVerificationCode != null) {
-                    tilVerificationCode.setError(null);
-                }
-            }
-            
-            @Override
-            public void afterTextChanged(Editable s) {
-                validateVerificationCode(s.toString());
-            }
-        });
-    }
+
     
     private void setupClickListeners() {
+        Log.d("LoginActivity", "=== Setting up click listeners ===");
+        
         if (btnLogin != null) {
             btnLogin.setOnClickListener(v -> performLogin());
+            Log.d("LoginActivity", "btnLogin click listener set ✓");
+        } else {
+            Log.w("LoginActivity", "btnLogin is null, skipping click listener ✗");
         }
         
         if (btnRegister != null) {
@@ -543,17 +798,38 @@ public class LoginActivity extends AppCompatActivity {
                 // 添加界面切换动画
                 overridePendingTransition(R.anim.slide_in_right, R.anim.fade_out);
             });
+            Log.d("LoginActivity", "btnRegister click listener set ✓");
+        } else {
+            Log.w("LoginActivity", "btnRegister is null, skipping click listener ✗");
         }
         
         if (btnSendCode != null) {
             btnSendCode.setOnClickListener(v -> sendVerificationCode());
+            Log.d("LoginActivity", "btnSendCode click listener set ✓");
+        } else {
+            Log.d("LoginActivity", "btnSendCode is null (normal - dialog button) ✓");
         }
         
         if (tvForgotPassword != null) {
             tvForgotPassword.setOnClickListener(v -> {
                 Toast.makeText(this, "忘记密码功能开发中...", Toast.LENGTH_SHORT).show();
             });
+            Log.d("LoginActivity", "tvForgotPassword click listener set ✓");
+        } else {
+            Log.w("LoginActivity", "tvForgotPassword is null, skipping click listener ✗");
         }
+        
+        if (btnSmsLogin != null) {
+            btnSmsLogin.setOnClickListener(v -> {
+                Log.d("LoginActivity", "手机验证码登录按钮被点击");
+                showSmsLoginDialog();
+            });
+            Log.d("LoginActivity", "btnSmsLogin click listener set ✓");
+        } else {
+            Log.e("LoginActivity", "btnSmsLogin is null, click listener NOT set ✗");
+        }
+        
+        Log.d("LoginActivity", "=== Click listeners setup completed ===");
     }
     
     private void performLogin() {
@@ -569,10 +845,18 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
         
+        // 检查登录安全性
+        SecurityManager.LoginAttemptResult attemptResult = securityManager.checkLoginAttempt();
+        if (!attemptResult.isAllowed()) {
+            UXEnhancementUtils.showEnhancedError(tilUsername, attemptResult.getMessage(), btnLogin);
+            UXEnhancementUtils.showEnhancedToast(LoginActivity.this, attemptResult.getMessage(), "error");
+            return;
+        }
+        
         // 传统用户名密码登录
         if (TextUtils.isEmpty(username)) {
             if (tilUsername != null) {
-                tilUsername.setError("请输入用户名");
+                UXEnhancementUtils.showEnhancedError(tilUsername, "请输入用户名", etUsername);
             }
             if (etUsername != null) {
                 etUsername.requestFocus();
@@ -589,7 +873,7 @@ public class LoginActivity extends AppCompatActivity {
         
         if (TextUtils.isEmpty(password)) {
             if (tilPassword != null) {
-                tilPassword.setError("请输入密码");
+                UXEnhancementUtils.showEnhancedError(tilPassword, "请输入密码", etPassword);
             }
             if (etPassword != null) {
                 etPassword.requestFocus();
@@ -609,7 +893,8 @@ public class LoginActivity extends AppCompatActivity {
         
         // 调用后端API进行登录验证
         ApiService apiService = ApiClient.getApiService();
-        Call<ApiResponse<LoginResponse>> call = apiService.loginUser(username, password);
+        LoginRequest loginRequest = new LoginRequest(username, password);
+        Call<ApiResponse<LoginResponse>> call = apiService.loginUser(loginRequest);
         
         call.enqueue(new Callback<ApiResponse<LoginResponse>>() {
             @Override
@@ -623,23 +908,44 @@ public class LoginActivity extends AppCompatActivity {
                     if (apiResponse.isSuccess() && apiResponse.getData() != null) {
                         LoginResponse loginData = apiResponse.getData();
                         
+                        // 记录登录成功
+                        securityManager.recordLoginSuccess();
+                        
                         // 保存登录状态和用户信息
                         saveLoginState(true, loginData.getUsername());
                         saveUserInfo(loginData);
                         
-                        Toast.makeText(LoginActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
+                        // 显示成功反馈
+                        UXEnhancementUtils.showSuccessFeedback(tilUsername, btnLogin);
+                        UXEnhancementUtils.showEnhancedToast(LoginActivity.this, "登录成功！", "success");
                         
-                        // 跳转到主页面
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(intent);
-                        finish();
+                        // 延迟跳转，让用户看到成功动画
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                            startActivity(intent);
+                            finish();
+                        }, 1000);
                     } else {
+                        // 记录登录失败
+                        securityManager.recordLoginFailure();
+                        
                         String errorMsg = apiResponse.getMessage() != null ? apiResponse.getMessage() : "登录失败";
-                        Toast.makeText(LoginActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                        
+                        // 检查是否需要显示剩余尝试次数
+                        int remainingAttempts = securityManager.checkLoginAttempt().getRemainingAttempts();
+                        if (remainingAttempts > 0 && remainingAttempts <= 3) {
+                            errorMsg += "（剩余" + remainingAttempts + "次尝试）";
+                        }
+                        
+                        UXEnhancementUtils.showEnhancedError(tilPassword, errorMsg, btnLogin);
+                        UXEnhancementUtils.showEnhancedToast(LoginActivity.this, errorMsg, "error");
                     }
                 } else {
-                    Toast.makeText(LoginActivity.this, "网络请求失败，请检查网络连接", Toast.LENGTH_SHORT).show();
+                    ErrorHandlingManager.ErrorInfo errorInfo = ErrorHandlingManager.handleNetworkError(
+                        LoginActivity.this, new Exception("HTTP " + response.code()));
+                    UXEnhancementUtils.showEnhancedToast(LoginActivity.this, 
+                        errorInfo.getUserMessage(), "error");
                 }
             }
             
@@ -648,8 +954,20 @@ public class LoginActivity extends AppCompatActivity {
                 // 隐藏加载状态
                 showLoginLoading(false);
                 
-                Log.e("LoginActivity", "登录请求失败", t);
-                Toast.makeText(LoginActivity.this, "网络连接失败: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                // 使用错误处理管理器处理错误
+                ErrorHandlingManager.ErrorInfo errorInfo = ErrorHandlingManager.handleNetworkError(
+                    LoginActivity.this, t);
+                ErrorHandlingManager.logError(errorInfo, "登录请求失败");
+                
+                // 显示用户友好的错误消息
+                String userMessage = ErrorHandlingManager.formatUserFriendlyMessage(errorInfo);
+                UXEnhancementUtils.showEnhancedToast(LoginActivity.this, userMessage, "error");
+                
+                // 如果是网络错误，显示重试提示
+                if (errorInfo.getType() == ErrorHandlingManager.ErrorType.NETWORK_ERROR) {
+                    UXEnhancementUtils.showEnhancedError(tilUsername, 
+                        "网络连接问题，请检查后重试", btnLogin);
+                }
             }
         });
     }
@@ -815,35 +1133,8 @@ public class LoginActivity extends AppCompatActivity {
         }
      }
      
-     private void setupInputFocusAnimations() {
-         // 为所有输入框添加获得焦点时的动画
-         View.OnFocusChangeListener focusAnimationListener = (v, hasFocus) -> {
-             if (hasFocus) {
-                 try {
-                     Animation focusAnimation = AnimationUtils.loadAnimation(this, R.anim.input_focus);
-                     v.startAnimation(focusAnimation);
-                 } catch (Exception e) {
-                     Log.e("LoginActivity", "Focus animation error: " + e.getMessage());
-                 }
-             }
-         };
-         
-         // 添加空指针检查
-         if (etUsername != null) {
-             etUsername.setOnFocusChangeListener(focusAnimationListener);
-         }
-         if (etPhone != null) {
-             etPhone.setOnFocusChangeListener(focusAnimationListener);
-         }
-         if (etVerificationCode != null) {
-             etVerificationCode.setOnFocusChangeListener(focusAnimationListener);
-         }
-         if (etPassword != null) {
-             etPassword.setOnFocusChangeListener(focusAnimationListener);
-         }
-     }
-     
-     private void startCountdown() {
+ 
+    private void startCountdown() {
         countdown = 60;
         android.os.Handler handler = new android.os.Handler();
         
@@ -869,28 +1160,19 @@ public class LoginActivity extends AppCompatActivity {
         return phone != null && phone.matches("^1[3-9]\\d{9}$");
     }
     
-    // 验证方法
+    // 验证方法 - 使用新的ValidationManager
     private boolean validateUsername(String username) {
         if (TextUtils.isEmpty(username)) {
             return true; // 空值在其他地方处理
         }
         
-        if (username.length() < 3) {
-            tilUsername.setError("用户名至少需要3个字符");
+        ValidationManager.ValidationResult result = ValidationManager.validateUsername(username);
+        if (!result.isValid()) {
+            UXEnhancementUtils.showEnhancedError(tilUsername, result.getErrorMessage(), etUsername);
             return false;
         }
         
-        if (username.length() > 20) {
-            tilUsername.setError("用户名不能超过20个字符");
-            return false;
-        }
-        
-        if (!username.matches("^[a-zA-Z0-9_\u4e00-\u9fa5]+$")) {
-            tilUsername.setError("用户名只能包含字母、数字、下划线和中文");
-            return false;
-        }
-        
-        tilUsername.setError(null);
+        UXEnhancementUtils.clearError(tilUsername);
         return true;
     }
     
@@ -899,17 +1181,13 @@ public class LoginActivity extends AppCompatActivity {
             return true; // 空值在其他地方处理
         }
         
-        if (password.length() < 6) {
-            tilPassword.setError("密码至少需要6个字符");
+        ValidationManager.ValidationResult result = ValidationManager.validatePassword(password);
+        if (!result.isValid()) {
+            UXEnhancementUtils.showEnhancedError(tilPassword, result.getErrorMessage(), etPassword);
             return false;
         }
         
-        if (password.length() > 20) {
-            tilPassword.setError("密码不能超过20个字符");
-            return false;
-        }
-        
-        tilPassword.setError(null);
+        UXEnhancementUtils.clearError(tilPassword);
         return true;
     }
     
@@ -954,16 +1232,14 @@ public class LoginActivity extends AppCompatActivity {
                 pbLoginLoading.setVisibility(View.VISIBLE);
             }
             if (btnLogin != null) {
-                btnLogin.setEnabled(false);
-                btnLogin.setText("登录中...");
+                UXEnhancementUtils.setButtonLoadingState(btnLogin, true, "登录");
             }
         } else {
             if (pbLoginLoading != null) {
                 pbLoginLoading.setVisibility(View.GONE);
             }
             if (btnLogin != null) {
-                btnLogin.setEnabled(true);
-                btnLogin.setText("登录");
+                UXEnhancementUtils.setButtonLoadingState(btnLogin, false, "登录");
             }
         }
     }
@@ -1251,6 +1527,250 @@ public class LoginActivity extends AppCompatActivity {
                     .putString("token_type", loginData.getTokenType())
                     .apply();
             Log.d("LoginActivity", "用户信息已保存: " + loginData.getUsername());
+        }
+    }
+    
+    /**
+     * 显示手机验证码登录对话框
+     */
+    private void showSmsLoginDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_sms_login, null);
+        builder.setView(dialogView);
+        
+        AlertDialog dialog = builder.create();
+        
+        // 获取对话框中的控件
+        EditText etDialogPhone = dialogView.findViewById(R.id.et_phone_dialog);
+        EditText etDialogCode = dialogView.findViewById(R.id.et_verification_code_dialog);
+        TextInputLayout tilDialogCode = dialogView.findViewById(R.id.til_verification_code_dialog);
+        LinearLayout layoutSendCodeContainer = dialogView.findViewById(R.id.layout_send_code_container);
+        TextView tvSendCodeHint = dialogView.findViewById(R.id.tv_send_code_hint);
+        Button btnDialogSendCode = dialogView.findViewById(R.id.btn_send_code_dialog);
+        Button btnDialogLogin = dialogView.findViewById(R.id.btn_login_dialog);
+        Button btnDialogCancel = dialogView.findViewById(R.id.btn_cancel_dialog);
+        
+        // 移除验证码输入框的焦点和点击监听器功能
+        
+        // 验证码输入框右侧图标点击事件
+        tilDialogCode.setEndIconOnClickListener(v -> {
+            String phone = etDialogPhone.getText().toString().trim();
+            if (TextUtils.isEmpty(phone)) {
+                Toast.makeText(this, "请先输入手机号码", Toast.LENGTH_SHORT).show();
+                etDialogPhone.requestFocus();
+                return;
+            }
+            if (!isValidPhoneNumber(phone)) {
+                Toast.makeText(this, "请输入有效的手机号码", Toast.LENGTH_SHORT).show();
+                etDialogPhone.requestFocus();
+                return;
+            }
+            
+            // 模拟发送验证码
+            simulateSendSMS(phone);
+            Toast.makeText(this, "验证码已发送到 " + phone, Toast.LENGTH_SHORT).show();
+            
+            // 开始倒计时
+            startDialogCountdown(btnDialogSendCode);
+        });
+        
+        // 发送验证码文字提示点击事件
+        tvSendCodeHint.setOnClickListener(v -> {
+            String phone = etDialogPhone.getText().toString().trim();
+            if (TextUtils.isEmpty(phone)) {
+                Toast.makeText(this, "请先输入手机号码", Toast.LENGTH_SHORT).show();
+                etDialogPhone.requestFocus();
+                return;
+            }
+            if (!isValidPhoneNumber(phone)) {
+                Toast.makeText(this, "请输入有效的手机号码", Toast.LENGTH_SHORT).show();
+                etDialogPhone.requestFocus();
+                return;
+            }
+            
+            // 模拟发送验证码
+            simulateSendSMS(phone);
+            Toast.makeText(this, "验证码已发送到 " + phone, Toast.LENGTH_SHORT).show();
+            
+            // 开始倒计时
+            startDialogCountdown(btnDialogSendCode);
+        });
+        
+        // 发送验证码按钮点击事件
+        btnDialogSendCode.setOnClickListener(v -> {
+            String phone = etDialogPhone.getText().toString().trim();
+            if (TextUtils.isEmpty(phone)) {
+                Toast.makeText(this, "请先输入手机号码", Toast.LENGTH_SHORT).show();
+                etDialogPhone.requestFocus();
+                return;
+            }
+            if (!isValidPhoneNumber(phone)) {
+                Toast.makeText(this, "请输入有效的手机号码", Toast.LENGTH_SHORT).show();
+                etDialogPhone.requestFocus();
+                return;
+            }
+            
+            // 模拟发送验证码
+            simulateSendSMS(phone);
+            Toast.makeText(this, "验证码已发送到 " + phone, Toast.LENGTH_SHORT).show();
+            
+            // 开始倒计时
+            startDialogCountdown(btnDialogSendCode);
+        });
+        
+        // 登录按钮点击事件
+        btnDialogLogin.setOnClickListener(v -> {
+            String phone = etDialogPhone.getText().toString().trim();
+            String code = etDialogCode.getText().toString().trim();
+            
+            if (TextUtils.isEmpty(phone)) {
+                Toast.makeText(this, "请输入手机号码", Toast.LENGTH_SHORT).show();
+                etDialogPhone.requestFocus();
+                return;
+            }
+            if (TextUtils.isEmpty(code)) {
+                Toast.makeText(this, "请输入验证码", Toast.LENGTH_SHORT).show();
+                etDialogCode.requestFocus();
+                return;
+            }
+            
+            // 执行手机验证码登录
+            performSmsLogin(phone, code);
+            dialog.dismiss();
+        });
+        
+        // 取消按钮点击事件
+        btnDialogCancel.setOnClickListener(v -> dialog.dismiss());
+        
+        // 设置对话框样式
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        
+        dialog.show();
+    }
+    
+    /**
+     * 对话框发送验证码倒计时
+     */
+    private void startDialogCountdown(Button sendButton) {
+        sendButton.setEnabled(false);
+        
+        new CountDownTimer(60000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                sendButton.setText("重新发送(" + millisUntilFinished / 1000 + "s)");
+            }
+            
+            @Override
+            public void onFinish() {
+                sendButton.setEnabled(true);
+                sendButton.setText("发送验证码");
+            }
+        }.start();
+    }
+    
+    /**
+     * 执行手机验证码登录
+     */
+    private void performSmsLogin(String phone, String code) {
+        // 这里可以调用现有的手机登录逻辑
+        performPhoneLogin(phone, code);
+    }
+    
+    /**
+     * 显示或隐藏发送验证码按钮容器，带有平滑动画效果
+     * @param container 发送验证码按钮容器
+     * @param show 是否显示
+     */
+    private void showSendCodeButton(LinearLayout container, boolean show) {
+        if (container == null) {
+            Log.w("LoginActivity", "发送验证码按钮容器为null");
+            return;
+        }
+        
+        if (show) {
+            // 显示按钮容器
+            if (container.getVisibility() != View.VISIBLE) {
+                container.setVisibility(View.VISIBLE);
+                
+                // 淡入动画
+                container.animate()
+                    .alpha(1.0f)
+                    .scaleX(1.0f)
+                    .scaleY(1.0f)
+                    .setDuration(300)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator())
+                    .withStartAction(() -> {
+                        container.setAlpha(0.0f);
+                        container.setScaleX(0.8f);
+                        container.setScaleY(0.8f);
+                    })
+                    .start();
+                
+                Log.d("LoginActivity", "显示发送验证码按钮容器");
+            }
+        } else {
+            // 隐藏按钮容器
+            if (container.getVisibility() == View.VISIBLE) {
+                // 淡出动画
+                container.animate()
+                    .alpha(0.0f)
+                    .scaleX(0.8f)
+                    .scaleY(0.8f)
+                    .setDuration(200)
+                    .setInterpolator(new android.view.animation.AccelerateInterpolator())
+                    .withEndAction(() -> {
+                        container.setVisibility(View.GONE);
+                    })
+                    .start();
+                
+                Log.d("LoginActivity", "隐藏发送验证码按钮容器");
+            }
+        }
+    }
+    
+    /**
+     * 设置可访问性支持
+     */
+    private void setupAccessibilitySupport() {
+        try {
+            // 检查是否启用了无障碍服务
+            boolean isAccessibilityEnabled = AccessibilityManager.isAccessibilityEnabled(this);
+            Log.d("LoginActivity", "无障碍服务状态: " + (isAccessibilityEnabled ? "已启用" : "未启用"));
+            
+            // 为主要输入框设置可访问性
+            if (tilUsername != null) {
+                AccessibilityManager.setupTextInputLayoutAccessibility(tilUsername, "用户名输入", "请输入您的用户名");
+            }
+            
+            if (tilPassword != null) {
+                AccessibilityManager.setupTextInputLayoutAccessibility(tilPassword, "密码输入", "请输入您的密码");
+            }
+            
+            // 为按钮设置可访问性
+            if (btnLogin != null) {
+                AccessibilityManager.setupAccessibility(btnLogin, "登录按钮", "点击进行账户登录");
+            }
+            
+            if (btnSmsLogin != null) {
+                AccessibilityManager.setupAccessibility(btnSmsLogin, "手机验证码登录按钮", "点击使用手机验证码登录");
+            }
+            
+            if (btnRegister != null) {
+                AccessibilityManager.setupAccessibility(btnRegister, "注册按钮", "点击注册新账户");
+            }
+            
+            if (tvForgotPassword != null) {
+                AccessibilityManager.setupAccessibility(tvForgotPassword, "忘记密码链接", "点击找回密码");
+            }
+            
+            // 设置键盘导航顺序
+            if (etUsername != null && etPassword != null && btnLogin != null) {
+                AccessibilityManager.setupKeyboardNavigation(etUsername, etPassword, btnLogin, btnSmsLogin, btnRegister);
+            }
+            
+            Log.d("LoginActivity", "可访问性支持设置完成");
+        } catch (Exception e) {
+            Log.e("LoginActivity", "设置可访问性支持失败", e);
         }
     }
 }

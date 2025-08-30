@@ -384,10 +384,10 @@ public class RegistrationFragment extends Fragment {
         appointment.setStatus("待确认");
         
         // 显示预约成功信息
-        showSuccess("预约成功！\n" +
-                   "医生：" + selectedDoctor.getName() + "\n" +
-                   "医院：" + selectedDoctor.getHospitalName() + "\n" +
-                   "科室：" + selectedDoctor.getDepartmentName() + "\n" +
+        showSuccess("预约成功！" + System.lineSeparator() +
+                   "医生：" + selectedDoctor.getName() + System.lineSeparator() +
+                   "医院：" + selectedDoctor.getHospitalName() + System.lineSeparator() +
+                   "科室：" + selectedDoctor.getDepartmentName() + System.lineSeparator() +
                    "时间：" + selectedTimeSlot);
         
         // 清空表单

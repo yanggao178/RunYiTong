@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- 错误状态 -->
+    <item android:state_enabled="true" android:state_focused="false">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/error_red" />
+            <solid android:color="@color/input_background" />
+        </shape>
+    </item>
+    
+    <!-- 聚焦状态 -->
+    <item android:state_enabled="true" android:state_focused="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <stroke android:width="2dp" android:color="@color/input_border_focused" />
+            <solid android:color="@color/white" />
+            <padding android:left="4dp" android:top="4dp" android:right="4dp" android:bottom="4dp" />
+        </shape>
+    </item>
+    
+    <!-- 普通状态 -->
+    <item android:state_enabled="true">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <stroke android:width="1dp" android:color="@color/input_border" />
+            <solid android:color="@color/input_background" />
+        </shape>
+    </item>
+    
+    <!-- 禁用状态 -->
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <stroke android:width="1dp" android:color="@color/button_disabled_stroke" />
+            <solid android:color="@color/button_disabled_background" />
+        </shape>
+    </item>
+    
+</selector>

@@ -55,7 +55,7 @@ public class OverlayPermissionManager {
         // 显示权限说明对话框
         new AlertDialog.Builder(activity)
                 .setTitle("需要悬浮窗权限")
-                .setMessage("为了在微信界面上显示搜索指引，需要开启悬浮窗权限。\n\n请在设置页面中找到本应用，开启'显示在其他应用的上层'权限。")
+                .setMessage("为了在微信界面上显示搜索指引，需要开启悬浮窗权限。" + System.lineSeparator() + System.lineSeparator() + "请在设置页面中找到本应用，开启'显示在其他应用的上层'权限。")
                 .setPositiveButton("去设置", (dialog, which) -> {
                     openOverlayPermissionSettings(activity);
                 })

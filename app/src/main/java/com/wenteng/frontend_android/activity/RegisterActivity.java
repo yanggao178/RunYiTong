@@ -24,6 +24,8 @@ import com.wenteng.frontend_android.api.ApiResponse;
 import com.wenteng.frontend_android.api.RegisterResponse;
 import com.wenteng.frontend_android.api.RegisterRequest;
 import com.wenteng.frontend_android.api.SmsCodeResponse;
+import com.wenteng.frontend_android.utils.UXEnhancementUtils;
+import com.wenteng.frontend_android.utils.ValidationManager;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -94,7 +96,7 @@ public class RegisterActivity extends AppCompatActivity {
             android.util.Log.d(TAG, "初始化API服务");
             apiService = ApiClient.getApiService();
             
-            // 初始化默认为密码注册模式
+            // 所有布局都支持模式切换，初始化默认为密码注册模式
             android.util.Log.d(TAG, "切换到默认密码注册模式");
             switchToPasswordMode();
             
@@ -199,17 +201,21 @@ public class RegisterActivity extends AppCompatActivity {
             android.util.Log.d(TAG, "发送验证码进度条初始化: " + (pbSendCodeLoading != null ? "成功" : "失败"));
 
             // 检查关键组件是否成功初始化
-            if (btnPasswordMode == null || btnSmsMode == null || 
-                layoutPasswordMode == null || layoutSmsMode == null ||
-                btnRegister == null) {
-                android.util.Log.e(TAG, "关键UI组件初始化失败");
-                android.util.Log.e(TAG, "btnPasswordMode: " + (btnPasswordMode != null));
-                android.util.Log.e(TAG, "btnSmsMode: " + (btnSmsMode != null));
-                android.util.Log.e(TAG, "layoutPasswordMode: " + (layoutPasswordMode != null));
-                android.util.Log.e(TAG, "layoutSmsMode: " + (layoutSmsMode != null));
+            if (btnRegister == null) {
+                android.util.Log.e(TAG, "关键组件初始化失败");
                 android.util.Log.e(TAG, "btnRegister: " + (btnRegister != null));
                 android.widget.Toast.makeText(this, "页面初始化失败，请重试", android.widget.Toast.LENGTH_SHORT).show();
                 return;
+            }
+            
+            // 检查模式切换组件（所有布局都应该有）
+            if (btnPasswordMode == null || btnSmsMode == null || 
+                layoutPasswordMode == null || layoutSmsMode == null) {
+                android.util.Log.w(TAG, "模式切换组件缺失，可能影响功能");
+                android.util.Log.w(TAG, "btnPasswordMode: " + (btnPasswordMode != null));
+                android.util.Log.w(TAG, "btnSmsMode: " + (btnSmsMode != null));
+                android.util.Log.w(TAG, "layoutPasswordMode: " + (layoutPasswordMode != null));
+                android.util.Log.w(TAG, "layoutSmsMode: " + (layoutSmsMode != null));
             }
 
             android.util.Log.d(TAG, "所有视图组件初始化成功");
@@ -391,6 +397,14 @@ public class RegisterActivity extends AppCompatActivity {
             btnSendCode.setOnClickListener(v -> sendVerificationCode());
         }
         
+        // 为验证码输入框的endIcon设置点击监听器（用于小屏幕布局）
+        if (tilVerificationCode != null) {
+            tilVerificationCode.setEndIconOnClickListener(v -> {
+                android.util.Log.d(TAG, "验证码输入框endIcon被点击");
+                sendVerificationCode();
+            });
+        }
+        
         if (btnBackToLogin != null) {
                 btnBackToLogin.setOnClickListener(v -> {
                 Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
@@ -524,11 +538,69 @@ public class RegisterActivity extends AppCompatActivity {
         
         showRegisterLoading(true);
         
+        // 根据当前模式选择注册逻辑
         if (currentMode == RegisterMode.PASSWORD) {
             performPasswordRegister();
         } else {
             performSmsRegister();
         }
+    }
+    
+    /**
+     * 执行简化的SMS注册（适用于小屏幕布局）
+     */
+    private void performSimplifiedSmsRegister() {
+        // 获取小屏幕布局的输入数据
+        String username = etUsername.getText().toString().trim();
+        String phone = etPhone.getText().toString().trim();
+        String verificationCode = etVerificationCode.getText().toString().trim();
+        String password = etPassword.getText().toString();
+        
+        android.util.Log.d(TAG, "执行简化SMS注册: " + username + ", 手机号: " + phone);
+        
+        // 创建注册请求对象
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.setUsername(username);
+        registerRequest.setPhone(phone);
+        registerRequest.setVerification_code(verificationCode);
+        registerRequest.setPassword(password);
+        
+        // 调用SMS注册 API
+        Call<ApiResponse<RegisterResponse>> call = apiService.registerWithSms(registerRequest);
+        call.enqueue(new Callback<ApiResponse<RegisterResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<RegisterResponse>> call, Response<ApiResponse<RegisterResponse>> response) {
+                showRegisterLoading(false);
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<RegisterResponse> apiResponse = response.body();
+                    
+                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
+                        RegisterResponse registerData = apiResponse.getData();
+                        android.util.Log.d(TAG, "简化SMS注册成功: " + registerData.toString());
+                        
+                        Toast.makeText(RegisterActivity.this, "注册成功！", Toast.LENGTH_SHORT).show();
+                        
+                        // 跳转到登录页面
+                        Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                        intent.putExtra("registered_username", username);
+                        startActivity(intent);
+                        finish();
+                    } else {
+                        Toast.makeText(RegisterActivity.this, "注册失败: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(RegisterActivity.this, "注册失败，请检查网络连接", Toast.LENGTH_SHORT).show();
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<RegisterResponse>> call, Throwable t) {
+                showRegisterLoading(false);
+                android.util.Log.e(TAG, "简化SMS注册请求失败: " + t.getMessage(), t);
+                Toast.makeText(RegisterActivity.this, "网络错误，请稍后重试", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     
     /**
@@ -660,8 +732,7 @@ public class RegisterActivity extends AppCompatActivity {
         }
         
         // 显示发送中状态
-        btnSendCode.setEnabled(false);
-        btnSendCode.setText("发送中...");
+        updateSendCodeState("sending");
         
         // 调用发送验证码API
         Call<ApiResponse<SmsCodeResponse>> call = apiService.sendSmsCode(phone);
@@ -680,15 +751,13 @@ public class RegisterActivity extends AppCompatActivity {
                         // 启动倒计时
                         startCountdown();
                     } else {
-                        // 发送失败，恢复按钮状态
-                        btnSendCode.setEnabled(true);
-                        btnSendCode.setText("发送验证码");
+                        // 发送失败，恢复状态
+                        updateSendCodeState("normal");
                         Toast.makeText(RegisterActivity.this, "验证码发送失败: " + apiResponse.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    // 网络错误，恢复按钮状态
-                    btnSendCode.setEnabled(true);
-                    btnSendCode.setText("发送验证码");
+                    // 网络错误，恢复状态
+                    updateSendCodeState("normal");
                     Toast.makeText(RegisterActivity.this, "验证码发送失败，请检查网络连接", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -697,12 +766,63 @@ public class RegisterActivity extends AppCompatActivity {
             public void onFailure(Call<ApiResponse<SmsCodeResponse>> call, Throwable t) {
                 android.util.Log.e(TAG, "验证码发送请求失败: " + t.getMessage(), t);
                 
-                // 网络错误，恢复按钮状态
-                btnSendCode.setEnabled(true);
-                btnSendCode.setText("发送验证码");
+                // 网络错误，恢复状态
+                updateSendCodeState("normal");
                 Toast.makeText(RegisterActivity.this, "网络错误，请稍后重试", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * 统一管理发送验证码的状态（适配按钮和endIcon两种布局）
+     * @param state "normal" - 正常状态, "sending" - 发送中, "countdown" - 倒计时状态
+     */
+    private void updateSendCodeState(String state) {
+        // 检查是否使用endIcon模式（小屏幕布局或没有发送按钮的布局）
+        boolean useEndIcon = (btnSendCode == null && tilVerificationCode != null);
+        
+        if (useEndIcon) {
+            android.util.Log.d(TAG, "使用endIcon模式，更新状态: " + state);
+            switch (state) {
+                case "sending":
+                    tilVerificationCode.setEndIconDrawable(null); // 移除图标表示加载中
+                    if (pbSendCodeLoading != null) {
+                        pbSendCodeLoading.setVisibility(View.VISIBLE);
+                    }
+                    break;
+                case "normal":
+                    tilVerificationCode.setEndIconDrawable(getDrawable(R.drawable.ic_arrow_forward));
+                    if (pbSendCodeLoading != null) {
+                        pbSendCodeLoading.setVisibility(View.GONE);
+                    }
+                    break;
+                case "countdown":
+                    tilVerificationCode.setEndIconDrawable(null); // 倒计时期间不显示图标
+                    if (pbSendCodeLoading != null) {
+                        pbSendCodeLoading.setVisibility(View.GONE);
+                    }
+                    break;
+            }
+        }
+        
+        // 对于有发送按钮的布局
+        if (btnSendCode != null) {
+            android.util.Log.d(TAG, "使用按钮模式，更新状态: " + state);
+            switch (state) {
+                case "sending":
+                    btnSendCode.setEnabled(false);
+                    btnSendCode.setText("发送中...");
+                    break;
+                case "normal":
+                    btnSendCode.setEnabled(true);
+                    btnSendCode.setText("发送验证码");
+                    break;
+                case "countdown":
+                    btnSendCode.setEnabled(false);
+                    // 倒计时文本在startCountdown方法中设置
+                    break;
+            }
+        }
     }
 
     private void showSendCodeLoading(boolean show) {
@@ -735,10 +855,23 @@ public class RegisterActivity extends AppCompatActivity {
             countDownTimer.cancel();
         }
         
+        // 设置倒计时状态
+        updateSendCodeState("countdown");
+        
+        // 检查是否使用endIcon模式
+        boolean useEndIcon = (btnSendCode == null && tilVerificationCode != null);
+        
         countDownTimer = new CountDownTimer(60000, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 countdown = (int) (millisUntilFinished / 1000);
+                
+                // endIcon模式：在hint中显示倒计时
+                if (useEndIcon && etVerificationCode != null) {
+                    etVerificationCode.setHint("验证码（" + countdown + "s后可重发）");
+                }
+                
+                // 按钮模式：在按钮中显示倒计时
                 if (btnSendCode != null) {
                     btnSendCode.setText(countdown + "s后重发");
                     btnSendCode.setEnabled(false);
@@ -748,10 +881,15 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onFinish() {
                 isCountingDown = false;
-                if (btnSendCode != null) {
-                    btnSendCode.setText("发送验证码");
-                    btnSendCode.setEnabled(true);
+                
+                // 恢复正常状态
+                updateSendCodeState("normal");
+                
+                // endIcon模式：恢复原始 hint
+                if (useEndIcon && etVerificationCode != null) {
+                    etVerificationCode.setHint("验证码（点击右侧图标发送）");
                 }
+                
                 isCodeSent = false;
                 android.util.Log.d(TAG, "验证码倒计时结束，可以重新发送");
             }
@@ -762,6 +900,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private boolean validateAllInputs() {
+        // 根据当前模式选择验证逻辑
         if (currentMode == RegisterMode.PASSWORD) {
             return validateUsername() && validateEmail() && validatePassword() && validateConfirmPassword();
         } else {
@@ -772,16 +911,14 @@ public class RegisterActivity extends AppCompatActivity {
 
     private boolean validateUsernameSms() {
         String username = etUsernameSms.getText().toString().trim();
-        if (TextUtils.isEmpty(username)) {
-            tilUsernameSms.setError("用户名不能为空");
+        ValidationManager.ValidationResult result = ValidationManager.validateUsername(username);
+        if (!result.isValid()) {
+            tilUsernameSms.setError(result.getErrorMessage());
             return false;
-        } else if (username.length() < 3) {
-            tilUsernameSms.setError("用户名至少3个字符");
-            return false;
-        } else {
-            tilUsernameSms.setError(null);
-            return true;
         }
+        
+        tilUsernameSms.setError(null);
+        return true;
     }
 
     private boolean validatePasswordSms() {
@@ -789,13 +926,16 @@ public class RegisterActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(password)) {
             tilPasswordSms.setError("密码不能为空");
             return false;
-        } else if (password.length() < 6) {
-            tilPasswordSms.setError("密码至少6个字符");
-            return false;
-        } else {
-            tilPasswordSms.setError(null);
-            return true;
         }
+        
+        ValidationManager.ValidationResult result = ValidationManager.validatePassword(password);
+        if (!result.isValid()) {
+            tilPasswordSms.setError(result.getErrorMessage());
+            return false;
+        }
+        
+        tilPasswordSms.setError(null);
+        return true;
     }
 
     private boolean validateConfirmPasswordSms() {
@@ -815,58 +955,50 @@ public class RegisterActivity extends AppCompatActivity {
 
     private boolean validateUsername() {
         String username = etUsername.getText().toString().trim();
-        if (TextUtils.isEmpty(username)) {
-            tilUsername.setError("用户名不能为空");
+        ValidationManager.ValidationResult result = ValidationManager.validateUsername(username);
+        if (!result.isValid()) {
+            tilUsername.setError(result.getErrorMessage());
             return false;
-        } else if (username.length() < 3) {
-            tilUsername.setError("用户名至少3个字符");
-            return false;
-        } else {
-            tilUsername.setError(null);
-            return true;
         }
+        
+        tilUsername.setError(null);
+        return true;
     }
 
     private boolean validateEmail() {
         String email = etEmail.getText().toString().trim();
-        if (TextUtils.isEmpty(email)) {
-            tilEmail.setError("邮箱不能为空");
+        ValidationManager.ValidationResult result = ValidationManager.validateEmail(email);
+        if (!result.isValid()) {
+            tilEmail.setError(result.getErrorMessage());
             return false;
-        } else if (!isValidEmail(email)) {
-            tilEmail.setError("请输入正确的邮箱格式");
-            return false;
-        } else {
-            tilEmail.setError(null);
-            return true;
         }
+        
+        tilEmail.setError(null);
+        return true;
     }
 
     private boolean validatePhone() {
         String phone = etPhone.getText().toString().trim();
-        if (TextUtils.isEmpty(phone)) {
-            tilPhone.setError("手机号不能为空");
+        ValidationManager.ValidationResult result = ValidationManager.validatePhone(phone);
+        if (!result.isValid()) {
+            tilPhone.setError(result.getErrorMessage());
             return false;
-        } else if (!isValidPhoneNumber(phone)) {
-            tilPhone.setError("请输入正确的手机号码");
-            return false;
-        } else {
-            tilPhone.setError(null);
-            return true;
         }
+        
+        tilPhone.setError(null);
+        return true;
     }
 
     private boolean validateVerificationCode() {
         String code = etVerificationCode.getText().toString().trim();
-        if (TextUtils.isEmpty(code)) {
-            tilVerificationCode.setError("验证码不能为空");
+        ValidationManager.ValidationResult result = ValidationManager.validateVerificationCode(code);
+        if (!result.isValid()) {
+            tilVerificationCode.setError(result.getErrorMessage());
             return false;
-        } else if (code.length() != 6) {
-            tilVerificationCode.setError("验证码应为6位数字");
-            return false;
-        } else {
-            tilVerificationCode.setError(null);
-            return true;
         }
+        
+        tilVerificationCode.setError(null);
+        return true;
     }
 
     private boolean validatePassword() {
@@ -874,13 +1006,16 @@ public class RegisterActivity extends AppCompatActivity {
         if (TextUtils.isEmpty(password)) {
             tilPassword.setError("密码不能为空");
             return false;
-        } else if (password.length() < 6) {
-            tilPassword.setError("密码至少6个字符");
-            return false;
-        } else {
-            tilPassword.setError(null);
-            return true;
         }
+        
+        ValidationManager.ValidationResult result = ValidationManager.validatePassword(password);
+        if (!result.isValid()) {
+            tilPassword.setError(result.getErrorMessage());
+            return false;
+        }
+        
+        tilPassword.setError(null);
+        return true;
     }
 
     private boolean validateConfirmPassword() {
