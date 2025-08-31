@@ -64,6 +64,10 @@ import com.wenteng.frontend_android.model.FacialRegions;
 import com.wenteng.frontend_android.model.TCMFaceDiagnosis;
 import com.wenteng.frontend_android.model.TCMFaceRecommendations;
 import com.wenteng.frontend_android.utils.ImageUtils;
+import com.wenteng.frontend_android.model.PrescriptionCreate;
+import com.wenteng.frontend_android.model.Prescription;
+import android.content.SharedPreferences;
+import android.content.Context;
 
 import com.wenteng.frontend_android.dialog.ImageProcessingDialogFragment;
 import com.wenteng.frontend_android.dialog.ImagePickerDialogFragment;
@@ -772,6 +776,9 @@ public class PrescriptionFragment extends Fragment {
         // 保存分析结果状态
         savedAnalysisResult = resultText;
         hasAnalysisResult = true;
+        
+        // 保存处方信息到服务器
+        savePrescriptionToServer(analysis, resultText);
     }
     
     // 打字机效果相关变量
@@ -950,6 +957,127 @@ public class PrescriptionFragment extends Fragment {
         // 保存症状输入文本
         if (etSymptoms != null) {
             savedSymptomsText = etSymptoms.getText().toString();
+        }
+    }
+    
+    /**
+     * 保存处方信息到服务器
+     * @param analysis 症状分析结果
+     * @param prescriptionText 处方全文
+     */
+    private void savePrescriptionToServer(SymptomAnalysis analysis, String prescriptionText) {
+        Log.d(TAG, "开始保存处方信息到服务器");
+        
+        // 检查用户登录状态
+        int userId = getCurrentUserId();
+        if (userId == -1) {
+            Log.w(TAG, "用户未登录，不保存处方信息");
+            return;
+        }
+        
+        // 提取症状描述
+        String symptoms = etSymptoms != null ? etSymptoms.getText().toString().trim() : "";
+        if (symptoms.isEmpty()) {
+            Log.w(TAG, "症状描述为空，不保存处方信息");
+            return;
+        }
+        
+        // 提取诊断信息
+        String diagnosis = extractDiagnosis(analysis);
+        
+        // 创建处方创建请求
+        PrescriptionCreate prescriptionCreate = new PrescriptionCreate(
+            userId,
+            symptoms,
+            diagnosis,
+            prescriptionText,
+            "AI中医助手", // 医生名称
+            null // 图片URL（如果有的话）
+        );
+        
+        Log.d(TAG, "发送处方创建请求: " + prescriptionCreate.toString());
+        
+        // 调用API保存处方
+        Call<ApiResponse<Prescription>> call = apiService.createPrescription(prescriptionCreate);
+        call.enqueue(new Callback<ApiResponse<Prescription>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Prescription>> call, Response<ApiResponse<Prescription>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    ApiResponse<Prescription> apiResponse = response.body();
+                    if (apiResponse.isSuccess()) {
+                        Log.d(TAG, "处方保存成功");
+                        showSafeToast("处方已保存到个人档案");
+                    } else {
+                        Log.e(TAG, "处方保存失败: " + apiResponse.getMessage());
+                        showSafeToast("处方保存失败：" + apiResponse.getMessage());
+                    }
+                } else {
+                    Log.e(TAG, "处方保存请求失败，响应码: " + response.code());
+                    showSafeToast("处方保存失败，请稍后重试");
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<ApiResponse<Prescription>> call, Throwable t) {
+                Log.e(TAG, "处方保存网络错误: " + t.getMessage(), t);
+                if (!call.isCanceled()) {
+                    showSafeToast("网络连接失败，处方未保存");
+                }
+            }
+        });
+    }
+    
+    /**
+     * 获取当前用户ID
+     * @return 用户ID，如果未登录则返回-1
+     */
+    private int getCurrentUserId() {
+        if (getContext() == null) {
+            return -1;
+        }
+        
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("user_login_state", Context.MODE_PRIVATE);
+        return sharedPreferences.getInt("user_id", -1);
+    }
+    
+    /**
+     * 从分析结果中提取诊断信息
+     * @param analysis 症状分析结果
+     * @return 诊断信息
+     */
+    private String extractDiagnosis(SymptomAnalysis analysis) {
+        StringBuilder diagnosis = new StringBuilder();
+        
+        // 提取辨证分型
+        if (analysis.getSyndromeType() != null) {
+            SymptomAnalysis.SyndromeType syndromeType = analysis.getSyndromeType();
+            if (syndromeType.getMainSyndrome() != null) {
+                diagnosis.append("主证：").append(syndromeType.getMainSyndrome());
+            }
+            if (syndromeType.getSecondarySyndrome() != null) {
+                if (diagnosis.length() > 0) diagnosis.append("; ");
+                diagnosis.append("次证：").append(syndromeType.getSecondarySyndrome());
+            }
+        }
+        
+        // 提取主方信息
+        if (analysis.getMainPrescription() != null && analysis.getMainPrescription().getFormulaName() != null) {
+            if (diagnosis.length() > 0) diagnosis.append("; ");
+            diagnosis.append("主方：").append(analysis.getMainPrescription().getFormulaName());
+        }
+        
+        return diagnosis.toString();
+    }
+    
+    /**
+     * 安全显示Toast消息（避免在Fragment分离后显示）
+     * @param message 消息内容
+     */
+    private void showSafeToast(String message) {
+        if (getContext() != null && isAdded() && !isDetached() && !isRemoving()) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        } else {
+            Log.w("PrescriptionFragment", "无法显示Toast，Fragment状态异常: " + message);
         }
     }
     
@@ -4462,17 +4590,6 @@ public class PrescriptionFragment extends Fragment {
         } else {
             // 调用原有的图片处理逻辑
             handleSelectedImage(imageUri);
-        }
-    }
-    
-    /**
-     * 安全显示Toast，避免Fragment状态异常
-     */
-    private void showSafeToast(String message) {
-        if (getContext() != null && isAdded() && !isDetached() && !isRemoving()) {
-            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
-        } else {
-            Log.w("PrescriptionFragment", "无法显示Toast，Fragment状态异常: " + message);
         }
     }
     

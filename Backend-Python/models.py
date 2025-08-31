@@ -29,6 +29,7 @@ class Product(Base):
     is_featured = Column(Boolean, default=False)
     is_prescription_required = Column(Boolean, default=False)
     manufacturer = Column(String(200))
+    pharmacy_name = Column(String(200))
     expiry_date = Column(DateTime)
     usage_instructions = Column(Text)
     side_effects = Column(Text)
@@ -141,3 +142,19 @@ class HealthRecord(Base):
     notes = Column(Text)  # 备注
     recorded_date = Column(DateTime, default=datetime.utcnow)
     created_time = Column(DateTime, default=datetime.utcnow)
+
+# 医院模型
+class Hospital(Base):
+    __tablename__ = "hospitals"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False, index=True)  # 医院名称
+    address = Column(String(500))  # 医院地址
+    phone = Column(String(50))  # 联系电话
+    level = Column(String(50))  # 医院等级（如：三甲）
+    description = Column(Text)  # 医院描述
+    departments = Column(Text)  # 可用科室ID列表，以逗号分隔存储
+    official_account_id = Column(String(100))  # 公众号原始ID
+    wechat_id = Column(String(100))  # 微信号
+    created_time = Column(DateTime, default=datetime.utcnow)
+    updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

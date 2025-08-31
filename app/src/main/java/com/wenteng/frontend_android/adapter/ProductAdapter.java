@@ -74,6 +74,12 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             holder.productDescription.setText(product.getDescription() != null ? product.getDescription() : "暂无描述");
         }
 
+        // 安全设置药店名
+        if (holder.pharmacyName != null) {
+            String pharmacyText = "药店: " + (product.getPharmacyName() != null ? product.getPharmacyName() : "未知");
+            holder.pharmacyName.setText(pharmacyText);
+        }
+
         // 暂时使用占位图
         if (holder.productImage != null) {
             holder.productImage.setImageResource(R.drawable.ic_launcher_background);
@@ -99,6 +105,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         TextView productName;
         TextView productPrice;
         TextView productDescription;
+        TextView pharmacyName;
 
         public ProductViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -106,6 +113,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             productName = itemView.findViewById(R.id.product_name);
             productPrice = itemView.findViewById(R.id.product_price);
             productDescription = itemView.findViewById(R.id.product_description);
+            pharmacyName = itemView.findViewById(R.id.pharmacy_name);
         }
     }
 }

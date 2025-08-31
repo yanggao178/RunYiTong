@@ -1,10 +1,14 @@
 package com.wenteng.frontend_android.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -163,25 +167,28 @@ public class RegistrationFragment extends Fragment {
         
         apiService.getHospitals().enqueue(new Callback<ApiResponse<HospitalListResponse>>() {
             @Override
-            public void onResponse(Call<ApiResponse<HospitalListResponse>> call, Response<ApiResponse<HospitalListResponse>> response) {
+            public void onResponse(@NonNull Call<ApiResponse<HospitalListResponse>> call, Response<ApiResponse<HospitalListResponse>> response) {
                 showLoading(false);
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
-                    hospitalList = response.body().getData().getHospitals();
-                    android.util.Log.d("RegistrationFragment", "接收到医院数据，数量: " + (hospitalList != null ? hospitalList.size() : 0));
-                    if (hospitalList != null && !hospitalList.isEmpty()) {
-                        android.util.Log.d("RegistrationFragment", "第一个医院: " + hospitalList.get(0).getName());
+                    ApiResponse<HospitalListResponse> apiResponse = response.body();
+                    if(apiResponse.isSuccess()){
+                        hospitalList = apiResponse.getData().getHospitals();
+                        setupHospitalAdapter();
+                    } else {
+                        android.util.Log.e("RegistrationFragment", "加载医院列表失败");
+                        showError("加载医院列表失败");
                     }
-                    setupHospitalAdapter();
                 } else {
-                    android.util.Log.e("RegistrationFragment", "API响应失败: " + response.code());
+                    android.util.Log.e("RegistrationFragment", "加载医院列表失败");
                     showError("加载医院列表失败");
                 }
             }
-            
+                       
             @Override
             public void onFailure(Call<ApiResponse<HospitalListResponse>> call, Throwable t) {
                 showLoading(false);
-                showError("网络错误：" + t.getMessage());
+                android.util.Log.e("RegistrationFragment", "网络请求失败: " + t.getMessage(), t);
+                showError("网络请求失败，请检查网络连接");
             }
         });
     }
@@ -244,6 +251,7 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void setupHospitalAdapter() {
+
         android.util.Log.d("RegistrationFragment", "设置医院适配器，医院列表大小: " + (hospitalList != null ? hospitalList.size() : 0));
         hospitalAdapter = new HospitalAdapter(getContext(), hospitalList, hospital -> {
             selectedHospital = hospital;

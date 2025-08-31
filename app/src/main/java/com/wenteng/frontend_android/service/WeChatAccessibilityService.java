@@ -123,9 +123,36 @@ public class WeChatAccessibilityService extends AccessibilityService {
     }
     
     /**
+     * 直接启动微信搜索（强化版）
+     * 此方法提供更直接、更高效的微信搜索自动化体验
+     */
+    public void startWeChatSearchDirectly(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            Log.w(TAG, "搜索关键词为空");
+            return;
+        }
+        
+        this.searchKeyword = keyword.trim();
+        this.isSearching = true;
+        
+        Log.d(TAG, "开始直接微信搜索: " + searchKeyword);
+        
+        // 启动微信
+        Intent launchIntent = getPackageManager().getLaunchIntentForPackage(WECHAT_PACKAGE);
+        if (launchIntent != null) {
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(launchIntent);
+            Log.d(TAG, "已启动微信应用");
+        } else {
+            Log.e(TAG, "无法启动微信应用");
+            stopSearch();
+        }
+    }
+    
+    /**
      * 执行微信搜索操作
      */
-    private void performWeChatSearch() {
+    public void performWeChatSearch() {
         AccessibilityNodeInfo rootNode = getRootInActiveWindow();
         if (rootNode == null) {
             Log.w(TAG, "无法获取根节点");
@@ -295,9 +322,13 @@ public class WeChatAccessibilityService extends AccessibilityService {
      */
     private boolean findEditTextAndClick(AccessibilityNodeInfo node) {
         if (node == null) return false;
+        String strClassName = null;
+        if (node.getClassName() != null) {
+            strClassName = node.getClassName().toString();
+        }
         
         // 检查当前节点是否是EditText
-        if ("android.widget.EditText".equals(node.getClassName())) {
+        if ("android.widget.EditText".equals(strClassName)) {
             if (node.isClickable() || node.isFocusable()) {
                 Log.d(TAG, "找到搜索框，正在点击");
                 boolean clicked = node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
@@ -311,15 +342,32 @@ public class WeChatAccessibilityService extends AccessibilityService {
         }
         
         // 递归检查子节点
-        for (int i = 0; i < node.getChildCount(); i++) {
-            AccessibilityNodeInfo child = node.getChild(i);
-            if (child != null) {
-                if (findEditTextAndClick(child)) {
-                    child.recycle();
-                    return true;
+        try {
+            int childCount = node.getChildCount();
+            for (int i = 0; i < childCount; i++) {
+                AccessibilityNodeInfo child = null;
+                try {
+                    child = node.getChild(i);
+                    if (child != null) {
+                        boolean found = findEditTextAndClick(child);
+                        child.recycle();
+                        if (found) {
+                            return true;
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "获取或访问子节点时出错: " + e.getMessage());
+                    if (child != null) {
+                        try {
+                            child.recycle();
+                        } catch (Exception re) {
+                            // 忽略回收时的异常
+                        }
+                    }
                 }
-                child.recycle();
             }
+        } catch (Exception e) {
+            Log.e(TAG, "获取子节点数量时出错: " + e.getMessage());
         }
         
         return false;

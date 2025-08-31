@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
 from database import get_db
-from models import Appointment as AppointmentModel
-from schemas import Appointment, AppointmentCreate, AppointmentUpdate, PaginatedResponse
+from models import Appointment as AppointmentModel, Hospital
+from schemas import Appointment, AppointmentCreate, AppointmentUpdate, PaginatedResponse, Hospital as HospitalSchema
 
 router = APIRouter()
 
@@ -56,47 +56,47 @@ async def get_appointments(
 
 # 获取医院列表
 @router.get("/hospitals")
-async def get_hospitals():
-    """获取医院列表"""
-    hospitals = [
-        {
-            "id": 1,
-            "name": "北京协和医院",
-            "address": "北京市东城区东单帅府园1号",
-            "phone": "010-69156114",
-            "level": "三甲",
-            "description": "国家卫生健康委直属医院"
-        },
-        {
-            "id": 2,
-            "name": "北京大学第一医院",
-            "address": "北京市西城区西什库大街8号",
-            "phone": "010-83572211",
-            "level": "三甲",
-            "description": "北京大学附属医院"
-        },
-        {
-            "id": 3,
-            "name": "中国人民解放军总医院",
-            "address": "北京市海淀区复兴路28号",
-            "phone": "010-66887329",
-            "level": "三甲",
-            "description": "解放军总医院"
-        },
-        {
-            "id": 4,
-            "name": "首都医科大学附属北京天坛医院",
-            "address": "北京市丰台区南四环西路119号",
-            "phone": "010-59978585",
-            "level": "三甲",
-            "description": "首都医科大学附属医院"
-        }
-    ]
+async def get_hospitals(
+    db: Session = Depends(get_db),
+    name: Optional[str] = Query(None, description="医院名称搜索")
+):
+    """从数据库获取医院列表"""
+    query = db.query(Hospital)
     
+    # 如果提供了名称参数，进行模糊搜索
+    if name:
+        query = query.filter(Hospital.name.contains(name))
+    
+    # 按创建时间降序排序
+    query = query.order_by(Hospital.created_time.desc())
+    
+    # 获取所有医院
+    hospitals = query.all()
+    
+    # 序列化医院数据并处理departments字段
+    serialized_hospitals = []
+    for hospital in hospitals:
+        # 使用HospitalSchema序列化基本字段
+        hospital_data = HospitalSchema.from_orm(hospital)
+        
+        # 将departments字符串转换为字符串列表
+        if hospital.departments:
+            # 分割逗号分隔的字符串
+            dept_ids = hospital.departments.split(',')
+            # 移除可能的空白字符
+            dept_ids = [dept_id.strip() for dept_id in dept_ids]
+            # 更新departments字段为列表
+            hospital_data.departments = dept_ids
+        else:
+            hospital_data.departments = []
+        
+        serialized_hospitals.append(hospital_data)
+    
+    # 返回符合客户端期望格式的响应
     return {
         "success": True,
         "message": "获取医院列表成功",
-        "data": {"hospitals": hospitals}
+        "data": {"hospitals": serialized_hospitals}
     }
 
 # 获取医生列表

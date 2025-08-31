@@ -115,6 +115,16 @@
                 android:layout_marginTop="6dp"
                 android:lineSpacingExtra="2dp" />
 
+            <!-- 药店名 -->
+            <TextView
+                android:id="@+id/pharmacy_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                android:textColor="#999999"
+                android:layout_marginTop="4dp"
+                android:text="药店: 未知" />
+
             <!-- 功能标签 -->
             <LinearLayout
                 android:layout_width="match_parent"

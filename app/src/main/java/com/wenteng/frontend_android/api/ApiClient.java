@@ -41,8 +41,8 @@ public class ApiClient {
         
         // Fallback for real devices on the same LAN. Ensure backend binds to 0.0.0.0 and firewall allows access.
         android.util.Log.i("ApiClient", "Using LAN IP for backend: 192.168.0.5:8000 (ensure this is reachable)");
-        return "http://192.168.0.6:8000/";
-        
+        return "http://192.168.0.5:8000/";
+//        return "http://8.141.2.166:8000";
     }
     private static Retrofit retrofit = null;
     private static ApiService apiService = null;

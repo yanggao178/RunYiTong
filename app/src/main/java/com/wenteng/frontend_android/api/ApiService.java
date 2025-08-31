@@ -1,5 +1,7 @@
 package com.wenteng.frontend_android.api;
 
+import com.wenteng.frontend_android.api.ProductListResponse;
+import com.wenteng.frontend_android.model.PrescriptionCreate;
 import com.wenteng.frontend_android.model.Product;
 import com.wenteng.frontend_android.model.Book;
 import com.wenteng.frontend_android.model.BookPage;
@@ -404,9 +406,9 @@ public interface ApiService {
      * @param userId 用户ID
      * @return 处方列表响应
      */
-    @GET("api/v1/prescriptions/user/{userId}")
-    Call<ApiResponse<List<Prescription>>> getUserPrescriptions(
-        @Path("userId") int userId
+    @GET("api/v1/prescriptions/user/{user_id}")
+    Call<List<Prescription>> getUserPrescriptions(
+        @Path("user_id") int userId
     );
     
     /**
@@ -427,6 +429,16 @@ public interface ApiService {
     @GET("api/v1/prescriptions/{prescriptionId}/items")
     Call<ApiResponse<List<PrescriptionItem>>> getPrescriptionItems(
         @Path("prescriptionId") int prescriptionId
+    );
+    
+    /**
+     * 创建新处方
+     * @param prescriptionCreate 处方创建请求
+     * @return 处方创建响应
+     */
+    @POST("api/v1/prescriptions/create")
+    Call<ApiResponse<Prescription>> createPrescription(
+        @Body PrescriptionCreate prescriptionCreate
     );
     
     /**

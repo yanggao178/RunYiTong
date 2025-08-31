@@ -16,6 +16,7 @@ import com.wenteng.frontend_android.adapter.PrescriptionAdapter;
 import com.wenteng.frontend_android.api.ApiClient;
 import com.wenteng.frontend_android.api.ApiService;
 import com.wenteng.frontend_android.api.ApiResponse;
+import com.wenteng.frontend_android.api.PrescriptionListResponse;
 import com.wenteng.frontend_android.model.Prescription;
 
 import java.util.ArrayList;
@@ -121,37 +122,31 @@ public class MyPrescriptionsActivity extends AppCompatActivity {
             return;
         }
         
-        Call<ApiResponse<List<Prescription>>> call = apiService.getUserPrescriptions(userId);
-        call.enqueue(new Callback<ApiResponse<List<Prescription>>>() {
+        Call<List<Prescription>> call = apiService.getUserPrescriptions(userId);
+        call.enqueue(new Callback<List<Prescription>>() {
             @Override
-            public void onResponse(Call<ApiResponse<List<Prescription>>> call, 
-                                 Response<ApiResponse<List<Prescription>>> response) {
+            public void onResponse(Call<List<Prescription>> call, 
+                                 Response<List<Prescription>> response) {
                 swipeRefreshLayout.setRefreshing(false);
                 
                 if (response.isSuccessful() && response.body() != null) {
-                    ApiResponse<List<Prescription>> apiResponse = response.body();
-                    if (apiResponse.isSuccess() && apiResponse.getData() != null) {
-                        prescriptionList.clear();
-                        prescriptionList.addAll(apiResponse.getData());
-                        prescriptionAdapter.updatePrescriptions(prescriptionList);
-                        
-                        if (prescriptionList.isEmpty()) {
-                            Toast.makeText(MyPrescriptionsActivity.this, 
-                                "暂无处方信息", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
+                    List<Prescription> prescriptions = response.body();
+                    prescriptionList.clear();
+                    prescriptionList.addAll(prescriptions);
+                    prescriptionAdapter.updatePrescriptions(prescriptionList);
+                    
+                    if (prescriptionList.isEmpty()) {
                         Toast.makeText(MyPrescriptionsActivity.this, 
-                            "获取处方信息失败: " + (apiResponse.getMessage() != null ? apiResponse.getMessage() : "未知错误"), 
-                            Toast.LENGTH_SHORT).show();
+                            "暂无处方信息", Toast.LENGTH_SHORT).show();
                     }
                 } else {
                     Toast.makeText(MyPrescriptionsActivity.this, 
-                        "网络请求失败", Toast.LENGTH_SHORT).show();
+                        "获取处方信息失败", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<List<Prescription>>> call, Throwable t) {
+            public void onFailure(Call<List<Prescription>> call, Throwable t) {
                 swipeRefreshLayout.setRefreshing(false);
                 Log.e(TAG, "加载处方列表失败", t);
                 Toast.makeText(MyPrescriptionsActivity.this, 

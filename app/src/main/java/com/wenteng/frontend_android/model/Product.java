@@ -36,7 +36,10 @@ public class Product implements Serializable {
     private String specification; // 规格
     
     @SerializedName("manufacturer")
-    private String manufacturer; // 厂商
+    private String manufacturer;
+    
+    @SerializedName("pharmacy_name")
+    private String pharmacyName; // 药店名
     
     @SerializedName("purchase_count")
     private int purchaseCount; // 购买人数
@@ -146,6 +149,14 @@ public class Product implements Serializable {
 
     public void setManufacturer(String manufacturer) {
         this.manufacturer = manufacturer;
+    }
+
+    public String getPharmacyName() {
+        return pharmacyName;
+    }
+
+    public void setPharmacyName(String pharmacyName) {
+        this.pharmacyName = pharmacyName;
     }
 
     public int getPurchaseCount() {

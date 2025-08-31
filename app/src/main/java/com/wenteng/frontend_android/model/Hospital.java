@@ -2,6 +2,7 @@ package com.wenteng.frontend_android.model;
 
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
 
 public class Hospital implements Serializable {
@@ -24,7 +25,19 @@ public class Hospital implements Serializable {
     private String description; // 医院描述
     
     @SerializedName("departments")
-    private List<Integer> departments; // 可用科室ID列表
+    private List<String> departments; // 可用科室ID列表
+    
+    @SerializedName("official_account_id")
+    private String officialAccountId; // 公众号原始ID
+    
+    @SerializedName("wechat_id")
+    private String wechatId; // 微信号
+    
+    @SerializedName("created_time")
+    private Date createdTime; // 创建时间
+    
+    @SerializedName("updated_time")
+    private Date updatedTime; // 更新时间
     
     // 无参构造函数
     public Hospital() {
@@ -32,7 +45,7 @@ public class Hospital implements Serializable {
     
     // 有参构造函数
     public Hospital(int id, String name, String address, String phone, String level, 
-                   String description, List<Integer> departments) {
+                   String description, List<String> departments) {
         this.id = id;
         this.name = name;
         this.address = address;
@@ -40,6 +53,23 @@ public class Hospital implements Serializable {
         this.level = level;
         this.description = description;
         this.departments = departments;
+    }
+    
+    // 全参构造函数
+    public Hospital(int id, String name, String address, String phone, String level, 
+                   String description, List<String> departments, String officialAccountId, 
+                   String wechatId, Date createdTime, Date updatedTime) {
+        this.id = id;
+        this.name = name;
+        this.address = address;
+        this.phone = phone;
+        this.level = level;
+        this.description = description;
+        this.departments = departments;
+        this.officialAccountId = officialAccountId;
+        this.wechatId = wechatId;
+        this.createdTime = createdTime;
+        this.updatedTime = updatedTime;
     }
     
     // Getter和Setter方法
@@ -91,12 +121,44 @@ public class Hospital implements Serializable {
         this.description = description;
     }
     
-    public List<Integer> getDepartments() {
+    public List<String> getDepartments() {
         return departments;
     }
     
-    public void setDepartments(List<Integer> departments) {
+    public void setDepartments(List<String> departments) {
         this.departments = departments;
+    }
+    
+    public String getOfficialAccountId() {
+        return officialAccountId;
+    }
+    
+    public void setOfficialAccountId(String officialAccountId) {
+        this.officialAccountId = officialAccountId;
+    }
+    
+    public String getWechatId() {
+        return wechatId;
+    }
+    
+    public void setWechatId(String wechatId) {
+        this.wechatId = wechatId;
+    }
+    
+    public Date getCreatedTime() {
+        return createdTime;
+    }
+    
+    public void setCreatedTime(Date createdTime) {
+        this.createdTime = createdTime;
+    }
+    
+    public Date getUpdatedTime() {
+        return updatedTime;
+    }
+    
+    public void setUpdatedTime(Date updatedTime) {
+        this.updatedTime = updatedTime;
     }
     
     @Override
@@ -109,6 +171,10 @@ public class Hospital implements Serializable {
                 ", level='" + level + '\'' +
                 ", description='" + description + '\'' +
                 ", departments=" + departments +
+                ", officialAccountId='" + officialAccountId + '\'' +
+                ", wechatId='" + wechatId + '\'' +
+                ", createdTime=" + createdTime +
+                ", updatedTime=" + updatedTime +
                 '}';
     }
 }

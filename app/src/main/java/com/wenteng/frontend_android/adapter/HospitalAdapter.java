@@ -57,13 +57,7 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
     private static long lastDialogTime = 0;
     private static final long DIALOG_COOLDOWN = 10000; // 10秒冷却时间
     
-    // 医院微信公众号映射 - 使用医院名称进行搜索
-    private Map<String, String> hospitalWeChatMap = new HashMap<String, String>() {{
-        put("北京协和医院", "北京协和医院");
-        put("北京大学第一医院", "北京大学第一医院");
-        put("中国人民解放军总医院", "解放军总医院");
-        put("首都医科大学附属北京天坛医院", "北京天坛医院");
-    }};
+    // 注：现在从医院对象中直接获取微信公众号信息，不再使用硬编码映射
     
 
     // 微信包名和协议
@@ -106,8 +100,15 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
             notifyItemChanged(previousPosition);
             notifyItemChanged(selectedPosition);
             
-            // 打开微信公众号
-            openWeChatPublicAccount(hospital.getName());
+            // 打开微信公众号 - 传递完整的医院对象
+            openWeChatPublicAccount(hospital);
+            
+            // 跳转到无障碍设置页面
+            if (context instanceof Activity) {
+                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                context.startActivity(intent);
+            }
             
             if (listener != null) {
                 listener.onHospitalClick(hospital);
@@ -156,22 +157,42 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
 
      
      /**
-     * 打开微信公众号
+     * 打开微信公众号 - 从医院对象直接获取信息版本
      */
-    private void openWeChatPublicAccount(String hospitalName) {
+    private void openWeChatPublicAccount(Hospital hospital) {
         if (context == null) {
             android.util.Log.e("HospitalAdapter", "Context is null");
             return;
         }
         
-        String searchKeyword = hospitalWeChatMap.get(hospitalName);
-        if (searchKeyword == null) {
-            Toast.makeText(context, "该医院暂未开通微信公众号", Toast.LENGTH_SHORT).show();
+        // 预检查微信是否安装
+        if (!isWeChatInstalled()) {
+            android.util.Log.w("HospitalAdapter", "微信未安装");
+            Toast.makeText(context, "请先安装微信客户端", Toast.LENGTH_SHORT).show();
             return;
         }
         
-        // 显示微信搜索指引对话框
-        showWeChatGuideDialogWithConfirmation(searchKeyword, hospitalName);
+        String hospitalName = hospital.getName();
+        
+        if (hospitalName != null && !hospitalName.isEmpty()) {
+            android.util.Log.d("HospitalAdapter", "找到微信公众号搜索关键词: " + hospitalName);
+            
+            // 显示确认对话框，然后使用更完善的启动微信搜索功能
+            showWeChatGuideDialogWithConfirmation(hospitalName);
+        } else {
+            android.util.Log.w("HospitalAdapter", "未找到该医院的微信公众号信息");
+            
+            // 提供更友好的提示，允许用户手动搜索
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle("公众号信息")
+                   .setMessage("未找到该医院的微信公众号预设信息，是否仍要打开微信进行手动搜索？\n\n搜索关键词建议: " + hospitalName)
+                   .setPositiveButton("前往微信", (dialog, which) -> {
+                       // 使用医院名称作为默认搜索关键词
+                       startWeChatSearch(hospitalName);
+                   })
+                   .setNegativeButton("取消", null)
+                   .show();
+        }
     }
     
 
@@ -179,7 +200,7 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
     /**
      * 显示美化的微信搜索指引对话框，用户确认后启动微信
      */
-    private void showWeChatGuideDialogWithConfirmation(String searchKeyword, String hospitalName) {
+    private void showWeChatGuideDialogWithConfirmation(String hospitalName) {
         // 检查是否在冷却时间内，防止重复显示对话框
         long currentTime = System.currentTimeMillis();
         if (isDialogShown && (currentTime - lastDialogTime) < DIALOG_COOLDOWN) {
@@ -225,20 +246,20 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         
         // 主要内容文本
         TextView contentView = new TextView(context);
-        String content = "即将为您打开微信搜索 \"" + searchKeyword + "\"\n\n" +
+        String content = "即将为您打开微信搜索 \"" + hospitalName + "\"\n\n" +
                 "📱 搜索步骤：\n\n" +
                 "1️⃣ 点击微信顶部搜索框\n\n" +
-                "2️⃣ 输入：" + searchKeyword + "\n\n" +
+                "2️⃣ 输入：" + hospitalName + "\n\n" +
                 "3️⃣ 选择公众号进行关注\n\n" +
                 "4️⃣ 点击对应的医院公众号";
         
         // 创建带颜色的文本
         SpannableString spannableContent = new SpannableString(content);
         // 高亮搜索关键词
-        int keywordStart = content.indexOf(searchKeyword);
+        int keywordStart = content.indexOf(hospitalName);
         if (keywordStart != -1) {
             spannableContent.setSpan(new ForegroundColorSpan(Color.parseColor("#07C160")), 
-                    keywordStart, keywordStart + searchKeyword.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    keywordStart, keywordStart + hospitalName.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         
         contentView.setText(spannableContent);
@@ -303,7 +324,7 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         });
         confirmButton.setOnClickListener(v -> {
             dialog.dismiss();
-            startWeChatSearchDirectly(searchKeyword);
+            startWeChatSearchDirectly(hospitalName);
             // 用户确认后不立即重置状态，防止从微信返回时重复显示
         });
         
@@ -338,22 +359,24 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         android.util.Log.d("HospitalAdapter", "用户确认后开始启动微信搜索：" + searchKeyword);
         boolean success = false;
         String errorMessage = "";
-        
+
         // 方法1：使用无障碍服务自动化搜索（推荐方式）
         WeChatAccessibilityService accessibilityService = WeChatAccessibilityService.getInstance();
         if (accessibilityService != null && isAccessibilityServiceEnabled()) {
             try {
                 android.util.Log.d("HospitalAdapter", "方法1：使用无障碍服务自动搜索");
-                accessibilityService.startWeChatSearch(searchKeyword);
+                accessibilityService.performWeChatSearch();
                 Toast.makeText(context, "正在自动打开微信搜索：" + searchKeyword, Toast.LENGTH_SHORT).show();
                 success = true;
             } catch (Exception e) {
                 android.util.Log.e("HospitalAdapter", "方法1异常：" + e.getMessage());
                 errorMessage += "方法1异常：" + e.getMessage() + "; ";
+                Toast.makeText(context, errorMessage + searchKeyword, Toast.LENGTH_SHORT).show();
             }
         } else {
             android.util.Log.w("HospitalAdapter", "方法1失败：无障碍服务未启用或不可用");
             errorMessage += "方法1失败：无障碍服务未启用; ";
+            Toast.makeText(context, errorMessage + searchKeyword, Toast.LENGTH_SHORT).show();
         }
         
         // 方法2：直接启动微信应用（备用方式）
@@ -420,7 +443,7 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         if (accessibilityService != null && isAccessibilityServiceEnabled()) {
             try {
                 android.util.Log.d("HospitalAdapter", "方法1：使用无障碍服务自动搜索");
-                accessibilityService.startWeChatSearch(searchKeyword);
+                accessibilityService.performWeChatSearch();
                 Toast.makeText(context, "正在自动打开微信搜索：" + searchKeyword, Toast.LENGTH_SHORT).show();
                 success = true;
             } catch (Exception e) {

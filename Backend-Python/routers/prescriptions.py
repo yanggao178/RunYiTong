@@ -850,6 +850,31 @@ async def create_prescription(prescription: PrescriptionCreate, db: Session = De
         logger.error(f"创建处方异常: {e}")
         raise HTTPException(status_code=500, detail=f"创建处方失败: {str(e)}")
 
+# 获取用户处方列表
+@router.get("/user/{user_id}", response_model=List[Prescription])
+async def get_user_prescriptions(user_id: int, db: Session = Depends(get_db)):
+    """获取指定用户的处方列表"""
+    def db_operation():
+        try:
+            prescriptions = db.query(PrescriptionModel).filter(
+                PrescriptionModel.user_id == user_id
+            ).order_by(PrescriptionModel.created_time.desc()).all()
+            return prescriptions
+        except OperationalError as e:
+            logger.error(f"数据库连接错误: {e}")
+            raise
+        except SQLAlchemyError as e:
+            logger.error(f"数据库查询错误: {e}")
+            raise HTTPException(status_code=500, detail="数据库查询失败")
+    
+    try:
+        return retry_db_operation(db_operation)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"获取用户处方列表异常: {e}")
+        raise HTTPException(status_code=500, detail=f"获取用户处方列表失败: {str(e)}")
+
 # 以下是参数化路由，必须放在最后以避免路由冲突
 
 # 获取单个处方

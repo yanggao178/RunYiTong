@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional, List
+from pydantic import BaseModel, EmailStr
 
 # 基础响应模型
 class BaseResponse(BaseModel):
@@ -17,6 +18,7 @@ class ProductBase(BaseModel):
     category_id: Optional[int] = None
     stock_quantity: int = 0
     manufacturer: Optional[str] = None
+    pharmacy_name: Optional[str] = None
     sales_count: int = 0
 
 class ProductCreate(ProductBase):
@@ -249,3 +251,44 @@ class PaginatedResponse(BaseModel):
     page: int
     size: int
     pages: int
+
+# 医院相关模式
+class HospitalBase(BaseModel):
+    name: str
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    level: Optional[str] = None
+    description: Optional[str] = None
+    departments: Optional[str] = None
+    official_account_id: Optional[str] = None
+    wechat_id: Optional[str] = None
+
+class HospitalCreate(HospitalBase):
+    pass
+
+class HospitalUpdate(BaseModel):
+    name: Optional[str] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    level: Optional[str] = None
+    description: Optional[str] = None
+    departments: Optional[str] = None
+    official_account_id: Optional[str] = None
+    wechat_id: Optional[str] = None
+
+class Hospital(HospitalBase):
+    id: int
+    created_time: datetime
+    updated_time: datetime
+    
+    class Config:
+        from_attributes = True
+
+# 医院列表响应
+class HospitalListResponse(BaseModel):
+    success: bool = True
+    message: str = "获取成功"
+    data: List[Hospital]
+    total: int
+    page: int
+    size: int
