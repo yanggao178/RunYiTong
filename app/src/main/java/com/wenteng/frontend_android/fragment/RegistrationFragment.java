@@ -1,12 +1,14 @@
 package com.wenteng.frontend_android.fragment;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -22,11 +24,13 @@ import com.wenteng.frontend_android.api.DoctorListResponse;
 import com.wenteng.frontend_android.api.HospitalListResponse;
 import com.wenteng.frontend_android.model.*;
 import com.wenteng.frontend_android.adapter.*;
+import com.wenteng.frontend_android.activity.LoginActivity;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.IOException;
 
 public class RegistrationFragment extends Fragment {
     
@@ -163,12 +167,55 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void loadHospitals() {
+        // 检查Fragment是否已附加到Activity
+        if (!isAdded()) {
+            Log.d("RegistrationFragment", "Fragment未附加到Activity，取消loadHospitals请求");
+            return;
+        }
+        
+        // 检查access_token是否存在
+        String accessToken = ApiClient.getInstance().getAccessToken();
+        if (accessToken == null || accessToken.isEmpty()) {
+            Log.e("RegistrationFragment", "access_token不存在，跳转到登录界面");
+            requireActivity().runOnUiThread(() -> {
+                showError("请先登录");
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            });
+            return;
+        }
+        
+        // 记录access_token长度和请求信息
+        Log.d("RegistrationFragment", "access_token长度: " + accessToken.length() + ", 请求医院列表");
+        
         showLoading(true);
+        
+        if (apiService == null) {
+            Log.e("RegistrationFragment", "apiService未初始化");
+            showLoading(false);
+            showError("网络服务初始化失败");
+            return;
+        }
         
         apiService.getHospitals().enqueue(new Callback<ApiResponse<HospitalListResponse>>() {
             @Override
             public void onResponse(@NonNull Call<ApiResponse<HospitalListResponse>> call, Response<ApiResponse<HospitalListResponse>> response) {
                 showLoading(false);
+                
+                // 记录响应状态码和头信息
+                Log.d("RegistrationFragment", "获取医院列表响应状态码: " + response.code() + ", 响应头: " + response.headers().toString());
+                
+                if (response.code() == 401) {
+                    Log.e("RegistrationFragment", "401认证失败，清除无效token并跳转到登录界面");
+                    clearLoginState();
+                    requireActivity().runOnUiThread(() -> {
+                        showError("登录已过期，请重新登录");
+                        Intent intent = new Intent(getContext(), LoginActivity.class);
+                        startActivity(intent);
+                    });
+                    return;
+                }
+                
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     ApiResponse<HospitalListResponse> apiResponse = response.body();
                     if(apiResponse.isSuccess()){
@@ -179,11 +226,20 @@ public class RegistrationFragment extends Fragment {
                         showError("加载医院列表失败");
                     }
                 } else {
-                    android.util.Log.e("RegistrationFragment", "加载医院列表失败");
+                    // 读取错误体内容
+                    String errorBody = "";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorBody = response.errorBody().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    android.util.Log.e("RegistrationFragment", "加载医院列表失败，响应体: " + errorBody);
                     showError("加载医院列表失败");
                 }
             }
-                       
+                        
             @Override
             public void onFailure(Call<ApiResponse<HospitalListResponse>> call, Throwable t) {
                 showLoading(false);
@@ -194,12 +250,55 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void loadDoctors() {
+        // 检查Fragment是否已附加到Activity
+        if (!isAdded()) {
+            Log.d("RegistrationFragment", "Fragment未附加到Activity，取消loadDoctors请求");
+            return;
+        }
+        
+        // 检查access_token是否存在
+        String accessToken = ApiClient.getInstance().getAccessToken();
+        if (accessToken == null || accessToken.isEmpty()) {
+            Log.e("RegistrationFragment", "access_token不存在，跳转到登录界面");
+            requireActivity().runOnUiThread(() -> {
+                showError("请先登录");
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            });
+            return;
+        }
+        
+        // 记录access_token长度和请求信息
+        Log.d("RegistrationFragment", "access_token长度: " + accessToken.length() + ", 请求医生列表");
+        
         showLoading(true);
+        
+        if (apiService == null) {
+            Log.e("RegistrationFragment", "apiService未初始化");
+            showLoading(false);
+            showError("网络服务初始化失败");
+            return;
+        }
         
         apiService.getDoctors(null, null).enqueue(new Callback<ApiResponse<DoctorListResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<DoctorListResponse>> call, Response<ApiResponse<DoctorListResponse>> response) {
                 showLoading(false);
+                
+                // 记录响应状态码和头信息
+                Log.d("RegistrationFragment", "获取医生列表响应状态码: " + response.code() + ", 响应头: " + response.headers().toString());
+                
+                if (response.code() == 401) {
+                    Log.e("RegistrationFragment", "401认证失败，清除无效token并跳转到登录界面");
+                    clearLoginState();
+                    requireActivity().runOnUiThread(() -> {
+                        showError("登录已过期，请重新登录");
+                        Intent intent = new Intent(getContext(), LoginActivity.class);
+                        startActivity(intent);
+                    });
+                    return;
+                }
+                
                 android.util.Log.d("RegistrationFragment", "医生API响应码: " + response.code());
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     doctorList = response.body().getData().getDoctors();
@@ -209,10 +308,16 @@ public class RegistrationFragment extends Fragment {
                     }
                     setupDoctorAdapter();
                 } else {
-                    android.util.Log.e("RegistrationFragment", "API响应失败: " + response.code());
-                    if (response.body() != null) {
-                        android.util.Log.e("RegistrationFragment", "响应体: " + response.body().toString());
+                    // 读取错误体内容
+                    String errorBody = "";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorBody = response.errorBody().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
+                    android.util.Log.e("RegistrationFragment", "API响应失败: " + response.code() + ", 错误体: " + errorBody);
                     showError("加载医生列表失败");
                 }
             }
@@ -227,17 +332,70 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void loadDepartmentsByHospital(int hospitalId) {
+        // 检查Fragment是否已附加到Activity
+        if (!isAdded()) {
+            Log.d("RegistrationFragment", "Fragment未附加到Activity，取消loadDepartmentsByHospital请求");
+            return;
+        }
+        
+        // 检查access_token是否存在
+        String accessToken = ApiClient.getInstance().getAccessToken();
+        if (accessToken == null || accessToken.isEmpty()) {
+            Log.e("RegistrationFragment", "access_token不存在，跳转到登录界面");
+            requireActivity().runOnUiThread(() -> {
+                showError("请先登录");
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            });
+            return;
+        }
+        
+        // 记录access_token长度和请求信息
+        Log.d("RegistrationFragment", "access_token长度: " + accessToken.length() + ", 请求医院部门列表: hospital_id=" + hospitalId);
+        
         showLoading(true);
+        
+        if (apiService == null) {
+            Log.e("RegistrationFragment", "apiService未初始化");
+            showLoading(false);
+            showError("网络服务初始化失败");
+            return;
+        }
         
         apiService.getHospitalDepartments(hospitalId).enqueue(new Callback<ApiResponse<DepartmentListResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<DepartmentListResponse>> call, Response<ApiResponse<DepartmentListResponse>> response) {
                 showLoading(false);
+                
+                // 记录响应状态码和头信息
+                Log.d("RegistrationFragment", "获取科室列表响应状态码: " + response.code() + ", 响应头: " + response.headers().toString());
+                
+                if (response.code() == 401) {
+                    Log.e("RegistrationFragment", "401认证失败，清除无效token并跳转到登录界面");
+                    clearLoginState();
+                    requireActivity().runOnUiThread(() -> {
+                        showError("登录已过期，请重新登录");
+                        Intent intent = new Intent(getContext(), LoginActivity.class);
+                        startActivity(intent);
+                    });
+                    return;
+                }
+                
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     departmentList = response.body().getData().getDepartments();
                     setupDepartmentAdapter();
                     recyclerViewDepartments.setVisibility(View.VISIBLE);
                 } else {
+                    // 读取错误体内容
+                    String errorBody = "";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorBody = response.errorBody().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Log.e("RegistrationFragment", "加载科室列表失败，错误体: " + errorBody);
                     showError("加载科室列表失败");
                 }
             }
@@ -287,17 +445,70 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void loadDoctorsByHospitalAndDepartment(int hospitalId, int departmentId) {
+        // 检查Fragment是否已附加到Activity
+        if (!isAdded()) {
+            Log.d("RegistrationFragment", "Fragment未附加到Activity，取消loadDoctorsByHospitalAndDepartment请求");
+            return;
+        }
+        
+        // 检查access_token是否存在
+        String accessToken = ApiClient.getInstance().getAccessToken();
+        if (accessToken == null || accessToken.isEmpty()) {
+            Log.e("RegistrationFragment", "access_token不存在，跳转到登录界面");
+            requireActivity().runOnUiThread(() -> {
+                showError("请先登录");
+                Intent intent = new Intent(getContext(), LoginActivity.class);
+                startActivity(intent);
+            });
+            return;
+        }
+        
+        // 记录access_token长度和请求信息
+        Log.d("RegistrationFragment", "access_token长度: " + accessToken.length() + ", 请求医生列表: department_id=" + departmentId + ", hospital_id=" + hospitalId);
+        
         showLoading(true);
+        
+        if (apiService == null) {
+            Log.e("RegistrationFragment", "apiService未初始化");
+            showLoading(false);
+            showError("网络服务初始化失败");
+            return;
+        }
         
         apiService.getDoctors(departmentId, hospitalId).enqueue(new Callback<ApiResponse<DoctorListResponse>>() {
             @Override
             public void onResponse(Call<ApiResponse<DoctorListResponse>> call, Response<ApiResponse<DoctorListResponse>> response) {
                 showLoading(false);
+                
+                // 记录响应状态码和头信息
+                Log.d("RegistrationFragment", "获取特定科室医生列表响应状态码: " + response.code() + ", 响应头: " + response.headers().toString());
+                
+                if (response.code() == 401) {
+                    Log.e("RegistrationFragment", "401认证失败，清除无效token并跳转到登录界面");
+                    clearLoginState();
+                    requireActivity().runOnUiThread(() -> {
+                        showError("登录已过期，请重新登录");
+                        Intent intent = new Intent(getContext(), LoginActivity.class);
+                        startActivity(intent);
+                    });
+                    return;
+                }
+                
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     doctorList = response.body().getData().getDoctors();
                     setupDoctorAdapter();
                     recyclerViewDoctors.setVisibility(View.VISIBLE);
                 } else {
+                    // 读取错误体内容
+                    String errorBody = "";
+                    if (response.errorBody() != null) {
+                        try {
+                            errorBody = response.errorBody().string();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Log.e("RegistrationFragment", "加载医生列表失败，错误体: " + errorBody);
                     showError("加载医生列表失败");
                 }
             }
@@ -426,5 +637,30 @@ public class RegistrationFragment extends Fragment {
     
     private void showSuccess(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+    }
+    
+    // 清除登录状态
+    private void clearLoginState() {
+        try {
+            SharedPreferences sharedPreferences = requireContext().getSharedPreferences("user_login_state", android.content.Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.remove("access_token");
+            editor.remove("user_id");
+            editor.apply();
+            Log.d("RegistrationFragment", "已清除登录状态");
+        } catch (Exception e) {
+            Log.e("RegistrationFragment", "清除登录状态失败: " + e.getMessage());
+        }
+    }
+    
+    // 获取当前登录用户的ID
+    private int getCurrentUserId() {
+        try {
+            SharedPreferences sharedPreferences = requireContext().getSharedPreferences("user_login_state", android.content.Context.MODE_PRIVATE);
+            return sharedPreferences.getInt("user_id", -1);
+        } catch (Exception e) {
+            Log.e("RegistrationFragment", "获取用户ID失败: " + e.getMessage());
+            return -1;
+        }
     }
 }

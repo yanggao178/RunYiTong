@@ -579,6 +579,15 @@ public class RegisterActivity extends AppCompatActivity {
                         RegisterResponse registerData = apiResponse.getData();
                         android.util.Log.d(TAG, "简化SMS注册成功: " + registerData.toString());
                         
+                        // 保存用户ID到SharedPreferences
+                        if (registerData.getUserId() != null) {
+                            getSharedPreferences("app_state", MODE_PRIVATE)
+                                    .edit()
+                                    .putInt("user_id", registerData.getUserId().intValue())
+                                    .apply();
+                            android.util.Log.d(TAG, "用户ID已保存: " + registerData.getUserId());
+                        }
+                        
                         Toast.makeText(RegisterActivity.this, "注册成功！", Toast.LENGTH_SHORT).show();
                         
                         // 跳转到登录页面
@@ -632,6 +641,15 @@ public class RegisterActivity extends AppCompatActivity {
                     if (apiResponse.isSuccess()) {
                         RegisterResponse registerData = apiResponse.getData();
                         android.util.Log.d(TAG, "密码注册成功: " + registerData.toString());
+                        
+                        // 保存用户ID到SharedPreferences
+                        if (registerData.getUserId() != null) {
+                            getSharedPreferences("app_state", MODE_PRIVATE)
+                                    .edit()
+                                    .putInt("user_id", registerData.getUserId().intValue())
+                                    .apply();
+                            android.util.Log.d(TAG, "用户ID已保存: " + registerData.getUserId());
+                        }
                         
                         Toast.makeText(RegisterActivity.this, "注册成功！欢迎 " + registerData.getUsername(), Toast.LENGTH_SHORT).show();
                         
@@ -688,6 +706,15 @@ public class RegisterActivity extends AppCompatActivity {
                     if (apiResponse.isSuccess()) {
                         RegisterResponse registerData = apiResponse.getData();
                         android.util.Log.d(TAG, "短信注册成功: " + registerData.toString());
+                        
+                        // 保存用户ID到SharedPreferences
+                        if (registerData.getUserId() != null) {
+                            getSharedPreferences("app_state", MODE_PRIVATE)
+                                    .edit()
+                                    .putInt("user_id", registerData.getUserId().intValue())
+                                    .apply();
+                            android.util.Log.d(TAG, "用户ID已保存: " + registerData.getUserId());
+                        }
                         
                         Toast.makeText(RegisterActivity.this, "注册成功！欢迎 " + registerData.getUsername(), Toast.LENGTH_SHORT).show();
                         

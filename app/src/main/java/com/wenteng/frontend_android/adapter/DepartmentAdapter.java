@@ -39,9 +39,10 @@ public class DepartmentAdapter extends RecyclerView.Adapter<DepartmentAdapter.De
         Department department = departmentList.get(position);
         holder.bind(department, position == selectedPosition);
         
+        final int adapterPosition = position; // 只在方法内部使用传入的position
         holder.itemView.setOnClickListener(v -> {
             int previousPosition = selectedPosition;
-            selectedPosition = position;
+            selectedPosition = adapterPosition;
             
             // 更新选中状态
             notifyItemChanged(previousPosition);

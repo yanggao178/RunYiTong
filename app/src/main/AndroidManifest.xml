@@ -127,6 +127,31 @@
             android:exported="false"
             android:screenOrientation="portrait" />
             
+        <activity
+            android:name=".activity.HealthRecordActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.EditHealthInfoActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.AddPhysicalExamActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.PhysicalExamDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <activity
+            android:name=".activity.ReportViewerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
         <!-- 微信支付回调Activity -->
         <activity
             android:name=".wxapi.WXPayEntryActivity"

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
-from models import Base, Product, Book, User
+from models import Base, Product, Book, User, HealthRecord
 from schemas import ProductCreate, BookCreate, UserCreate
 from routers.users import get_password_hash
 from datetime import datetime

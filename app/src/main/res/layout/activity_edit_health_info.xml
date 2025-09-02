@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- 顶部工具栏 -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/primary"
+        android:elevation="4dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        app:title="编辑健康信息" />
+
+    <!-- 滚动视图，用于容纳表单内容 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:spacing="16dp">
+
+            <!-- 基本信息标题 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="基本信息"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary" />
+
+            <!-- 姓名 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="姓名"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入姓名"
+                    android:textSize="16sp"
+                    android:inputType="textPersonName"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 性别 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="性别"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <RadioGroup
+                    android:id="@+id/rg_gender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <RadioButton
+                        android:id="@+id/rb_male"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="男"
+                        android:textSize="16sp"
+                        android:layout_marginRight="16dp" />
+                    <RadioButton
+                        android:id="@+id/rb_female"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="女"
+                        android:textSize="16sp" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- 出生日期 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="出生日期"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_birthdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入出生日期，格式：YYYY-MM-DD"
+                    android:textSize="16sp"
+                    android:inputType="date"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 身高 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="身高 (cm)"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_height"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入身高"
+                    android:textSize="16sp"
+                    android:inputType="numberDecimal"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 体重 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="体重 (kg)"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_weight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入体重"
+                    android:textSize="16sp"
+                    android:inputType="numberDecimal"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 血型 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="血型"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_blood_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入血型，如：A型、B型、O型、AB型"
+                    android:textSize="16sp"
+                    android:inputType="text"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 健康状况标题 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="健康状况"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginTop="24dp" />
+
+            <!-- 过敏史 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="过敏史"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_allergies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入过敏史，如有多种过敏请用逗号分隔"
+                    android:textSize="16sp"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 慢性病 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="慢性病"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_chronic_diseases"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入慢性病，如有多种疾病请用逗号分隔"
+                    android:textSize="16sp"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 用药史 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="用药史"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_medications"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入目前正在服用的药物"
+                    android:textSize="16sp"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 家族病史 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="家族病史"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_family_history"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入家族成员的疾病史"
+                    android:textSize="16sp"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 紧急联系人标题 -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="紧急联系人"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginTop="24dp" />
+
+            <!-- 紧急联系人姓名 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="16dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="联系人姓名"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_emergency_contact_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入紧急联系人姓名"
+                    android:textSize="16sp"
+                    android:inputType="textPersonName"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 紧急联系人电话 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="32dp">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="联系人电话"
+                    android:textSize="16sp"
+                    android:textColor="@color/text_primary" />
+                <EditText
+                    android:id="@+id/et_emergency_contact_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="请输入紧急联系人电话号码"
+                    android:textSize="16sp"
+                    android:inputType="phone"
+                    android:padding="10dp"
+                    android:background="@drawable/edittext_background" />
+            </LinearLayout>
+
+            <!-- 保存按钮 -->
+            <Button
+                android:id="@+id/btn_save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="保存"
+                android:textSize="18sp"
+                android:textColor="@color/white"
+                android:background="@color/primary"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

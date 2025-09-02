@@ -3,16 +3,24 @@ package com.wenteng.frontend_android.fragment;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.util.TypedValue;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
+import android.widget.LinearLayout;
 import com.wenteng.frontend_android.R;
 import com.wenteng.frontend_android.activity.LoginActivity;
 import com.wenteng.frontend_android.utils.DiagnosticUtils;
@@ -20,11 +28,12 @@ import com.wenteng.frontend_android.activity.OrderActivity;
 import com.wenteng.frontend_android.activity.SettingsActivity;
 import com.wenteng.frontend_android.activity.MyAppointmentsActivity;
 import com.wenteng.frontend_android.activity.MyPrescriptionsActivity;
+import com.wenteng.frontend_android.activity.HealthRecordActivity;
 
 public class ProfileFragment extends Fragment {
 
     private Button btnExpressOrders, btnLogin, btnLogout;
-    private CardView cardSettings, cardMyAppointments, cardMyPrescriptions;
+    private CardView cardSettings, cardMyAppointments, cardMyPrescriptions, cardHealthRecord;
     private TextView tvUsername, tvWelcome;
     private SharedPreferences sharedPreferences;
     
@@ -32,6 +41,8 @@ public class ProfileFragment extends Fragment {
     private static final String PREFS_NAME = "user_login_state";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_USERNAME = "username";
+
+    private static final String USER_ID = "user_id";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -53,6 +64,7 @@ public class ProfileFragment extends Fragment {
         tvWelcome = view.findViewById(R.id.tv_welcome);
         cardMyAppointments = view.findViewById(R.id.card_my_appointments);
         cardMyPrescriptions = view.findViewById(R.id.card_my_prescriptions);
+        cardHealthRecord = view.findViewById(R.id.card_health_record);
         
         // 初始化SharedPreferences
         if (getActivity() != null) {
@@ -74,6 +86,10 @@ public class ProfileFragment extends Fragment {
         }
         if (cardMyPrescriptions == null) {
             android.util.Log.e("ProfileFragment", "cardMyPrescriptions not found in layout");
+        }
+        
+        if (cardHealthRecord == null) {
+            android.util.Log.e("ProfileFragment", "cardHealthRecord not found in layout");
         }
         
         updateLoginStatus();
@@ -223,6 +239,40 @@ public class ProfileFragment extends Fragment {
                 }
             });
         }
+        
+        // 健康档案点击事件
+        if (cardHealthRecord != null) {
+            cardHealthRecord.setOnClickListener(v -> {
+                if (getActivity() == null || getActivity().isFinishing()) {
+                    return;
+                }
+                
+                if (!getLoginState()) {
+                    // 显示登录对话框
+                    showLoginDialog();
+                    return;
+                }
+                
+                try {
+                    // 实现健康档案功能
+                    showHealthRecord();
+                } catch (Exception e) {
+                    android.util.Log.e("ProfileFragment", "打开健康档案失败: " + e.getMessage(), e);
+                    Toast.makeText(getActivity(), "无法打开健康档案页面，请重试", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+    
+    /**
+     * 显示健康档案功能
+     */
+    private void showHealthRecord() {
+        android.util.Log.d("ProfileFragment", "打开健康档案功能");
+        
+        // 跳转到健康档案Activity
+        Intent intent = new Intent(getActivity(), HealthRecordActivity.class);
+        startActivity(intent);
     }
     
     /**
@@ -233,25 +283,111 @@ public class ProfileFragment extends Fragment {
             return;
         }
         
-        new AlertDialog.Builder(getActivity())
-                .setTitle("提示")
-                .setMessage("请先登录")
-                .setPositiveButton("去登录", (dialog, which) -> {
-                    try {
-                        Intent intent = new Intent(getActivity(), LoginActivity.class);
-                        startActivity(intent);
-                        android.util.Log.d("ProfileFragment", "用户选择去登录");
-                    } catch (Exception e) {
-                        android.util.Log.e("ProfileFragment", "启动LoginActivity失败: " + e.getMessage(), e);
-                        Toast.makeText(getActivity(), "无法打开登录页面，请重试", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("取消", (dialog, which) -> {
+        // 创建自定义对话框
+        AlertDialog dialog = new AlertDialog.Builder(getActivity(), R.style.CustomDialogTheme)
+                .create();
+        
+        // 确保对话框不为null
+        if (dialog == null) {
+            return;
+        }
+        
+        // 使用LayoutInflater加载自定义布局
+        LayoutInflater inflater = LayoutInflater.from(getActivity());
+        View dialogView = inflater.inflate(R.layout.custom_login_dialog, null);
+        
+        // 设置对话框的视图
+        dialog.setView(dialogView);
+        
+        // 设置对话框显示和消失的动画
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().getAttributes().windowAnimations = R.style.DialogAnimation;
+            
+            // 设置对话框背景透明
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            
+            // 设置对话框大小
+            WindowManager.LayoutParams params = dialog.getWindow().getAttributes();
+            params.width = WindowManager.LayoutParams.WRAP_CONTENT;
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            dialog.getWindow().setAttributes(params);
+        }
+        
+        // 获取自定义布局中的控件
+        TextView tvTitle = dialogView.findViewById(R.id.dialog_title);
+        TextView tvMessage = dialogView.findViewById(R.id.dialog_message);
+        Button btnCancel = dialogView.findViewById(R.id.btn_cancel);
+        Button btnLogin = dialogView.findViewById(R.id.btn_login);
+        
+        // 设置控件内容
+        if (tvTitle != null) {
+            tvTitle.setText("提示");
+        }
+        
+        if (tvMessage != null) {
+            tvMessage.setText("请先登录");
+        }
+        
+        // 设置取消按钮点击事件
+        if (btnCancel != null) {
+            btnCancel.setOnClickListener(v -> {
+                dialog.dismiss();
+                android.util.Log.d("ProfileFragment", "用户取消登录");
+            });
+        }
+        
+        // 设置去登录按钮点击事件
+        if (btnLogin != null) {
+            btnLogin.setOnClickListener(v -> {
+                try {
+                    Intent intent = new Intent(getActivity(), LoginActivity.class);
+                    startActivity(intent);
+                    android.util.Log.d("ProfileFragment", "用户选择去登录");
                     dialog.dismiss();
-                    android.util.Log.d("ProfileFragment", "用户取消登录");
-                })
-                .setCancelable(true)
-                .show();
+                } catch (Exception e) {
+                    android.util.Log.e("ProfileFragment", "启动LoginActivity失败: " + e.getMessage(), e);
+                    Toast.makeText(getActivity(), "无法打开登录页面，请重试", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+        
+        // 设置点击对话框外部可以取消
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(true);
+        
+        dialog.show();
+        
+        // 对话框显示后，设置按钮点击效果
+        if (btnCancel != null) {
+            btnCancel.setOnTouchListener((v, event) -> {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    v.setAlpha(0.7f);
+                } else if (event.getAction() == MotionEvent.ACTION_UP || 
+                           event.getAction() == MotionEvent.ACTION_CANCEL) {
+                    v.setAlpha(1.0f);
+                }
+                return false;
+            });
+        }
+        
+        if (btnLogin != null) {
+            btnLogin.setOnTouchListener((v, event) -> {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    v.setAlpha(0.7f);
+                } else if (event.getAction() == MotionEvent.ACTION_UP || 
+                           event.getAction() == MotionEvent.ACTION_CANCEL) {
+                    v.setAlpha(1.0f);
+                }
+                return false;
+            });
+        }
+    }
+    
+    /**
+     * dp转px工具方法
+     */
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density + 0.5f);
     }
     
     /**
@@ -260,6 +396,7 @@ public class ProfileFragment extends Fragment {
     private void performLogout() {
         // 清除登录状态
         saveLoginState(false, "");
+        saveUserId(-1);
         updateLoginStatus();
         
         if (getActivity() != null) {
@@ -279,6 +416,18 @@ public class ProfileFragment extends Fragment {
                     .putString(KEY_USERNAME, username)
                     .apply();
             android.util.Log.d("ProfileFragment", "登录状态已保存: " + isLoggedIn + ", 用户名: " + username);
+        }
+    }
+
+    /**
+     * 保存用户ID到SharedPreferences
+     */
+    private void saveUserId(int userId) {
+        if (sharedPreferences != null) {
+            sharedPreferences.edit()
+                    .putInt(USER_ID, userId)
+                    .apply();
+            android.util.Log.d("ProfileFragment", "用户ID已保存: " + userId);
         }
     }
     
@@ -351,5 +500,16 @@ public class ProfileFragment extends Fragment {
         saveLoginState(true, username);
         updateLoginStatus();
         android.util.Log.d("ProfileFragment", "模拟登录成功: " + username);
+    }
+
+    /**
+     * 模拟登录成功，保存登录状态和用户ID
+     * 在实际应用中，这个方法应该在LoginActivity登录成功后调用
+     */
+    public void simulateLoginSuccess(String username, int userId) {
+        saveLoginState(true, username);
+        saveUserId(userId);
+        updateLoginStatus();
+        android.util.Log.d("ProfileFragment", "模拟登录成功: " + username + ", 用户ID: " + userId);
     }
 }

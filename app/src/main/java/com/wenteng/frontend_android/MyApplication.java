@@ -4,6 +4,7 @@ import android.app.Application;
 import android.util.Log;
 
 import com.wenteng.frontend_android.utils.CrashHandler;
+import com.wenteng.frontend_android.api.ApiClient;
 
 /**
  * 自定义Application类
@@ -23,6 +24,10 @@ public class MyApplication extends Application {
         Log.d(TAG, "Application onCreate started");
         
         try {
+            // 初始化ApiClient，传入ApplicationContext
+            ApiClient.initialize(this);
+            Log.d(TAG, "ApiClient initialized");
+            
             // 初始化全局异常处理器
             CrashHandler.getInstance().init(this);
             Log.d(TAG, "CrashHandler initialized");

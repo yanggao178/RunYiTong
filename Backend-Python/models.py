@@ -136,12 +136,45 @@ class HealthRecord(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    record_type = Column(String(50), nullable=False)  # 记录类型：blood_pressure, weight, etc.
-    value = Column(String(100))  # 记录值
-    unit = Column(String(20))  # 单位
-    notes = Column(Text)  # 备注
-    recorded_date = Column(DateTime, default=datetime.utcnow)
+    name = Column(String(100))  # 姓名
+    gender = Column(String(10))  # 性别
+    birthdate = Column(String(100))  # 出生日期，使用字符串类型以匹配Android模型
+    height = Column(Float)  # 身高
+    weight = Column(Float)  # 体重
+    blood_type = Column(String(10))  # 血型
+    allergies = Column(Text)  # 过敏史
+    chronic_diseases = Column(Text)  # 慢性疾病
+    medications = Column(Text)  # 用药情况
+    family_history = Column(Text)  # 家族病史
+    emergency_contact_name = Column(String(100))  # 紧急联系人姓名
+    emergency_contact_phone = Column(String(20))  # 紧急联系人电话
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 关联关系
+    physical_exam_reports = relationship("PhysicalExamReport", back_populates="health_record")
+
+# 体检报告模型
+class PhysicalExamReport(Base):
+    __tablename__ = "physical_exam_reports"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    health_record_id = Column(Integer, ForeignKey("health_records.id"), nullable=False)
+    report_name = Column(String(200))  # 报告名称
+    exam_date = Column(DateTime)  # 体检日期
+    hospital_name = Column(String(200))  # 医院名称
+    doctor_comments = Column(String(100))  # 医生评论
+    summary = Column(Text) #总结
+    key_findings = Column(Text)  # 主要发现（JSON字符串）
+    normal_items = Column(Text)  # 正常项目（JSON字符串）
+    abnormal_items = Column(Text)  # 异常项目（JSON字符串）
+    recommendations = Column(Text) #建议
+    report_url = Column(String(500)) #报告url
     created_time = Column(DateTime, default=datetime.utcnow)
+    updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 关联关系
+    health_record = relationship("HealthRecord", back_populates="physical_exam_reports")
 
 # 医院模型
 class Hospital(Base):

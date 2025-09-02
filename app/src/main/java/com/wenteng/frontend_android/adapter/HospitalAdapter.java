@@ -93,15 +93,23 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         holder.bind(hospital, position == selectedPosition);
         
         holder.itemView.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition == RecyclerView.NO_POSITION) {
+                return; // 位置无效，忽略点击事件
+            }
+            
             int previousPosition = selectedPosition;
-            selectedPosition = position;
+            selectedPosition = adapterPosition;
             
             // 更新选中状态
             notifyItemChanged(previousPosition);
             notifyItemChanged(selectedPosition);
             
+            // 重新获取医院对象，确保使用最新的位置
+            Hospital clickedHospital = hospitalList.get(adapterPosition);
+            
             // 打开微信公众号 - 传递完整的医院对象
-            openWeChatPublicAccount(hospital);
+            openWeChatPublicAccount(clickedHospital);
             
             // 跳转到无障碍设置页面
             if (context instanceof Activity) {
@@ -111,7 +119,7 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
             }
             
             if (listener != null) {
-                listener.onHospitalClick(hospital);
+                listener.onHospitalClick(clickedHospital);
             }
         });
     }
@@ -176,8 +184,10 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         
         if (hospitalName != null && !hospitalName.isEmpty()) {
             android.util.Log.d("HospitalAdapter", "找到微信公众号搜索关键词: " + hospitalName);
-            
-            // 显示确认对话框，然后使用更完善的启动微信搜索功能
+//            jumpToOfficialAccountByUsername(hospital.getWechatId());
+//
+            // 显示确认对话框，然后使用更完善的启动微信搜索
+            // 功能
             showWeChatGuideDialogWithConfirmation(hospitalName);
         } else {
             android.util.Log.w("HospitalAdapter", "未找到该医院的微信公众号信息");
@@ -351,437 +361,454 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         lastDialogTime = 0;
         android.util.Log.d("HospitalAdapter", "对话框状态已重置");
     }
-    
-    /**
-     * 直接启动微信搜索功能（不显示fallback对话框）
-     */
-    private void startWeChatSearchDirectly(String searchKeyword) {
-        android.util.Log.d("HospitalAdapter", "用户确认后开始启动微信搜索：" + searchKeyword);
-        boolean success = false;
-        String errorMessage = "";
 
-        // 方法1：使用无障碍服务自动化搜索（推荐方式）
-        WeChatAccessibilityService accessibilityService = WeChatAccessibilityService.getInstance();
-        if (accessibilityService != null && isAccessibilityServiceEnabled()) {
-            try {
-                android.util.Log.d("HospitalAdapter", "方法1：使用无障碍服务自动搜索");
-                accessibilityService.performWeChatSearch();
-                Toast.makeText(context, "正在自动打开微信搜索：" + searchKeyword, Toast.LENGTH_SHORT).show();
-                success = true;
-            } catch (Exception e) {
-                android.util.Log.e("HospitalAdapter", "方法1异常：" + e.getMessage());
-                errorMessage += "方法1异常：" + e.getMessage() + "; ";
-                Toast.makeText(context, errorMessage + searchKeyword, Toast.LENGTH_SHORT).show();
-            }
-        } else {
-            android.util.Log.w("HospitalAdapter", "方法1失败：无障碍服务未启用或不可用");
-            errorMessage += "方法1失败：无障碍服务未启用; ";
-            Toast.makeText(context, errorMessage + searchKeyword, Toast.LENGTH_SHORT).show();
-        }
-        
-        // 方法2：直接启动微信应用（备用方式）
-        if (!success) {
-            try {
-                PackageManager pm = context.getPackageManager();
-                Intent launchIntent = pm.getLaunchIntentForPackage(WECHAT_PACKAGE);
-                if (launchIntent != null) {
-                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(launchIntent);
-                    android.util.Log.d("HospitalAdapter", "方法2成功：直接启动微信应用");
-                    
-                    // 检查悬浮窗权限并显示悬浮指引窗口（不显示fallback对话框）
-                    if (context instanceof Activity) {
-                        Activity activity = (Activity) context;
-                        OverlayPermissionManager.checkAndRequestOverlayPermission(activity, new OverlayPermissionManager.PermissionCallback() {
-                            @Override
-                            public void onPermissionGranted() {
-                                // 权限获取成功，使用无障碍服务显示悬浮指引窗口
-                                WeChatAccessibilityService service = WeChatAccessibilityService.getInstance();
-                                if (service != null) {
-                                    // 延迟5秒显示悬浮窗，确保微信已完全启动
-                                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                                        service.showFloatingGuide(searchKeyword);
-                                    }, 5000);
-                                }
-                            }
-                            
-                            @Override
-                            public void onPermissionDenied() {
-                                // 权限获取失败，不显示任何对话框，避免重复
-                                android.util.Log.d("HospitalAdapter", "悬浮窗权限被拒绝，不显示fallback对话框");
-                            }
-                        });
-                    }
-                    success = true;
-                } else {
-                    android.util.Log.w("HospitalAdapter", "方法2失败：无法获取微信启动Intent");
-                    errorMessage += "方法2失败：无法获取微信启动Intent; ";
-                }
-            } catch (Exception e) {
-                android.util.Log.e("HospitalAdapter", "方法2异常：" + e.getMessage());
-                errorMessage += "方法2异常：" + e.getMessage() + "; ";
-            }
-        }
-        
-        // 如果所有方法都失败，显示错误信息但不显示对话框
-        if (!success) {
-            android.util.Log.e("HospitalAdapter", "所有启动微信的方法都失败了: " + errorMessage);
-            Toast.makeText(context, "无法启动微信，请手动打开微信搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
+    public void jumpToOfficialAccountByUsername(String userName) {
+        String scheme = "weixin://dl/officialaccounts?username=" + userName;
+
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(scheme));
+        try {
+            context.startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(context, "跳转失败", Toast.LENGTH_SHORT).show();
         }
     }
-    
-    /**
-     * 启动微信搜索功能（带fallback对话框）
-     */
-    private void startWeChatSearch(String searchKeyword) {
-        android.util.Log.d("HospitalAdapter", "用户确认后开始启动微信搜索：" + searchKeyword);
-        boolean success = false;
-        String errorMessage = "";
-        
-        // 方法1：使用无障碍服务自动化搜索（推荐方式）
-        WeChatAccessibilityService accessibilityService = WeChatAccessibilityService.getInstance();
-        if (accessibilityService != null && isAccessibilityServiceEnabled()) {
-            try {
-                android.util.Log.d("HospitalAdapter", "方法1：使用无障碍服务自动搜索");
-                accessibilityService.performWeChatSearch();
-                Toast.makeText(context, "正在自动打开微信搜索：" + searchKeyword, Toast.LENGTH_SHORT).show();
-                success = true;
-            } catch (Exception e) {
-                android.util.Log.e("HospitalAdapter", "方法1异常：" + e.getMessage());
-                errorMessage += "方法1异常：" + e.getMessage() + "; ";
+
+        /*
+         * 直接启动微信搜索功能（不显示fallback对话框）
+         */
+        private void startWeChatSearchDirectly (String searchKeyword){
+            android.util.Log.d("HospitalAdapter", "用户确认后开始启动微信搜索：" + searchKeyword);
+            boolean success = false;
+            String errorMessage = "";
+
+//            if(searchKeyword != null)
+//            {
+//                jumpToOfficialAccountByUsername(searchKeyword);
+//                success = true;
+//            }
+
+            // 方法1：使用无障碍服务自动化搜索（推荐方式）
+            WeChatAccessibilityService accessibilityService = WeChatAccessibilityService.getInstance();
+            if (accessibilityService != null && isAccessibilityServiceEnabled()) {
+                try {
+                    android.util.Log.d("HospitalAdapter", "方法1：使用无障碍服务自动搜索");
+                    accessibilityService.startWeChatSearch(searchKeyword);;
+                    Toast.makeText(context, "正在自动打开微信搜索：" + searchKeyword, Toast.LENGTH_SHORT).show();
+                    success = true;
+                } catch (Exception e) {
+                    android.util.Log.e("HospitalAdapter", "方法1异常：" + e.getMessage());
+                    errorMessage += "方法1异常：" + e.getMessage() + "; ";
+                    Toast.makeText(context, errorMessage + searchKeyword, Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                android.util.Log.w("HospitalAdapter", "方法1失败：无障碍服务未启用或不可用");
+                errorMessage += "方法1失败：无障碍服务未启用; ";
+                Toast.makeText(context, errorMessage + searchKeyword, Toast.LENGTH_SHORT).show();
             }
-        } else {
-            android.util.Log.w("HospitalAdapter", "方法1失败：无障碍服务未启用或不可用");
-            errorMessage += "方法1失败：无障碍服务未启用; ";
+
+            // 方法2：直接启动微信应用（备用方式）
+            if (!success) {
+                try {
+                    PackageManager pm = context.getPackageManager();
+                    Intent launchIntent = pm.getLaunchIntentForPackage(WECHAT_PACKAGE);
+                    if (launchIntent != null) {
+                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(launchIntent);
+                        android.util.Log.d("HospitalAdapter", "方法2成功：直接启动微信应用");
+
+                        // 检查悬浮窗权限并显示悬浮指引窗口（不显示fallback对话框）
+                        if (context instanceof Activity) {
+                            Activity activity = (Activity) context;
+                            OverlayPermissionManager.checkAndRequestOverlayPermission(activity, new OverlayPermissionManager.PermissionCallback() {
+                                @Override
+                                public void onPermissionGranted() {
+                                    // 权限获取成功，使用无障碍服务显示悬浮指引窗口
+                                    WeChatAccessibilityService service = WeChatAccessibilityService.getInstance();
+                                    if (service != null) {
+                                        // 延迟5秒显示悬浮窗，确保微信已完全启动
+                                        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                                            service.showFloatingGuide(searchKeyword);
+                                        }, 5000);
+                                    }
+                                }
+
+                                @Override
+                                public void onPermissionDenied() {
+                                    // 权限获取失败，不显示任何对话框，避免重复
+                                    android.util.Log.d("HospitalAdapter", "悬浮窗权限被拒绝，不显示fallback对话框");
+                                }
+                            });
+                        }
+                        success = true;
+                    } else {
+                        android.util.Log.w("HospitalAdapter", "方法2失败：无法获取微信启动Intent");
+                        errorMessage += "方法2失败：无法获取微信启动Intent; ";
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("HospitalAdapter", "方法2异常：" + e.getMessage());
+                    errorMessage += "方法2异常：" + e.getMessage() + "; ";
+                }
+            }
+
+            // 如果所有方法都失败，显示错误信息但不显示对话框
+            if (!success) {
+                android.util.Log.e("HospitalAdapter", "所有启动微信的方法都失败了: " + errorMessage);
+                Toast.makeText(context, "无法启动微信，请手动打开微信搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
+            }
         }
-        
-        // 方法2：直接启动微信应用（备用方式）
-        if (!success) {
-            try {
-                PackageManager pm = context.getPackageManager();
-                Intent launchIntent = pm.getLaunchIntentForPackage("com.tencent.mm");
-                if (launchIntent != null) {
-                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(launchIntent);
-                    android.util.Log.d("HospitalAdapter", "方法2成功：直接启动微信应用");
-                    
-                    // 检查悬浮窗权限并显示指引窗口
-                    if (context instanceof Activity) {
-                        Activity activity = (Activity) context;
-                        OverlayPermissionManager.checkAndRequestOverlayPermission(activity, new OverlayPermissionManager.PermissionCallback() {
-                            @Override
-                            public void onPermissionGranted() {
-                                // 权限获取成功，使用无障碍服务显示悬浮指引窗口
-                                WeChatAccessibilityService service = WeChatAccessibilityService.getInstance();
-                                if (service != null) {
-                                    // 延迟5秒显示悬浮窗，确保微信已完全启动
-                                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
-                                        service.showFloatingGuide(searchKeyword);
-                                    }, 5000);
-                                } else {
-                                    // 如果无障碍服务不可用，回退到普通对话框
+
+        /**
+         * 启动微信搜索功能（带fallback对话框）
+         */
+        private void startWeChatSearch (String searchKeyword){
+            android.util.Log.d("HospitalAdapter", "用户确认后开始启动微信搜索：" + searchKeyword);
+            boolean success = false;
+            String errorMessage = "";
+
+            // 方法1：使用无障碍服务自动化搜索（推荐方式）
+            WeChatAccessibilityService accessibilityService = WeChatAccessibilityService.getInstance();
+            if (accessibilityService != null && isAccessibilityServiceEnabled()) {
+                try {
+                    android.util.Log.d("HospitalAdapter", "方法1：使用无障碍服务自动搜索");
+                    accessibilityService.performWeChatSearch();
+                    Toast.makeText(context, "正在自动打开微信搜索：" + searchKeyword, Toast.LENGTH_SHORT).show();
+                    success = true;
+                } catch (Exception e) {
+                    android.util.Log.e("HospitalAdapter", "方法1异常：" + e.getMessage());
+                    errorMessage += "方法1异常：" + e.getMessage() + "; ";
+                }
+            } else {
+                android.util.Log.w("HospitalAdapter", "方法1失败：无障碍服务未启用或不可用");
+                errorMessage += "方法1失败：无障碍服务未启用; ";
+            }
+
+            // 方法2：直接启动微信应用（备用方式）
+            if (!success) {
+                try {
+                    PackageManager pm = context.getPackageManager();
+                    Intent launchIntent = pm.getLaunchIntentForPackage("com.tencent.mm");
+                    if (launchIntent != null) {
+                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(launchIntent);
+                        android.util.Log.d("HospitalAdapter", "方法2成功：直接启动微信应用");
+
+                        // 检查悬浮窗权限并显示指引窗口
+                        if (context instanceof Activity) {
+                            Activity activity = (Activity) context;
+                            OverlayPermissionManager.checkAndRequestOverlayPermission(activity, new OverlayPermissionManager.PermissionCallback() {
+                                @Override
+                                public void onPermissionGranted() {
+                                    // 权限获取成功，使用无障碍服务显示悬浮指引窗口
+                                    WeChatAccessibilityService service = WeChatAccessibilityService.getInstance();
+                                    if (service != null) {
+                                        // 延迟5秒显示悬浮窗，确保微信已完全启动
+                                        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                                            service.showFloatingGuide(searchKeyword);
+                                        }, 5000);
+                                    } else {
+                                        // 如果无障碍服务不可用，回退到普通对话框
+                                        showFallbackDialog(searchKeyword);
+                                    }
+                                }
+
+                                @Override
+                                public void onPermissionDenied() {
+                                    // 权限获取失败，显示普通对话框
                                     showFallbackDialog(searchKeyword);
                                 }
-                            }
-                            
-                            @Override
-                            public void onPermissionDenied() {
-                                // 权限获取失败，显示普通对话框
-                                showFallbackDialog(searchKeyword);
-                            }
-                        });
+                            });
+                        } else {
+                            // 如果context不是Activity，直接显示普通对话框
+                            showFallbackDialog(searchKeyword);
+                        }
+                        success = true;
                     } else {
-                        // 如果context不是Activity，直接显示普通对话框
-                        showFallbackDialog(searchKeyword);
+                        android.util.Log.w("HospitalAdapter", "方法2失败：无法获取微信启动Intent");
+                        errorMessage += "方法2失败：无法获取微信启动Intent; ";
                     }
-                    success = true;
-                } else {
-                    android.util.Log.w("HospitalAdapter", "方法2失败：无法获取微信启动Intent");
-                    errorMessage += "方法2失败：无法获取微信启动Intent; ";
+                } catch (Exception e) {
+                    android.util.Log.e("HospitalAdapter", "方法2异常：" + e.getMessage());
+                    errorMessage += "方法2异常：" + e.getMessage() + "; ";
                 }
-            } catch (Exception e) {
-                android.util.Log.e("HospitalAdapter", "方法2异常：" + e.getMessage());
-                errorMessage += "方法2异常：" + e.getMessage() + "; ";
+            }
+
+            // 方法3：如果前面的方法都失败，尝试其他方式
+            if (!success) {
+                try {
+                    PackageManager pm = context.getPackageManager();
+                    Intent launchIntent = pm.getLaunchIntentForPackage("com.tencent.mm");
+                    if (launchIntent != null) {
+                        launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        context.startActivity(launchIntent);
+                        android.util.Log.d("HospitalAdapter", "方法2成功：直接启动微信应用");
+
+                        // 启动微信后，尝试延迟发送搜索协议
+                        android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+                        handler.postDelayed(() -> {
+                            try {
+                                Intent searchIntent = new Intent(Intent.ACTION_VIEW);
+                                String searchUrl = "weixin://dl/search?query=" + Uri.encode(searchKeyword);
+                                searchIntent.setData(Uri.parse(searchUrl));
+                                searchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                if (searchIntent.resolveActivity(pm) != null) {
+                                    context.startActivity(searchIntent);
+                                    android.util.Log.d("HospitalAdapter", "延迟搜索成功：" + searchUrl);
+                                } else {
+                                    android.util.Log.w("HospitalAdapter", "延迟搜索失败：无法解析搜索协议");
+                                }
+                            } catch (Exception ex) {
+                                android.util.Log.e("HospitalAdapter", "延迟搜索异常：" + ex.getMessage());
+                            }
+                        }, 1500); // 延迟1.5秒等待微信启动
+
+                        Toast.makeText(context, "已打开微信，正在尝试自动搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
+                        success = true;
+                    } else {
+                        android.util.Log.w("HospitalAdapter", "方法2失败：无法获取微信启动Intent");
+                        errorMessage += "方法2失败：无法获取微信启动Intent; ";
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("HospitalAdapter", "方法2异常：" + e.getMessage());
+                    errorMessage += "方法2异常：" + e.getMessage() + "; ";
+                }
+            }
+
+            // 方法3：如果搜索协议失败，尝试通用微信协议启动
+            if (!success) {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse("weixin://"));
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    PackageManager pm = context.getPackageManager();
+                    if (intent.resolveActivity(pm) != null) {
+                        context.startActivity(intent);
+                        android.util.Log.d("HospitalAdapter", "方法3成功：通用微信协议");
+                        Toast.makeText(context, "已打开微信，请在微信中搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
+                        success = true;
+                    } else {
+                        android.util.Log.w("HospitalAdapter", "方法3失败：无法解析通用微信协议");
+                        errorMessage += "方法3失败：无法解析通用微信协议; ";
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("HospitalAdapter", "方法3异常：" + e.getMessage());
+                    errorMessage += "方法3异常：" + e.getMessage() + "; ";
+                }
+            }
+
+            // 方法4：尝试通过应用商店链接打开微信
+            if (!success) {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse("market://details?id=com.tencent.mm"));
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    PackageManager pm = context.getPackageManager();
+                    if (intent.resolveActivity(pm) != null) {
+                        // 不直接打开应用商店，而是先检查微信是否真的未安装
+                        if (isWeChatInstalled()) {
+                            android.util.Log.w("HospitalAdapter", "微信已安装但无法启动，提示手动搜索");
+                            Toast.makeText(context, "微信已安装但无法自动打开，请手动在微信中搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
+                        } else {
+                            android.util.Log.w("HospitalAdapter", "微信未安装，提示安装");
+                            Toast.makeText(context, "请先安装微信客户端，然后搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
+                        }
+                        success = true;
+                    } else {
+                        android.util.Log.w("HospitalAdapter", "方法4失败：无法打开应用商店");
+                        errorMessage += "方法4失败：无法打开应用商店; ";
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("HospitalAdapter", "方法4异常：" + e.getMessage());
+                    errorMessage += "方法4异常：" + e.getMessage() + "; ";
+                }
+            }
+
+            // 方法5：如果以上都失败，显示详细错误信息和手动搜索提示
+            if (!success) {
+                android.util.Log.e("HospitalAdapter", "所有方法都失败了。错误信息：" + errorMessage);
+                Toast.makeText(context, "无法自动打开微信，请手动在微信中搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
             }
         }
-        
-        // 方法3：如果前面的方法都失败，尝试其他方式
-         if (!success) {
+
+        /**
+         * 检查微信是否安装
+         */
+        private boolean isWeChatInstalled () {
+            PackageManager pm = context.getPackageManager();
+
+            // 方法1：检查包名
             try {
-                PackageManager pm = context.getPackageManager();
-                Intent launchIntent = pm.getLaunchIntentForPackage("com.tencent.mm");
-                if (launchIntent != null) {
-                    launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(launchIntent);
-                    android.util.Log.d("HospitalAdapter", "方法2成功：直接启动微信应用");
-                    
-                    // 启动微信后，尝试延迟发送搜索协议
-                    android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
-                    handler.postDelayed(() -> {
-                        try {
-                            Intent searchIntent = new Intent(Intent.ACTION_VIEW);
-                            String searchUrl = "weixin://dl/search?query=" + Uri.encode(searchKeyword);
-                            searchIntent.setData(Uri.parse(searchUrl));
-                            searchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            if (searchIntent.resolveActivity(pm) != null) {
-                                context.startActivity(searchIntent);
-                                android.util.Log.d("HospitalAdapter", "延迟搜索成功：" + searchUrl);
-                            } else {
-                                android.util.Log.w("HospitalAdapter", "延迟搜索失败：无法解析搜索协议");
-                            }
-                        } catch (Exception ex) {
-                            android.util.Log.e("HospitalAdapter", "延迟搜索异常：" + ex.getMessage());
-                        }
-                    }, 1500); // 延迟1.5秒等待微信启动
-                    
-                    Toast.makeText(context, "已打开微信，正在尝试自动搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
-                    success = true;
-                } else {
-                    android.util.Log.w("HospitalAdapter", "方法2失败：无法获取微信启动Intent");
-                    errorMessage += "方法2失败：无法获取微信启动Intent; ";
-                }
-            } catch (Exception e) {
-                android.util.Log.e("HospitalAdapter", "方法2异常：" + e.getMessage());
-                errorMessage += "方法2异常：" + e.getMessage() + "; ";
+                pm.getPackageInfo("com.tencent.mm", 0);
+                return true;
+            } catch (PackageManager.NameNotFoundException e) {
+                // 继续尝试其他方法
             }
-         }
-        
-        // 方法3：如果搜索协议失败，尝试通用微信协议启动
-         if (!success) {
+
+            // 方法2：检查Intent是否可以处理微信协议
             try {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setData(Uri.parse("weixin://"));
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                PackageManager pm = context.getPackageManager();
                 if (intent.resolveActivity(pm) != null) {
-                    context.startActivity(intent);
-                    android.util.Log.d("HospitalAdapter", "方法3成功：通用微信协议");
-                    Toast.makeText(context, "已打开微信，请在微信中搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
-                    success = true;
-                } else {
-                    android.util.Log.w("HospitalAdapter", "方法3失败：无法解析通用微信协议");
-                    errorMessage += "方法3失败：无法解析通用微信协议; ";
+                    return true;
                 }
             } catch (Exception e) {
-                android.util.Log.e("HospitalAdapter", "方法3异常：" + e.getMessage());
-                errorMessage += "方法3异常：" + e.getMessage() + "; ";
+                // 继续尝试其他方法
             }
-         }
-        
-        // 方法4：尝试通过应用商店链接打开微信
-        if (!success) {
+
+            // 方法3：检查微信的启动Activity
             try {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("market://details?id=com.tencent.mm"));
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                PackageManager pm = context.getPackageManager();
-                if (intent.resolveActivity(pm) != null) {
-                    // 不直接打开应用商店，而是先检查微信是否真的未安装
-                    if (isWeChatInstalled()) {
-                        android.util.Log.w("HospitalAdapter", "微信已安装但无法启动，提示手动搜索");
-                        Toast.makeText(context, "微信已安装但无法自动打开，请手动在微信中搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
-                    } else {
-                        android.util.Log.w("HospitalAdapter", "微信未安装，提示安装");
-                        Toast.makeText(context, "请先安装微信客户端，然后搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
-                    }
-                    success = true;
-                } else {
-                    android.util.Log.w("HospitalAdapter", "方法4失败：无法打开应用商店");
-                    errorMessage += "方法4失败：无法打开应用商店; ";
+                Intent launchIntent = pm.getLaunchIntentForPackage("com.tencent.mm");
+                if (launchIntent != null) {
+                    return true;
                 }
             } catch (Exception e) {
-                android.util.Log.e("HospitalAdapter", "方法4异常：" + e.getMessage());
-                errorMessage += "方法4异常：" + e.getMessage() + "; ";
+                // 继续尝试其他方法
             }
+
+            return false;
         }
-        
-        // 方法5：如果以上都失败，显示详细错误信息和手动搜索提示
-        if (!success) {
-            android.util.Log.e("HospitalAdapter", "所有方法都失败了。错误信息：" + errorMessage);
-            Toast.makeText(context, "无法自动打开微信，请手动在微信中搜索：" + searchKeyword, Toast.LENGTH_LONG).show();
-        }
-    }
-    
-    /**
-     * 检查微信是否安装
-     */
-    private boolean isWeChatInstalled() {
-        PackageManager pm = context.getPackageManager();
-        
-        // 方法1：检查包名
-        try {
-            pm.getPackageInfo("com.tencent.mm", 0);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            // 继续尝试其他方法
-        }
-        
-        // 方法2：检查Intent是否可以处理微信协议
-        try {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("weixin://"));
-            if (intent.resolveActivity(pm) != null) {
-                return true;
+
+        /**
+         * 检查无障碍服务是否启用
+         */
+        private boolean isAccessibilityServiceEnabled () {
+            int accessibilityEnabled = 0;
+            final String service = context.getPackageName() + "/" + WeChatAccessibilityService.class.getCanonicalName();
+
+            try {
+                accessibilityEnabled = Settings.Secure.getInt(
+                        context.getContentResolver(),
+                        Settings.Secure.ACCESSIBILITY_ENABLED);
+            } catch (Settings.SettingNotFoundException e) {
+                android.util.Log.e("HospitalAdapter", "无障碍设置未找到: " + e.getMessage());
             }
-        } catch (Exception e) {
-            // 继续尝试其他方法
-        }
-        
-        // 方法3：检查微信的启动Activity
-        try {
-            Intent launchIntent = pm.getLaunchIntentForPackage("com.tencent.mm");
-            if (launchIntent != null) {
-                return true;
-            }
-        } catch (Exception e) {
-            // 继续尝试其他方法
-        }
-        
-        return false;
-    }
-    
-    /**
-     * 检查无障碍服务是否启用
-     */
-    private boolean isAccessibilityServiceEnabled() {
-        int accessibilityEnabled = 0;
-        final String service = context.getPackageName() + "/" + WeChatAccessibilityService.class.getCanonicalName();
-        
-        try {
-            accessibilityEnabled = Settings.Secure.getInt(
-                context.getContentResolver(),
-                Settings.Secure.ACCESSIBILITY_ENABLED);
-        } catch (Settings.SettingNotFoundException e) {
-            android.util.Log.e("HospitalAdapter", "无障碍设置未找到: " + e.getMessage());
-        }
-        
-        TextUtils.SimpleStringSplitter mStringColonSplitter = new TextUtils.SimpleStringSplitter(':');
-        
-        if (accessibilityEnabled == 1) {
-            String settingValue = Settings.Secure.getString(
-                context.getContentResolver(),
-                Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-            if (settingValue != null) {
-                mStringColonSplitter.setString(settingValue);
-                while (mStringColonSplitter.hasNext()) {
-                    String accessibilityService = mStringColonSplitter.next();
-                    if (accessibilityService.equalsIgnoreCase(service)) {
-                        android.util.Log.d("HospitalAdapter", "无障碍服务已启用");
-                        return true;
+
+            TextUtils.SimpleStringSplitter mStringColonSplitter = new TextUtils.SimpleStringSplitter(':');
+
+            if (accessibilityEnabled == 1) {
+                String settingValue = Settings.Secure.getString(
+                        context.getContentResolver(),
+                        Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
+                if (settingValue != null) {
+                    mStringColonSplitter.setString(settingValue);
+                    while (mStringColonSplitter.hasNext()) {
+                        String accessibilityService = mStringColonSplitter.next();
+                        if (accessibilityService.equalsIgnoreCase(service)) {
+                            android.util.Log.d("HospitalAdapter", "无障碍服务已启用");
+                            return true;
+                        }
                     }
                 }
             }
+
+            android.util.Log.w("HospitalAdapter", "无障碍服务未启用");
+            return false;
         }
-        
-        android.util.Log.w("HospitalAdapter", "无障碍服务未启用");
-        return false;
-    }
-    
-    /**
-     * 尝试其他方式打开微信
-     */
-    private void tryAlternativeWeChatOpen(String hospitalName) {
-        try {
-            // 尝试通过Intent查询可以处理weixin协议的应用
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse("weixin://"));
-            PackageManager pm = context.getPackageManager();
-            if (intent.resolveActivity(pm) != null) {
-                // 如果有应用可以处理weixin协议，说明微信已安装
-                Toast.makeText(context, "正在尝试打开微信公众号...", Toast.LENGTH_SHORT).show();
-                context.startActivity(intent);
-            } else {
-                // 没有应用可以处理，提示手动搜索
-                Toast.makeText(context, "无法自动打开微信公众号，请在微信中手动搜索：" + hospitalName, Toast.LENGTH_LONG).show();
+
+        /**
+         * 尝试其他方式打开微信
+         */
+        private void tryAlternativeWeChatOpen (String hospitalName){
+            try {
+                // 尝试通过Intent查询可以处理weixin协议的应用
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse("weixin://"));
+                PackageManager pm = context.getPackageManager();
+                if (intent.resolveActivity(pm) != null) {
+                    // 如果有应用可以处理weixin协议，说明微信已安装
+                    Toast.makeText(context, "正在尝试打开微信公众号...", Toast.LENGTH_SHORT).show();
+                    context.startActivity(intent);
+                } else {
+                    // 没有应用可以处理，提示手动搜索
+                    Toast.makeText(context, "无法自动打开微信公众号，请在微信中手动搜索：" + hospitalName, Toast.LENGTH_LONG).show();
+                }
+            } catch (Exception e) {
+                Toast.makeText(context, "请在微信中手动搜索：" + hospitalName, Toast.LENGTH_LONG).show();
             }
-        } catch (Exception e) {
-            Toast.makeText(context, "请在微信中手动搜索：" + hospitalName, Toast.LENGTH_LONG).show();
+        }
+
+        /**
+         * 显示美化的微信搜索指引对话框
+         */
+        /**
+         * 显示降级对话框（当权限被拒绝或无障碍服务不可用时）
+         * @param searchKeyword 搜索关键词
+         */
+        private void showFallbackDialog (String searchKeyword){
+            String message = "已打开微信\n\n请按以下步骤搜索：\n" +
+                    "1. 点击微信顶部搜索框\n" +
+                    "2. 输入：" + searchKeyword + "\n" +
+                    "3. 选择'公众号'标签\n" +
+                    "4. 点击对应的医院公众号";
+            showWeChatGuideDialog(message);
+        }
+
+        private void showWeChatGuideDialog (String message){
+            if (context == null) {
+                return;
+            }
+
+            // 创建自定义布局
+            LinearLayout layout = new LinearLayout(context);
+            layout.setOrientation(LinearLayout.VERTICAL);
+            layout.setPadding(60, 40, 60, 20);
+
+            // 创建标题
+            TextView titleView = new TextView(context);
+            titleView.setText("微信搜索指引");
+            titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
+            titleView.setTextColor(Color.parseColor("#2E7D32"));
+            titleView.setGravity(Gravity.CENTER);
+            titleView.setPadding(0, 0, 0, 30);
+            titleView.setTypeface(null, android.graphics.Typeface.BOLD);
+            layout.addView(titleView);
+
+            // 创建消息内容
+            TextView messageView = new TextView(context);
+            messageView.setText(message);
+            messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+            messageView.setTextColor(Color.parseColor("#424242"));
+            messageView.setLineSpacing(8, 1.2f);
+            messageView.setPadding(20, 0, 20, 30);
+            layout.addView(messageView);
+
+            // 创建对话框
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setView(layout);
+
+            // 创建确定按钮
+            builder.setPositiveButton("我知道了", (dialog, which) -> {
+                dialog.dismiss();
+            });
+
+            AlertDialog dialog = builder.create();
+
+            // 设置对话框样式
+            dialog.show();
+
+            // 美化确定按钮
+            Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            if (positiveButton != null) {
+                positiveButton.setTextColor(Color.parseColor("#2E7D32"));
+                positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
+                positiveButton.setTypeface(null, android.graphics.Typeface.BOLD);
+
+                // 创建圆角背景
+                GradientDrawable drawable = new GradientDrawable();
+                drawable.setShape(GradientDrawable.RECTANGLE);
+                drawable.setCornerRadius(25);
+                drawable.setColor(Color.parseColor("#E8F5E8"));
+                drawable.setStroke(2, Color.parseColor("#2E7D32"));
+                positiveButton.setBackground(drawable);
+                positiveButton.setPadding(40, 20, 40, 20);
+            }
+
+            // 设置对话框窗口样式
+            if (dialog.getWindow() != null) {
+                GradientDrawable windowDrawable = new GradientDrawable();
+                windowDrawable.setShape(GradientDrawable.RECTANGLE);
+                windowDrawable.setCornerRadius(20);
+                windowDrawable.setColor(Color.WHITE);
+                dialog.getWindow().setBackgroundDrawable(windowDrawable);
+            }
         }
     }
-    
-    /**
-     * 显示美化的微信搜索指引对话框
-     */
-    /**
-     * 显示降级对话框（当权限被拒绝或无障碍服务不可用时）
-     * @param searchKeyword 搜索关键词
-     */
-    private void showFallbackDialog(String searchKeyword) {
-        String message = "已打开微信\n\n请按以下步骤搜索：\n" +
-                       "1. 点击微信顶部搜索框\n" +
-                       "2. 输入：" + searchKeyword + "\n" +
-                       "3. 选择'公众号'标签\n" +
-                       "4. 点击对应的医院公众号";
-        showWeChatGuideDialog(message);
-    }
-    
-    private void showWeChatGuideDialog(String message) {
-        if (context == null) {
-            return;
-        }
-        
-        // 创建自定义布局
-        LinearLayout layout = new LinearLayout(context);
-        layout.setOrientation(LinearLayout.VERTICAL);
-        layout.setPadding(60, 40, 60, 20);
-        
-        // 创建标题
-        TextView titleView = new TextView(context);
-        titleView.setText("微信搜索指引");
-        titleView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
-        titleView.setTextColor(Color.parseColor("#2E7D32"));
-        titleView.setGravity(Gravity.CENTER);
-        titleView.setPadding(0, 0, 0, 30);
-        titleView.setTypeface(null, android.graphics.Typeface.BOLD);
-        layout.addView(titleView);
-        
-        // 创建消息内容
-        TextView messageView = new TextView(context);
-        messageView.setText(message);
-        messageView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-        messageView.setTextColor(Color.parseColor("#424242"));
-        messageView.setLineSpacing(8, 1.2f);
-        messageView.setPadding(20, 0, 20, 30);
-        layout.addView(messageView);
-        
-        // 创建对话框
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setView(layout);
-        
-        // 创建确定按钮
-        builder.setPositiveButton("我知道了", (dialog, which) -> {
-            dialog.dismiss();
-        });
-        
-        AlertDialog dialog = builder.create();
-        
-        // 设置对话框样式
-        dialog.show();
-        
-        // 美化确定按钮
-        Button positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        if (positiveButton != null) {
-            positiveButton.setTextColor(Color.parseColor("#2E7D32"));
-            positiveButton.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
-            positiveButton.setTypeface(null, android.graphics.Typeface.BOLD);
-            
-            // 创建圆角背景
-            GradientDrawable drawable = new GradientDrawable();
-            drawable.setShape(GradientDrawable.RECTANGLE);
-            drawable.setCornerRadius(25);
-            drawable.setColor(Color.parseColor("#E8F5E8"));
-            drawable.setStroke(2, Color.parseColor("#2E7D32"));
-            positiveButton.setBackground(drawable);
-            positiveButton.setPadding(40, 20, 40, 20);
-        }
-        
-        // 设置对话框窗口样式
-        if (dialog.getWindow() != null) {
-            GradientDrawable windowDrawable = new GradientDrawable();
-            windowDrawable.setShape(GradientDrawable.RECTANGLE);
-            windowDrawable.setCornerRadius(20);
-            windowDrawable.setColor(Color.WHITE);
-            dialog.getWindow().setBackgroundDrawable(windowDrawable);
-        }
-    }
-}

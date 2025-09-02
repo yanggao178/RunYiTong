@@ -61,6 +61,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "user_login_state";
     private static final String KEY_IS_LOGGED_IN = "is_logged_in";
     private static final String KEY_USERNAME = "username";
+    private static final String USER_ID = "user_id";
     
     // 安全管理器
     private SecurityManager securityManager;
@@ -678,6 +679,18 @@ public class LoginActivity extends AppCompatActivity {
         
         // 模拟登录成功，返回主界面
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            // 保存登录状态和用户ID
+            saveLoginState(true, username);
+            
+            // 在实际应用中，这里应该从API响应中获取真实的用户ID
+            // 这里使用1作为模拟的用户ID
+            int simulatedUserId = 1;
+            
+            // 保存用户ID
+            sharedPreferences.edit()
+                    .putInt("user_id", simulatedUserId)
+                    .apply();
+            
             Toast.makeText(this, "登录成功", Toast.LENGTH_SHORT).show();
             finish();
         }, 1000);
@@ -992,6 +1005,15 @@ public class LoginActivity extends AppCompatActivity {
         if (verificationCode.equals("123456")) {
             // 保存登录状态，使用手机号作为用户名
             saveLoginState(true, phone);
+            
+            // 在实际应用中，这里应该从API响应中获取真实的用户ID
+            // 这里使用1作为模拟的用户ID
+            int simulatedUserId = 1;
+            
+            // 保存用户信息
+            sharedPreferences.edit()
+                    .putInt("user_id", simulatedUserId)
+                    .apply();
             
             Toast.makeText(this, "手机验证码登录成功！", Toast.LENGTH_SHORT).show();
             
@@ -1526,7 +1548,7 @@ public class LoginActivity extends AppCompatActivity {
                     .putString("access_token", loginData.getAccessToken())
                     .putString("token_type", loginData.getTokenType())
                     .apply();
-            Log.d("LoginActivity", "用户信息已保存: " + loginData.getUsername());
+            Log.d("LoginActivity", "Token已保存: " + loginData.getAccessToken());
         }
     }
     

@@ -4,10 +4,12 @@ from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 
 # 基础响应模型
+from typing import Any
+
 class BaseResponse(BaseModel):
     success: bool = True
     message: str = "操作成功"
-    data: Optional[dict] = None
+    data: Optional[Any] = None
 
 # 商品相关模式
 class ProductBase(BaseModel):
@@ -189,14 +191,83 @@ class Prescription(PrescriptionBase):
 
 # 健康档案相关模式
 class HealthRecordBase(BaseModel):
-    record_type: str
-    value: str
-    unit: Optional[str] = None
-    notes: Optional[str] = None
-    recorded_date: Optional[datetime] = None
+    name: Optional[str] = None
+    gender: Optional[str] = None
+    birthdate: Optional[datetime] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
+    blood_type: Optional[str] = None
+    allergy_history: Optional[str] = None
+    medication_history: Optional[str] = None
+    family_medical_history: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+    created_time: Optional[datetime] = None
+    updated_time: Optional[datetime] = None
 
 class HealthRecordCreate(HealthRecordBase):
+    pass
+
+class HealthRecordUpdate(BaseModel):
+    name: Optional[str] = None
+    gender: Optional[str] = None
+    birthdate: Optional[datetime] = None
+    height: Optional[float] = None
+    weight: Optional[float] = None
+    blood_type: Optional[str] = None
+    allergy_history: Optional[str] = None
+    chronic_diseases: Optional[str] = None
+    medication_history: Optional[str] = None
+    family_medical_history: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+
+class HealthRecord(HealthRecordBase):
+    id: int
     user_id: int
+    physical_exam_reports: Optional[List['PhysicalExamReport']] = None
+    
+    class Config:
+        from_attributes = True
+
+# 体检报告相关模式
+class PhysicalExamReportBase(BaseModel):
+    report_name: Optional[str] = None
+    exam_date: Optional[str] = None  # 改为字符串类型以匹配Android端
+    hospital_name: Optional[str] = None
+    doctor_comments: Optional[str] = None
+    summary: Optional[str] = None
+    key_findings: Optional[dict] = None
+    normal_items: Optional[dict] = None
+    abnormal_items: Optional[dict] = None
+    recommendations: Optional[str] = None  # 改为字符串类型以匹配Android端
+    report_url: Optional[str] = None
+    created_time: Optional[datetime] = None
+    updated_time: Optional[datetime] = None
+
+class PhysicalExamReportCreate(PhysicalExamReportBase):
+    pass
+
+class PhysicalExamReportUpdate(BaseModel):
+    report_name: Optional[str] = None
+    exam_date: Optional[str] = None  # 改为字符串类型以匹配Android端
+    hospital_name: Optional[str] = None
+    doctor_comments: Optional[str] = None  # 使用doctor_comments而不是doctor_name以匹配Android端
+    summary: Optional[str] = None
+    key_findings: Optional[dict] = None
+    normal_items: Optional[dict] = None
+    abnormal_items: Optional[dict] = None
+    recommendations: Optional[str] = None  # 添加recommendations字段
+
+class PhysicalExamReport(PhysicalExamReportBase):
+    id: int
+    health_record_id: int
+    
+    class Config:
+        from_attributes = True
+
+# 解决循环引用
+HealthRecord.update_forward_refs()
 
 class HealthRecord(HealthRecordBase):
     id: int

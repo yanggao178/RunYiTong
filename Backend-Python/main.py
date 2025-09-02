@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import uvicorn
@@ -11,7 +12,7 @@ import os
 load_dotenv()
 
 # 导入路由
-from routers import products, books, prescriptions, appointments, users, payments
+from routers import products, books, prescriptions, appointments, users, payments, health_records
 from database import engine, Base
 
 
@@ -50,6 +51,7 @@ app.include_router(prescriptions.router, prefix="/api/v1/prescriptions", tags=["
 app.include_router(appointments.router, prefix="/api/v1/appointments", tags=["预约挂号"])
 app.include_router(users.router, prefix="/api/v1/users", tags=["用户管理"])
 app.include_router(payments.router, prefix="/api/v1/payments", tags=["支付管理"])
+app.include_router(health_records.router, prefix="/api/v1/health-records", tags=["健康档案"])
 
 @app.get("/")
 async def root():

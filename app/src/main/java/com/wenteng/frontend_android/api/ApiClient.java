@@ -17,10 +17,14 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.io.IOException;
 import android.util.Log;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 
 public class ApiClient {
     // 根据运行环境选择合适的服务器地址
     private static final String BASE_URL = getBaseUrl();
+    private static Context appContext;
     
     private static String getBaseUrl() {
         // 优先使用localhost进行本地测试
@@ -41,11 +45,50 @@ public class ApiClient {
         
         // Fallback for real devices on the same LAN. Ensure backend binds to 0.0.0.0 and firewall allows access.
         android.util.Log.i("ApiClient", "Using LAN IP for backend: 192.168.0.5:8000 (ensure this is reachable)");
-        return "http://192.168.0.5:8000/";
+        return "http://192.168.0.4:8000/";
 //        return "http://8.141.2.166:8000";
     }
     private static Retrofit retrofit = null;
     private static ApiService apiService = null;
+    
+    /**
+     * 初始化ApiClient，需要传入ApplicationContext
+     */
+    public static void initialize(Context context) {
+        appContext = context.getApplicationContext();
+    }
+
+    public static Context getAppContext() {
+        return appContext;
+    }
+
+    /**
+     * 从SharedPreferences获取access_token（公开实例方法）
+     */
+    public String getAccessToken() {
+        return getAccessTokenStatic();
+    }
+    
+    /**
+     * 从SharedPreferences获取access_token（私有静态方法，供内部使用）
+     */
+    private static String getAccessTokenStatic() {
+        if (appContext == null) {
+            Log.w("ApiClient", "App context is null when trying to get access token");
+            return null;
+        }
+        
+        try {
+            // 直接使用appContext变量，避免额外的方法调用
+            SharedPreferences sharedPreferences = appContext.getSharedPreferences("user_login_state", Context.MODE_PRIVATE);
+            String strAccessToken = sharedPreferences.getString("access_token", null);
+            Log.d("ApiClient", "Access token retrieved: " + (strAccessToken != null ? "available" : "null"));
+            return strAccessToken;
+        } catch (Exception e) {
+            Log.e("ApiClient", "Failed to get access token: " + e.getMessage(), e);
+            return null;
+        }
+    }
     
     /**
      * 获取Retrofit实例
@@ -115,8 +158,31 @@ public class ApiClient {
                 }
             };
             
+            // 创建认证拦截器
+            Interceptor authInterceptor = new Interceptor() {
+                @Override
+                public Response intercept(Chain chain) throws IOException {
+                    Request originalRequest = chain.request();
+                    
+                    // 获取access_token
+                    String accessToken = getAccessTokenStatic();
+                    
+                    // 如果有token，添加Authorization头
+                    if (accessToken != null && !accessToken.isEmpty()) {
+                        Request authorizedRequest = originalRequest.newBuilder()
+                                .header("Authorization", "Bearer " + accessToken)
+                                .build();
+                        return chain.proceed(authorizedRequest);
+                    }
+                    
+                    // 没有token，直接请求
+                    return chain.proceed(originalRequest);
+                }
+            };
+            
             // 创建OkHttpClient
             OkHttpClient okHttpClient = new OkHttpClient.Builder()
+                    .addInterceptor(authInterceptor)  // 添加认证拦截器
                     .addInterceptor(retryInterceptor)
                     .addInterceptor(loggingInterceptor)
                     .connectTimeout(45, TimeUnit.SECONDS)  // 增加连接超时时间

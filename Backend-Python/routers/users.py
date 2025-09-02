@@ -9,16 +9,25 @@ from typing import Optional
 from database import get_db
 from models import User as UserModel, HealthRecord as HealthRecordModel
 from schemas import User, UserCreate, UserUpdate, HealthRecord, HealthRecordCreate, SmsCodeResponse, SmsRegisterRequest, RegisterResponse, SmsCodeRequest, LoginRequest
+import os
+import base64
 
 router = APIRouter()
 
 # 密码加密配置
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def generate_jwt_secret():
+    # 生成 32 字节的随机数据
+    random_bytes = os.urandom(32)
+    # 转换为 base64 字符串
+    secret_key = base64.b64encode(random_bytes).decode('utf-8')
+    return secret_key
+
 # JWT配置
-SECRET_KEY = "33f1ec3b5552a00c46e6653119d9700155b215ead4b72948920c479def7536a4"  # 在生产环境中应该使用环境变量
+SECRET_KEY = "a5gV+Zsx0P27rOou8YMRJqDWxwq/51b5hsgIntCXZueZa66B/Qx5u3pSmlpC5BLUCT6gxx5Pf3nhOkVxdo7OMA=="  # 在生产环境中应该使用环境变量
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 60*24
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/token")
 
@@ -250,12 +259,13 @@ async def login_user(request: LoginRequest, db: Session = Depends(get_db)):
     
     # 查找用户
     user = db.query(UserModel).filter(UserModel.username == username).first()
+    print(user)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="用户名不存在"
         )
-    
+
     # 验证密码
     if not verify_password(password, user.hashed_password):
         raise HTTPException(

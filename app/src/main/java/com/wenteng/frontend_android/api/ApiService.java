@@ -3,9 +3,12 @@ package com.wenteng.frontend_android.api;
 import com.wenteng.frontend_android.api.ProductListResponse;
 import com.wenteng.frontend_android.model.PrescriptionCreate;
 import com.wenteng.frontend_android.model.Product;
+import com.wenteng.frontend_android.model.ProductDetail;
 import com.wenteng.frontend_android.model.Book;
 import com.wenteng.frontend_android.model.BookPage;
 import com.wenteng.frontend_android.model.SymptomAnalysis;
+import com.wenteng.frontend_android.model.HealthRecord;
+import com.wenteng.frontend_android.model.PhysicalExamReport;
 import com.wenteng.frontend_android.model.OCRResult;
 import com.wenteng.frontend_android.model.PrescriptionAnalysis;
 import com.wenteng.frontend_android.model.MedicalImageAnalysis;
@@ -59,9 +62,10 @@ public interface ApiService {
      * @param productId 商品ID
      * @return 商品详情响应
      */
-    @GET("api/v1/products/{id}/")
-    Call<ApiResponse<Product>> getProduct(@Path("id") int productId);
+    @GET("api/v1/products/{id}")
+    Call<ApiResponse<Product>> getProductDetail(@Path("id") int productId);
     
+
     /**
      * 获取中医古籍列表
      * @return 中医古籍列表响应
@@ -342,8 +346,8 @@ public interface ApiService {
     
     /**
      * 发送短信验证码
-     * @param phone 手机号
-     * @return 发送结果响应
+     * @param phone 手机号码
+     * @return 短信验证码响应
      */
     @FormUrlEncoded
     @POST("api/v1/users/send-sms-code")
@@ -452,4 +456,60 @@ public interface ApiService {
         @Path("prescriptionId") int prescriptionId,
         @Field("status") String status
     );
+    
+    // ==================== 健康档案相关接口 ====================
+    
+    /**
+     * 获取用户健康档案
+     * @param userId 用户ID
+     * @return 健康档案响应
+     */
+    @GET("api/v1/health-records/{user_id}")
+    Call<ApiResponse<HealthRecord>> getHealthRecord(@Path("user_id") int userId);
+    
+    /**
+     * 更新用户健康档案
+     * @param userId 用户ID
+     * @param healthRecord 健康档案数据
+     * @return 更新结果响应
+     */
+    @PUT("api/v1/health-records/{user_id}")
+    Call<ApiResponse<HealthRecord>> updateHealthRecord(
+            @Path("user_id") int userId,
+            @Body HealthRecord healthRecord
+    );
+    
+    /**
+     * 获取用户体检报告列表
+     * @param userId 用户ID
+     * @param skip 跳过数量
+     * @param limit 限制数量
+     * @return 体检报告列表响应
+     */
+    @GET("api/v1/health-records/{user_id}/physical-exams")
+    Call<ApiResponse<List<PhysicalExamReport>>> getPhysicalExamReports(
+            @Path("user_id") int userId,
+            @Query("skip") int skip,
+            @Query("limit") int limit
+    );
+    
+    /**
+     * 添加新的体检报告
+     * @param userId 用户ID
+     * @param report 体检报告数据
+     * @return 添加结果响应
+     */
+    @PUT("api/v1/health-records/{user_id}/physical-exams-add")
+    Call<ApiResponse<PhysicalExamReport>> addPhysicalExamReport(
+            @Path("user_id") int userId,
+            @Body PhysicalExamReport report
+    );
+    
+    /**
+     * 删除体检报告
+     * @param reportId 体检报告ID
+     * @return 删除结果响应
+     */
+    @DELETE("api/v1/health-records/physical-exams/{report_id}")
+    Call<ApiResponse<Object>> deletePhysicalExamReport(@Path("report_id") int reportId);
 }
