@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">上工通</string>
+    <string name="app_name">迅医通</string>
     <string name="select_department_prompt">请选择科室</string>
     
     <!-- Order status strings -->
