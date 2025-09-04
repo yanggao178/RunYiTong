@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.wenteng.frontend_android'
+    namespace 'com.wenxing.xunyitong'
     compileSdk 34
     
     configurations.all {
@@ -14,7 +14,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.wenteng.frontend_android"
+        applicationId "com.wenxing.xunyitong"
         minSdk 24
         targetSdk 34
         versionCode 1
@@ -41,11 +41,25 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            debuggable true
+            minifyEnabled false
+            testCoverageEnabled false
         }
+        
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
+            debuggable false
+        }
+    }
+    
+    // 确保所有变体都不标记为测试版本
+    applicationVariants.all { variant ->
+        variant.outputs.each { output ->
+            if (output.outputFile != null && output.outputFile.name.endsWith('.apk')) {
+                output.outputFileName = "${variant.name}-${variant.versionName}.apk"
+            }
         }
     }
     compileOptions {
@@ -63,6 +77,11 @@ android {
             excludes += ['META-INF/LICENSE.txt']
             excludes += ['META-INF/NOTICE']
             excludes += ['META-INF/NOTICE.txt']
+            excludes += ['META-INF/ASL2.0']
+            excludes += ['META-INF/LGPL2.1']
+        }
+        jniLibs {
+            useLegacyPackaging = true
         }
     }
 }
@@ -72,7 +91,7 @@ android {
 dependencies {
     implementation libs.appcompat
     implementation libs.material
-    implementation files('src\\main\\resources\\libs\\libapshare.jar')
+    implementation files('src/main/resources/libs/libapshare.jar')
     testImplementation libs.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core

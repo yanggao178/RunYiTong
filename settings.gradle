@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Frontend-Android"
+rootProject.name = "Xun_Yi_Tong"
 include ':app'
