@@ -1,0 +1,20 @@
+<!--
+    Input:
+        system/libhidl/vintfdata/system_ext_manifest.default.xml
+        device/qcom/qssi/framework_manifest.xml
+-->
+<manifest version="7.0" type="framework">
+    <hal format="hidl">
+        <name>vendor.qti.hardware.qccsyshal</name>
+        <transport>hwbinder</transport>
+        <fqname>@1.2::IQccsyshal/qccsyshal</fqname>
+    </hal>
+    <hal format="hidl">
+        <name>vendor.qti.hardware.radio.atcmdfwd</name>
+        <transport>hwbinder</transport>
+        <fqname>@1.0::IAtCmdFwd/AtCmdFwdService</fqname>
+    </hal>
+    <vendor-ndk>
+        <version>34</version>
+    </vendor-ndk>
+</manifest>

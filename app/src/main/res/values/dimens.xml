@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Button dimensions -->
+    <dimen name="button_padding">12dp</dimen>
+    <dimen name="button_padding_large">16dp</dimen>
+    <dimen name="button_text_size">16sp</dimen>
+    
+    <!-- Dialog dimensions -->
+    <dimen name="dialog_corner_radius">16dp</dimen>
+    <dimen name="dialog_padding">24dp</dimen>
+    <dimen name="dialog_margin">24dp</dimen>
+    
+    <!-- Text dimensions -->
+    <dimen name="text_title_size">18sp</dimen>
+    <dimen name="text_content_size">16sp</dimen>
+    <dimen name="text_small_size">14sp</dimen>
+    
+    <!-- Spacing dimensions -->
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+</resources>

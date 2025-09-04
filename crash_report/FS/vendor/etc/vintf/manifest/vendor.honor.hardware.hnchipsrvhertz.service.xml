@@ -1,0 +1,15 @@
+<!--/*
+ * Copyright (c) Honor Device Co., Ltd 2023-2023. All rights reserved.
+ * Description: Manifest file for hnchipsrv aidl interface.
+ * Author: l00011993
+ * Create: 2023-02-16
+ */
+-->
+
+<manifest version="1.0" type="device">
+    <hal format="aidl">
+        <name>vendor.honor.hardware.hnchipsrvhertz</name>
+        <version>1</version>
+        <fqname>IHnChipSrvHertz/hnchipsrv_hertz</fqname>
+    </hal>
+</manifest>

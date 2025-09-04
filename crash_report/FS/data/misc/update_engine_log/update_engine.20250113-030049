@@ -1,0 +1,404 @@
+[0113/030114.804956] [INFO:main.cc(54)] A/B Update Engine starting
+[0113/030114.905428] [INFO:pow_manger_update.cc(28)] A/B Update Engine acquire wake lock
+[0113/030114.939830] [INFO:boot_control_android.cc(64)] Loaded boot control hal.
+[0113/030114.995402] [INFO:battery.cpp(25)] battery level: 90 charge status: 0
+[0113/030115.035919] rmt_oeminfo_read[201]:ReadOeminfoFromCmdline success, idx = 18, dst:all/cn
+[0113/030115.091099] [INFO:update_attempter_android.cc(1399)] Detected a slot switch, OTA succeeded, device updated from 8.0.0.173C00E170R104P3 to 8.0.0.180C00E171R105P1, previous slot: 1 current slot: 0
+[0113/030115.109936] [INFO:update_attempter_android.cc(284)] OTAResult::OTA_SUCCESSFUL
+[0113/030115.222553] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:15563, shell_frame:16277, shell_front:14593, soc-cpu-1-0:36300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030115.301480] [INFO:update_attempter_android.cc(1286)] Clearing update complete marker.
+[0113/030115.330076] [WARNING:metrics_utils.cc(433)] time_to_reboot is negative - system_updated_at: 1/11/1970 12:48:36 GMT current time: 1/1/1970 0:01:32 GMT
+[0113/030115.366730] [INFO:delta_performer.cc(1475)] Resetting recorded hash for prepared partitions.
+[0113/030115.383366] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 1
+[0113/030115.409092] [INFO:update_attempter_android.cc(1750)] Scheduling CleanupPreviousUpdateAction.
+[0113/030115.423670] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 11 progress: 0 OUC progress : 0
+shell_back:15563, shell_frame:16277, shell_front:14593, soc-cpu-1-0:36300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030115.439405] [INFO:action_processor.cc(51)] ActionProcessor: starting CleanupPreviousUpdateAction
+[0113/030115.454273] [INFO:cleanup_previous_update_action.cc(161)] Starting/resuming CleanupPreviousUpdateAction
+[0113/030115.471904] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 2 for WaitBootCompleted
+[0113/030115.486195] [GetUpdatePackageState]: file /data/update/update_status not found
+
+[0113/030115.507441] [WARNING:bi_report.cpp(141)] read fail
+[0113/030115.529030] [INFO:update_attempter_android.cc(307)] Init End, ready for binder
+shell_back:15563, shell_frame:16277, shell_front:14593, soc-cpu-1-0:37300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030117.476575] [INFO:cleanup_previous_update_action.cc(121)] Executing task 2
+[0113/030117.486030] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 4 for WaitBootCompleted
+[0113/030119.488147] [INFO:cleanup_previous_update_action.cc(121)] Executing task 4
+[0113/030119.507522] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 5 for WaitBootCompleted
+[0113/030121.508127] [INFO:cleanup_previous_update_action.cc(121)] Executing task 5
+[0113/030121.516310] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 6 for WaitBootCompleted
+[0113/030123.519288] [INFO:cleanup_previous_update_action.cc(121)] Executing task 6
+[0113/030123.570699] [INFO:cleanup_previous_update_action.cc(201)] Boot completed, waiting on markBootSuccessful()
+[0113/030123.616954] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030123.626952] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0113/030123.711858] [INFO:ota_extend.cpp(124)] can not get OEMINFO_TMP_VENDORCOUNTRY, ret is -1
+[0113/030123.738081] [INFO:ota_extend.cpp(343)] no need to change vc.
+[0113/030123.776151] [INFO:cleanup_previous_update_action.cc(280)] Waiting for any previous merge request to complete. This can take up to several minutes.
+[0113/030123.808054] [INFO:update_engine_virtual_ab.cpp(177)] max shell temperature:16761
+shell_back:16001, shell_frame:16761, shell_front:15019, soc-cpu-1-0:38300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030123.838253] [INFO:cleanup_previous_update_action.cc(347)] Current shell temperature:16761
+[0113/030123.875898] [WARNING:bi_report.cpp(40)] no valid dir:/data/update/bilog.log
+[0113/030123.915877] [INFO:ota_log.cpp(163)] bi-report: MERGE_START
+301:2025-01-13 03:01:23
+
+[0113/030123.940467] [INFO:update_engine_virtual_ab.cpp(177)] max shell temperature:16761
+shell_back:16001, shell_frame:16761, shell_front:15019, soc-cpu-1-0:37300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030123.948730] [INFO:update_engine_virtual_ab.cpp(179)] no need to wait shell-temperature initialization
+[0113/030123.970092] [INFO:ota_log.cpp(66)] The temperature is 16.761000, record result: OK
+[0113/030123.991340] [INFO:ota_extend.cpp(313)] copy version
+[0113/030124.003165] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.043723] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.139875] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.155449] rmt_oeminfo_write_aidl[110]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.218653] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.247219] rmt_oeminfo_erase_aidl[151]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.298230] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.321680] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.379185] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.390018] rmt_oeminfo_write_aidl[110]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.435670] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.453398] rmt_oeminfo_erase_aidl[151]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.490567] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.512507] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.556219] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.581565] rmt_oeminfo_write_aidl[110]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.642628] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030124.654154] rmt_oeminfo_erase_aidl[151]:aidl service connect fail, attempt to use hidl
+
+[0113/030124.691159] [INFO:cleanup_previous_update_action.cc(577)] Attempting to initiate merge.
+[0113/030125.051641] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 7 for WaitForMerge
+[0113/030127.054622] [INFO:cleanup_previous_update_action.cc(121)] Executing task 7
+[0113/030128.688242] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 16%.
+shell_back:16264, shell_frame:17053, shell_front:15231, soc-cpu-1-0:35300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030128.700577] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 8 for WaitForMerge
+[0113/030130.703681] [INFO:cleanup_previous_update_action.cc(121)] Executing task 8
+[0113/030130.879596] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 22%.
+shell_back:16264, shell_frame:17053, shell_front:15231, soc-cpu-1-0:30600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030130.898739] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 9 for WaitForMerge
+[0113/030132.900458] [INFO:cleanup_previous_update_action.cc(121)] Executing task 9
+[0113/030132.934850] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 27%.
+shell_back:16264, shell_frame:17053, shell_front:15231, soc-cpu-1-0:31300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030132.973808] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 10 for WaitForMerge
+[0113/030134.976852] [INFO:cleanup_previous_update_action.cc(121)] Executing task 10
+[0113/030135.002431] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 32%.
+shell_back:16631, shell_frame:17538, shell_front:15586, soc-cpu-1-0:29900, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030135.023030] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 11 for WaitForMerge
+[0113/030137.026417] [INFO:cleanup_previous_update_action.cc(121)] Executing task 11
+[0113/030137.051139] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 34%.
+shell_back:16631, shell_frame:17538, shell_front:15586, soc-cpu-1-0:27900, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030137.068614] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 12 for WaitForMerge
+[0113/030139.071075] [INFO:cleanup_previous_update_action.cc(121)] Executing task 12
+[0113/030139.085355] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 38%.
+shell_back:16799, shell_frame:17753, shell_front:15731, soc-cpu-1-0:27300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030139.096799] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 13 for WaitForMerge
+[0113/030141.099393] [INFO:cleanup_previous_update_action.cc(121)] Executing task 13
+[0113/030141.332875] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 42%.
+shell_back:16799, shell_frame:17753, shell_front:15731, soc-cpu-1-0:26600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030141.343447] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 14 for WaitForMerge
+[0113/030143.345892] [INFO:cleanup_previous_update_action.cc(121)] Executing task 14
+[0113/030143.364512] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 46%.
+shell_back:16759, shell_frame:17681, shell_front:15678, soc-cpu-1-0:26600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030143.372221] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 15 for WaitForMerge
+[0113/030145.375039] [INFO:cleanup_previous_update_action.cc(121)] Executing task 15
+[0113/030145.386936] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 50%.
+shell_back:16759, shell_frame:17681, shell_front:15678, soc-cpu-1-0:26300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030145.398761] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 16 for WaitForMerge
+[0113/030147.401224] [INFO:cleanup_previous_update_action.cc(121)] Executing task 16
+[0113/030147.561761] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 54%.
+shell_back:16759, shell_frame:17681, shell_front:15678, soc-cpu-1-0:27900, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030147.571720] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 17 for WaitForMerge
+[0113/030149.574393] [INFO:cleanup_previous_update_action.cc(121)] Executing task 17
+[0113/030149.589910] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 58%.
+shell_back:16704, shell_frame:17595, shell_front:15674, soc-cpu-1-0:25600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030149.603524] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 18 for WaitForMerge
+[0113/030151.606282] [INFO:cleanup_previous_update_action.cc(121)] Executing task 18
+[0113/030151.625504] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 62%.
+shell_back:16704, shell_frame:17595, shell_front:15674, soc-cpu-1-0:25300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030151.637488] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 19 for WaitForMerge
+[0113/030153.640123] [INFO:cleanup_previous_update_action.cc(121)] Executing task 19
+[0113/030153.649579] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 66%.
+shell_back:16557, shell_frame:17348, shell_front:15444, soc-cpu-1-0:24900, freq(M):1958 1958 1958 1958 1958 1958 2054 2054 
+[0113/030153.660753] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 20 for WaitForMerge
+[0113/030155.666543] [INFO:cleanup_previous_update_action.cc(121)] Executing task 20
+[0113/030155.900774] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 69%.
+shell_back:16557, shell_frame:17348, shell_front:15444, soc-cpu-1-0:27300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030155.904451] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 21 for WaitForMerge
+[0113/030157.907435] [INFO:cleanup_previous_update_action.cc(121)] Executing task 21
+[0113/030157.916403] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 71%.
+shell_back:16557, shell_frame:17348, shell_front:15444, soc-cpu-1-0:24600, freq(M):1958 1958 1958 1958 1958 1958 2054 2054 
+[0113/030157.922610] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 22 for WaitForMerge
+[0113/030159.925499] [INFO:cleanup_previous_update_action.cc(121)] Executing task 22
+[0113/030159.930929] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 73%.
+shell_back:16349, shell_frame:17093, shell_front:15221, soc-cpu-1-0:25300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0113/030159.934690] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 23 for WaitForMerge
+[0113/030201.937128] [INFO:cleanup_previous_update_action.cc(121)] Executing task 23
+[0113/030202.188982] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 24 for WaitForMerge
+[0113/030204.191826] [INFO:cleanup_previous_update_action.cc(121)] Executing task 24
+[0113/030204.195764] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 25 for WaitForMerge
+[0113/030206.198133] [INFO:cleanup_previous_update_action.cc(121)] Executing task 25
+[0113/030206.202382] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 26 for WaitForMerge
+[0113/030208.204925] [INFO:cleanup_previous_update_action.cc(121)] Executing task 26
+[0113/030208.209021] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 27 for WaitForMerge
+[0113/030210.211561] [INFO:cleanup_previous_update_action.cc(121)] Executing task 27
+[0113/030210.215664] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 28 for WaitForMerge
+[0113/030212.218236] [INFO:cleanup_previous_update_action.cc(121)] Executing task 28
+[0113/030212.222732] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 29 for WaitForMerge
+[0113/030214.225368] [INFO:cleanup_previous_update_action.cc(121)] Executing task 29
+[0113/030214.229235] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 30 for WaitForMerge
+[0113/030216.231286] [INFO:cleanup_previous_update_action.cc(121)] Executing task 30
+[0113/030216.236835] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 74%.
+shell_back:15755, shell_frame:16276, shell_front:14546, soc-cpu-1-0:22900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030216.240332] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 32 for WaitForMerge
+[0113/030218.244196] [INFO:cleanup_previous_update_action.cc(121)] Executing task 32
+[0113/030218.249244] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 33 for WaitForMerge
+[0113/030220.251778] [INFO:cleanup_previous_update_action.cc(121)] Executing task 33
+[0113/030220.256860] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 75%.
+shell_back:15675, shell_frame:16272, shell_front:14650, soc-cpu-1-0:23600, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030220.260371] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 34 for WaitForMerge
+[0113/030222.262600] [INFO:cleanup_previous_update_action.cc(121)] Executing task 34
+[0113/030222.267174] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 35 for WaitForMerge
+[0113/030224.269861] [INFO:cleanup_previous_update_action.cc(121)] Executing task 35
+[0113/030224.273924] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 36 for WaitForMerge
+[0113/030226.276492] [INFO:cleanup_previous_update_action.cc(121)] Executing task 36
+[0113/030226.281050] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 76%.
+shell_back:15463, shell_frame:15964, shell_front:14439, soc-cpu-1-0:23300, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030226.284442] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 37 for WaitForMerge
+[0113/030228.287006] [INFO:cleanup_previous_update_action.cc(121)] Executing task 37
+[0113/030228.291362] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 38 for WaitForMerge
+[0113/030230.294075] [INFO:cleanup_previous_update_action.cc(121)] Executing task 38
+[0113/030230.299679] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 77%.
+shell_back:15317, shell_frame:15732, shell_front:14256, soc-cpu-1-0:22600, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030230.303122] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 39 for WaitForMerge
+[0113/030232.305865] [INFO:cleanup_previous_update_action.cc(121)] Executing task 39
+[0113/030232.310855] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 78%.
+shell_back:15317, shell_frame:15732, shell_front:14256, soc-cpu-1-0:22900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030232.314389] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 40 for WaitForMerge
+[0113/030234.316705] [INFO:cleanup_previous_update_action.cc(121)] Executing task 40
+[0113/030234.322403] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 79%.
+shell_back:15474, shell_frame:16056, shell_front:14650, soc-cpu-1-0:22900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030234.325856] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 41 for WaitForMerge
+[0113/030236.328439] [INFO:cleanup_previous_update_action.cc(121)] Executing task 41
+[0113/030236.333726] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 80%.
+shell_back:15474, shell_frame:16056, shell_front:14650, soc-cpu-1-0:22600, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030236.337238] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 42 for WaitForMerge
+[0113/030238.340740] [INFO:cleanup_previous_update_action.cc(121)] Executing task 42
+[0113/030238.344766] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 43 for WaitForMerge
+[0113/030240.348518] [INFO:cleanup_previous_update_action.cc(121)] Executing task 43
+[0113/030240.353293] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 81%.
+shell_back:15545, shell_frame:16271, shell_front:14899, soc-cpu-1-0:22300, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030240.356491] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 44 for WaitForMerge
+[0113/030242.358768] [INFO:cleanup_previous_update_action.cc(121)] Executing task 44
+[0113/030242.362711] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 45 for WaitForMerge
+[0113/030244.364909] [INFO:cleanup_previous_update_action.cc(121)] Executing task 45
+[0113/030244.368897] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 46 for WaitForMerge
+[0113/030246.372438] [INFO:cleanup_previous_update_action.cc(121)] Executing task 46
+[0113/030246.377958] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 82%.
+shell_back:15405, shell_frame:16153, shell_front:14800, soc-cpu-1-0:22300, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030246.381409] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 47 for WaitForMerge
+[0113/030248.384748] [INFO:cleanup_previous_update_action.cc(121)] Executing task 47
+[0113/030248.389307] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 83%.
+shell_back:15366, shell_frame:16096, shell_front:14772, soc-cpu-1-0:22600, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030248.392487] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 48 for WaitForMerge
+[0113/030250.396177] [INFO:cleanup_previous_update_action.cc(121)] Executing task 48
+[0113/030250.400930] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 84%.
+shell_back:15366, shell_frame:16096, shell_front:14772, soc-cpu-1-0:22900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030250.404433] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 49 for WaitForMerge
+[0113/030252.408181] [INFO:cleanup_previous_update_action.cc(121)] Executing task 49
+[0113/030252.412752] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 85%.
+shell_back:15366, shell_frame:16096, shell_front:14772, soc-cpu-1-0:22600, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030252.415999] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 50 for WaitForMerge
+[0113/030254.420263] [INFO:cleanup_previous_update_action.cc(121)] Executing task 50
+[0113/030254.424876] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 86%.
+shell_back:15520, shell_frame:16293, shell_front:15015, soc-cpu-1-0:22600, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030254.428409] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 51 for WaitForMerge
+[0113/030256.432152] [INFO:cleanup_previous_update_action.cc(121)] Executing task 51
+[0113/030256.437069] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 87%.
+shell_back:15520, shell_frame:16293, shell_front:15015, soc-cpu-1-0:22900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030256.440677] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 52 for WaitForMerge
+[0113/030258.444218] [INFO:cleanup_previous_update_action.cc(121)] Executing task 52
+[0113/030258.449312] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 88%.
+shell_back:15548, shell_frame:16326, shell_front:15069, soc-cpu-1-0:22300, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030258.452526] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 53 for WaitForMerge
+[0113/030300.456114] [INFO:cleanup_previous_update_action.cc(121)] Executing task 53
+[0113/030300.464569] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 89%.
+shell_back:15548, shell_frame:16326, shell_front:15069, soc-cpu-1-0:21900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030300.467941] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 54 for WaitForMerge
+[0113/030302.470478] [INFO:cleanup_previous_update_action.cc(121)] Executing task 54
+[0113/030302.474951] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 55 for WaitForMerge
+[0113/030304.477483] [INFO:cleanup_previous_update_action.cc(121)] Executing task 55
+[0113/030304.482674] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 90%.
+shell_back:15455, shell_frame:16266, shell_front:14991, soc-cpu-1-0:21900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030304.486321] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 56 for WaitForMerge
+[0113/030306.489092] [INFO:cleanup_previous_update_action.cc(121)] Executing task 56
+[0113/030306.494238] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 91%.
+shell_back:15455, shell_frame:16266, shell_front:14991, soc-cpu-1-0:21900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030306.497434] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 57 for WaitForMerge
+[0113/030308.499827] [INFO:cleanup_previous_update_action.cc(121)] Executing task 57
+[0113/030308.504610] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 92%.
+shell_back:15328, shell_frame:16140, shell_front:14889, soc-cpu-1-0:21900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030308.507848] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 58 for WaitForMerge
+[0113/030310.510222] [INFO:cleanup_previous_update_action.cc(121)] Executing task 58
+[0113/030310.515205] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 93%.
+shell_back:15328, shell_frame:16140, shell_front:14889, soc-cpu-1-0:21900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030310.518615] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 59 for WaitForMerge
+[0113/030312.521347] [INFO:cleanup_previous_update_action.cc(121)] Executing task 59
+[0113/030312.526499] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 94%.
+shell_back:15328, shell_frame:16140, shell_front:14889, soc-cpu-1-0:21900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030312.529998] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 60 for WaitForMerge
+[0113/030314.532610] [INFO:cleanup_previous_update_action.cc(121)] Executing task 60
+[0113/030314.536662] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 61 for WaitForMerge
+[0113/030316.538842] [INFO:cleanup_previous_update_action.cc(121)] Executing task 61
+[0113/030316.542993] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 63 for WaitForMerge
+[0113/030318.545624] [INFO:cleanup_previous_update_action.cc(121)] Executing task 63
+[0113/030318.550045] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 64 for WaitForMerge
+[0113/030320.552390] [INFO:cleanup_previous_update_action.cc(121)] Executing task 64
+[0113/030320.558724] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 95%.
+shell_back:15358, shell_frame:16292, shell_front:15158, soc-cpu-1-0:21900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030320.562119] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 65 for WaitForMerge
+[0113/030322.564482] [INFO:cleanup_previous_update_action.cc(121)] Executing task 65
+[0113/030322.569743] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 96%.
+shell_back:15358, shell_frame:16292, shell_front:15158, soc-cpu-1-0:21900, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030322.573001] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 66 for WaitForMerge
+[0113/030324.576770] [INFO:cleanup_previous_update_action.cc(121)] Executing task 66
+[0113/030324.581850] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 97%.
+shell_back:15392, shell_frame:16372, shell_front:15254, soc-cpu-1-0:21600, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030324.585480] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 67 for WaitForMerge
+[0113/030326.587859] [INFO:cleanup_previous_update_action.cc(121)] Executing task 67
+[0113/030326.592738] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 98%.
+shell_back:15392, shell_frame:16372, shell_front:15254, soc-cpu-1-0:22300, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030326.596099] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 68 for WaitForMerge
+[0113/030328.598546] [INFO:cleanup_previous_update_action.cc(121)] Executing task 68
+[0113/030328.602849] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 69 for WaitForMerge
+[0113/030330.605372] [INFO:cleanup_previous_update_action.cc(121)] Executing task 69
+[0113/030330.610718] [INFO:cleanup_previous_update_action.cc(519)] Waiting for merge to complete: 99%.
+shell_back:15283, shell_frame:16224, shell_front:15096, soc-cpu-1-0:22300, freq(M):1958 1958 1958 1958 1958 1958 691 691 
+[0113/030330.613955] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 70 for WaitForMerge
+[0113/030332.618858] [INFO:cleanup_previous_update_action.cc(121)] Executing task 70
+[0113/030333.010930] [INFO:ota_log.cpp(163)] bi-report: MERGE_END MERGE_TIME
+303:2025-01-13 03:03:33
+304:129
+
+[0113/030333.021494] [INFO:update_engine_virtual_ab.cpp(177)] max shell temperature:16224
+shell_back:15283, shell_frame:16224, shell_front:15096, soc-cpu-1-0:22600, freq(M):672 672 672 672 672 672 960 960 
+[0113/030333.028815] [INFO:update_engine_virtual_ab.cpp(179)] no need to wait shell-temperature initialization
+[0113/030333.036628] [INFO:ota_log.cpp(66)] The temperature is 16.224000, record result: OK
+[0113/030333.132809] [INFO:cota_in_hota_proc.cpp(146)] no /data/update/last_cota
+[0113/030333.141372] [INFO:update_cota_in_hota.cpp(109)] no cota in hota
+[0113/030333.149520] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030333.156649] rmt_oeminfo_write_for_reused_aidl[192]:aidl service connect fail, attempt to use hidl
+
+[0113/030333.230678] [INFO:overwrite_partition.cpp(71)] ok
+[0113/030333.237376] [INFO:ota_log.cpp(163)] bi-report: PARTITION_COPY_START
+401:2025-01-13 03:03:33
+
+[0113/030333.244749] [INFO:update_engine_virtual_ab.cpp(177)] max shell temperature:16224
+shell_back:15283, shell_frame:16224, shell_front:15096, soc-cpu-1-0:21600, freq(M):1094 1094 1094 1094 1094 1094 691 691 
+[0113/030333.249631] [INFO:update_engine_virtual_ab.cpp(179)] no need to wait shell-temperature initialization
+[0113/030333.255312] [INFO:ota_log.cpp(66)] The temperature is 16.224000, record result: OK
+[0113/030333.260364] [INFO:cleanup_previous_update_action.cc(458)] PartitionsCopy task start after 2s
+[0113/030335.269007] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030335.280403] rmt_oeminfo_write_for_reused_aidl[192]:aidl service connect fail, attempt to use hidl
+
+[0113/030335.325910] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030335.331593] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0113/030335.369985] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030335.375166] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0113/030335.400397] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030335.406085] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0113/030336.813396] [ERROR:overwrite_static_partitions.cpp(137)] fail to set /dev/block/bootdevice/by-name/mdtp_b read_write
+[0113/030336.817657] [ERROR:overwrite_static_partitions.cpp(137)] fail to set /dev/block/bootdevice/by-name/mdtpsecapp_b read_write
+[0113/030348.715333] [INFO:overwrite_partition.cpp(143)] overwrite ok.
+[0113/030348.720513] [INFO:overwrite_partition.cpp(155)] overwrite super metadata done.
+[0113/030348.725063] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030348.729331] rmt_oeminfo_erase_for_reused_aidl[179]:aidl service connect fail, attempt to use hidl
+
+[0113/030348.795334] [INFO:ota_log.cpp(163)] bi-report: PARTITION_COPY_END PARTITION_COPY_TIME
+403:2025-01-13 03:03:48
+404:15
+
+[0113/030348.800802] [INFO:update_engine_virtual_ab.cpp(177)] max shell temperature:16105
+shell_back:15170, shell_frame:16105, shell_front:14849, soc-cpu-1-0:22600, freq(M):672 672 672 672 672 672 1900 1900 
+[0113/030348.804131] [INFO:update_engine_virtual_ab.cpp(179)] no need to wait shell-temperature initialization
+[0113/030348.810246] [INFO:ota_log.cpp(66)] The temperature is 16.105000, record result: OK
+[0113/030348.816780] [INFO:cleanup_previous_update_action.cc(463)] Merge finished with state MergeCompleted.
+[0113/030348.823174] [INFO:cleanup_previous_update_action.cc(474)] merge verify task start after 3s
+[0113/030351.829769] [INFO:cleanup_previous_update_action.cc(480)] begin merge verify
+[0113/030351.866635] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030351.872556] [INFO:dynamic_partition_control_android.cc(1249)] system_a is mapped on device mapper: /dev/block/dm-2
+[0113/030351.892285] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030351.897817] [INFO:dynamic_partition_control_android.cc(1249)] product_a is mapped on device mapper: /dev/block/dm-5
+[0113/030351.919356] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030351.925341] [INFO:dynamic_partition_control_android.cc(1249)] system_ext_a is mapped on device mapper: /dev/block/dm-8
+[0113/030351.943202] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030351.948109] [INFO:dynamic_partition_control_android.cc(1249)] vendor_a is mapped on device mapper: /dev/block/dm-11
+[0113/030351.962712] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030351.967063] [INFO:dynamic_partition_control_android.cc(1249)] vendor_dlkm_a is mapped on device mapper: /dev/block/dm-14
+[0113/030351.980168] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030351.984485] [INFO:dynamic_partition_control_android.cc(1249)] odm_a is mapped on device mapper: /dev/block/dm-17
+[0113/030351.998249] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030352.002585] [INFO:dynamic_partition_control_android.cc(1249)] product_h_a is mapped on device mapper: /dev/block/dm-20
+[0113/030352.017045] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030352.021514] [INFO:dynamic_partition_control_android.cc(1249)] cust_a is mapped on device mapper: /dev/block/dm-23
+[0113/030352.036579] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030352.041128] [INFO:dynamic_partition_control_android.cc(1249)] preas_a is mapped on device mapper: /dev/block/dm-26
+[0113/030352.055964] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030352.060414] [INFO:dynamic_partition_control_android.cc(1249)] preavs_a is mapped on device mapper: /dev/block/dm-29
+[0113/030352.075493] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030352.080079] [INFO:dynamic_partition_control_android.cc(1249)] version_a is mapped on device mapper: /dev/block/dm-32
+[0113/030352.094981] [INFO:dynamic_partition_control_android.cc(357)] Loaded metadata from slot A in /dev/block/bootdevice/by-name/super
+[0113/030352.099502] [INFO:dynamic_partition_control_android.cc(1249)] preload_a is mapped on device mapper: /dev/block/dm-35
+[0113/030409.356099] [INFO:update_engine_virtual_ab.cpp(80)] delete: /data/update/vab_merge_verify_state ok
+[0113/030409.362408] [INFO:update_engine_virtual_ab.cpp(80)] delete: /data/update/vab_merge_verify_info ok
+[0113/030409.365167] [INFO:cleanup_previous_update_action.cc(501)] merge verify ok
+[0113/030409.369100] [INFO:ota_log.cpp(36)] WriteUploadLog HOTA_SUCCESS:0;
+HOTA_COW_COMPRESS:0;
+DEXOPT_PROGRESS:100
+[0113/030409.375403] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0113/030409.379008] [INFO:cleanup_previous_update_action.cc(681)] Reporting merge stats: MergeCompleted in 165612ms (resumed 0 times), using 11911610368 bytes of COW image.
+[0113/030409.383263] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0113/030409.389087] [INFO:action_processor.cc(116)] ActionProcessor: finished CleanupPreviousUpdateAction with code ErrorCode::kSuccess
+[0113/030409.393400] [INFO:action_processor.cc(145)] ActionProcessor: starting PartitionsCopyAction
+[0113/030409.399876] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0113/030409.405022] rmt_oeminfo_read_for_reused_aidl[211]:aidl service connect fail, attempt to use hidl
+
+[0113/030409.487260] [WARNING:overwrite_partition.cpp(80)] read fail, no last partision-copy, -2
+[0113/030409.494846] [INFO:action_processor.cc(116)] ActionProcessor: finished PartitionsCopyAction with code ErrorCode::kSuccess
+[0113/030409.501043] [INFO:action_processor.cc(145)] ActionProcessor: starting MergeVerifyAction
+[0113/030409.506718] [INFO:action_processor.cc(116)] ActionProcessor: finished last action MergeVerifyAction with code ErrorCode::kSuccess
+[0113/030409.512658] [INFO:update_attempter_android.cc(908)] Processing Done.
+[0113/030409.529215] [INFO:update_attempter_android.cc(1286)] Clearing update complete marker.
+[0113/030409.535918] [INFO:update_attempter_android.cc(1108)] Terminating cleanup previous update. ErrorCode::kSuccess
+[0113/030409.543940] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:15186, shell_frame:16194, shell_front:14991, soc-cpu-1-0:23600, freq(M):672 672 672 672 672 672 691 691 
+[0113/030409.551411] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 0
+[0113/030409.558732] [INFO:pow_manger_update.cc(38)] A/B Update Engine release wake lock

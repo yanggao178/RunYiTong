@@ -49,6 +49,12 @@
     <color name="text_error">#F44336</color>
     <color name="text_success">#28A745</color>
     
+    <!-- 危险按钮颜色 -->
+    <color name="color_danger">#F44336</color>
+    <color name="color_danger_pressed">#D32F2F</color>
+    <color name="color_danger_disabled">#FFCDD2</color>
+    <color name="light_gray">#E0E0E0</color>
+    
     <!-- 预约状态颜色 -->
     <color name="status_pending">#FF9800</color>
     <color name="status_confirmed">#4CAF50</color>

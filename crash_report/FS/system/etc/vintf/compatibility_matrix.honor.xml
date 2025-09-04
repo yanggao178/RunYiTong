@@ -1,0 +1,621 @@
+<!--
+    Input:
+        vendor/honor/common/common_intf/interfaces/compatibility_matrices/compatibility_matrix.honor.7.xml
+-->
+<compatibility-matrix version="7.0" type="framework" level="7">
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.activity_recognition</name>
+        <interface>
+            <name>IActivityRecognition</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.aiservice</name>
+        <version>1.0</version>
+        <interface>
+            <name>IAiService</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.aiservice</name>
+        <interface>
+            <name>IAiService</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.aoservice</name>
+        <version>1.0</version>
+        <interface>
+            <name>IAOService</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.audioremote</name>
+        <version>1.0-1</version>
+        <interface>
+            <name>IAudioRemoteConnect</name>
+            <instance>default</instance>
+            <instance>virtualmodem</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.biometrics.fingerprint</name>
+        <version>2.2</version>
+        <interface>
+            <name>IExtBiometricsFingerprint</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.biometrics.hwfacerecognize</name>
+        <version>2.0</version>
+        <interface>
+            <name>IBiometricsFaceRecognize</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.camera.camResource</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHwCameraResourceService</name>
+            <instance>honor.cameraresource.service</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.camera.cfgsvr</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHwCamCfgSvr</name>
+            <instance>honor.camera.cfgsvr</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.camera.haon</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHAONService</name>
+            <instance>haoncameraservice</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.camera.hiaon</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHIAONService</name>
+            <instance>hiaoncameraservice</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.camera.hulk</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHulkService</name>
+            <instance>camerahulkservice</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.camera.manufacture</name>
+        <interface>
+            <name>ICameraManufacture</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.camera.vircamera</name>
+        <version>1.0</version>
+        <interface>
+            <name>IVirCameraChannel</name>
+            <instance>virtualcamera.register</instance>
+            <instance>virtualcamera.streamchange</instance>
+        </interface>
+        <interface>
+            <name>IVirCameraTranslator</name>
+            <instance>virtualcamera.translator</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.eid</name>
+        <version>1.1</version>
+        <interface>
+            <name>IEid</name>
+            <instance>eid</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.fusd</name>
+        <version>1.7</version>
+        <interface>
+            <name>IFusdLbs</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.fusd</name>
+        <interface>
+            <name>IFusdLbs</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.fusionproxy.controlplane</name>
+        <interface>
+            <name>IFusionProxyControl</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.fusionproxy.dataplane</name>
+        <interface>
+            <name>IFusionProxyData</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnblesensorhub</name>
+        <interface>
+            <name>IHnBleSensorHub</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnchipsrvhertz</name>
+        <interface>
+            <name>IHnChipSrvHertz</name>
+            <instance>hnchipsrv_hertz</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnchipsrvlog</name>
+        <interface>
+            <name>IHnChipSrvLog</name>
+            <instance>hnchipsrv_log</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnchipsrvlog</name>
+        <version>2</version>
+        <interface>
+            <name>IHnChipSrvLog</name>
+            <instance>hnchipsrv_log</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnchipsrvlog</name>
+        <version>3</version>
+        <interface>
+            <name>IHnChipSrvLog</name>
+            <instance>hnchipsrv_log</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnchipsrvsat</name>
+        <interface>
+            <name>IHnChipSrvSat</name>
+            <instance>hnchipsrv_sat</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.hnradio</name>
+        <version>1.0</version>
+        <interface>
+            <name>IRadio</name>
+            <instance>slot0</instance>
+            <instance>slot1</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnradio</name>
+        <interface>
+            <name>IRadio</name>
+            <instance>slot1</instance>
+            <instance>slot2</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnradio</name>
+        <version>2</version>
+        <interface>
+            <name>IRadio</name>
+            <instance>slot1</instance>
+            <instance>slot2</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hnsimradio</name>
+        <interface>
+            <name>IHnsimradio</name>
+            <instance>slot1</instance>
+            <instance>slot2</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.honorantitheft</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHonorAntiTheft</name>
+            <instance>honorantitheft</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.honorantitheft</name>
+        <interface>
+            <name>IHonorAntiTheft</name>
+            <instance>honorantitheft</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.honorsigntool</name>
+        <version>1.0</version>
+        <interface>
+            <name>ISignTool</name>
+            <instance>honorsigntool</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.hwdisplay</name>
+        <version>1.4</version>
+        <interface>
+            <name>IDisplay</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hwdisplay</name>
+        <interface>
+            <name>IDisplay</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.hwdisplay.displayengine</name>
+        <version>1.2</version>
+        <interface>
+            <name>IDisplayEngineWrapper</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hwdisplay.displayengine</name>
+        <interface>
+            <name>IDisplayEngineWrapper</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.hwfactoryinterface</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHwFactoryInterface</name>
+            <instance>hwfactoryinterface_hal</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.hwfs</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHwfs</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hwfs</name>
+        <interface>
+            <name>IHwfs</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.hwhiview</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHwHiviewInterface</name>
+            <instance>hwhiview_hal</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.hwsched</name>
+        <version>1.0</version>
+        <interface>
+            <name>ISched</name>
+            <instance>hwsched</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hwsched</name>
+        <interface>
+            <name>ISchedAidlInterface</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hwupdate</name>
+        <interface>
+            <name>IUpdateAidlInterface</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.hyperhold</name>
+        <version>1.0</version>
+        <interface>
+            <name>IPersistingData</name>
+            <instance>hyperhold_hal</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.hyperhold</name>
+        <interface>
+            <name>IPersistingData</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.iawareperf</name>
+        <version>1.0</version>
+        <interface>
+            <name>IUniPerf</name>
+            <instance>uniperf</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.iawareperf</name>
+        <interface>
+            <name>IUniPerfAidlInterface</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.iawareperfpolicy</name>
+        <version>1.0</version>
+        <interface>
+            <name>IPerfPolicy</name>
+            <instance>perfpolicy</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.iawareperfpolicy</name>
+        <interface>
+            <name>IPerfPolicyAidlInterface</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.kds</name>
+        <interface>
+            <name>IKds</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.keyboardservice</name>
+        <interface>
+            <name>IKeyboardService</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.libteec</name>
+        <interface>
+            <name>ILibteecGlobal</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.light</name>
+        <version>2.0</version>
+        <interface>
+            <name>ILight</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.mdlogservice</name>
+        <version>1.0-1</version>
+        <interface>
+            <name>IMdLogService</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.mdlogservice</name>
+        <interface>
+            <name>IMdLogService</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.nfc</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHWNfc</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.nfc</name>
+        <interface>
+            <name>IHnNfc</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.nxpese</name>
+        <version>1.0</version>
+        <interface>
+            <name>INxpEse</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.nxpese</name>
+        <interface>
+            <name>INxpEse</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.nxpnfc</name>
+        <version>1.0</version>
+        <version>2.0</version>
+        <interface>
+            <name>INxpNfc</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.nxpnfc</name>
+        <interface>
+            <name>INxpNfc</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.offlinealgo</name>
+        <version>2</version>
+        <interface>
+            <name>IOfflineAlgo</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.pixelworks_display</name>
+        <version>1.0</version>
+        <interface>
+            <name>IIris</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.pixelworks_feature</name>
+        <version>1.0</version>
+        <interface>
+            <name>IIrisFeature</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.power</name>
+        <version>1.0</version>
+        <interface>
+            <name>IHWPower</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.radio_radar</name>
+        <version>1.0</version>
+        <interface>
+            <name>IRadioRadar</name>
+            <instance>slot0</instance>
+            <instance>slot1</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.radioenhance</name>
+        <version>1.0</version>
+        <interface>
+            <name>IRadioenhance</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.radioenhance</name>
+        <version>1.0</version>
+        <interface>
+            <name>IRadioenhance</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.radioenhance</name>
+        <interface>
+            <name>IRadioenhance</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.sensors</name>
+        <version>1.2</version>
+        <version>2.0</version>
+        <interface>
+            <name>ISensors</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.snpelaunch</name>
+        <version>1.0</version>
+        <interface>
+            <name>ISnpelaunch</name>
+            <instance>snpelaunch</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.snpelaunch</name>
+        <interface>
+            <name>ISnpelaunch</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.tp</name>
+        <version>1.0</version>
+        <interface>
+            <name>ITouchscreen</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.tp</name>
+        <interface>
+            <name>ITouchscreen</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.weaver</name>
+        <version>1.1</version>
+        <interface>
+            <name>IWeaver</name>
+            <instance>honorweaver</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.wifi</name>
+        <version>1.2</version>
+        <interface>
+            <name>IHwWifiExt</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.wifi.p2pext_supplicant</name>
+        <version>1.0</version>
+        <interface>
+            <name>IP2pExtSupplicant</name>
+            <instance>p2pex</instance>
+        </interface>
+    </hal>
+    <hal format="hidl" optional="true">
+        <name>vendor.honor.hardware.wifi.supplicant</name>
+        <version>3.0</version>
+        <version>4.0</version>
+        <interface>
+            <name>ISupplicant</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" optional="true">
+        <name>vendor.honor.hardware.wifi.supplicant</name>
+        <version>2</version>
+        <interface>
+            <name>ISupplicantHonor</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</compatibility-matrix>

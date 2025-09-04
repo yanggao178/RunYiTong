@@ -21,6 +21,7 @@ import com.wenteng.frontend_android.model.Prescription;
 import com.wenteng.frontend_android.model.PrescriptionItem;
 import com.wenteng.frontend_android.model.PaymentOrderRequest;
 import com.wenteng.frontend_android.model.PaymentOrderResponse;
+import com.wenteng.frontend_android.model.Address;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -64,6 +65,14 @@ public interface ApiService {
      */
     @GET("api/v1/products/{id}")
     Call<ApiResponse<Product>> getProductDetail(@Path("id") int productId);
+    
+    /**
+     * 根据药店名称获取商品列表
+     * @param pharmacyName 药店名称
+     * @return 商品列表响应
+     */
+    @GET("api/v1/products/pharmacy")
+    Call<ApiResponse<ProductListResponse>> getProductsByPharmacy(@Query("pharmacy_name") String pharmacyName);
     
 
     /**
@@ -395,6 +404,52 @@ public interface ApiService {
     Call<ApiResponse<PaymentOrderResponse>> createWechatOrder(
         @Body PaymentOrderRequest request
     );
+
+    // ==================== 收货地址相关接口 ====================
+    
+    /**
+     * 获取用户的收货地址列表
+     * @param userId 用户ID
+     * @return 地址列表响应
+     */
+    @GET("api/v1/addresses/user/{user_id}")
+    Call<AddressListResponse> getUserAddresses(@Path("user_id") int userId);
+    
+    /**
+     * 添加新的收货地址
+     * @param address 地址信息
+     * @return 地址创建响应
+     */
+    @POST("api/v1/addresses/")
+    Call<ApiResponse<Address>> addAddress(@Body Address address);
+    
+    /**
+     * 更新收货地址
+     * @param addressId 地址ID
+     * @param address 更新后的地址信息
+     * @return 地址更新响应
+     */
+    @PUT("api/v1/addresses/{address_id}")
+    Call<ApiResponse<Address>> updateAddress(
+        @Path("address_id") int addressId,
+        @Body Address address
+    );
+    
+    /**
+     * 删除收货地址
+     * @param addressId 地址ID
+     * @return 删除结果响应
+     */
+    @DELETE("api/v1/addresses/{address_id}")
+    Call<ApiResponse<Object>> deleteAddress(@Path("address_id") int addressId);
+    
+    /**
+     * 设置默认收货地址
+     * @param addressId 地址ID
+     * @return 设置结果响应
+     */
+    @PUT("api/v1/addresses/{address_id}/default")
+    Call<ApiResponse<Address>> setDefaultAddress(@Path("address_id") int addressId);
     
     /**
      * 健康检查端点

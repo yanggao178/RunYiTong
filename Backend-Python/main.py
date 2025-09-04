@@ -12,7 +12,7 @@ import os
 load_dotenv()
 
 # 导入路由
-from routers import products, books, prescriptions, appointments, users, payments, health_records
+from routers import products, books, prescriptions, appointments, users, payments, health_records, addresses
 from database import engine, Base
 
 
@@ -52,6 +52,7 @@ app.include_router(appointments.router, prefix="/api/v1/appointments", tags=["�
 app.include_router(users.router, prefix="/api/v1/users", tags=["用户管理"])
 app.include_router(payments.router, prefix="/api/v1/payments", tags=["支付管理"])
 app.include_router(health_records.router, prefix="/api/v1/health-records", tags=["健康档案"])
+app.include_router(addresses.router, prefix="/api/v1/addresses", tags=["收货地址管理"])
 
 @app.get("/")
 async def root():

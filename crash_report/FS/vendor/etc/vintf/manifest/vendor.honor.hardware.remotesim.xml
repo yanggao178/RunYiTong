@@ -1,0 +1,16 @@
+<!--/*
+ * Copyright (c) Honor Device Co., Ltd 2022-2022. All rights reserved.
+ * Description: Manifest file for remotesim aidl interface.
+ * Author: z00014562
+ * Create: 2022-07-08
+ */
+ -->
+
+<manifest version="1.0" type="device">
+    <hal format="aidl">
+        <name>vendor.honor.hardware.remotesim</name>
+        <version>1</version>
+        <fqname>IRemoteSim/slot1</fqname>
+        <fqname>IRemoteSim/slot2</fqname>
+    </hal>
+</manifest>

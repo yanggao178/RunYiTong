@@ -92,4 +92,21 @@
         <item name="android:letterSpacing">0.05</item>
         <item name="android:minWidth">80dp</item>
     </style>
+    
+    <!-- 确认注销账号对话框主题 -->
+    <style name="AlertDialogTheme" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="android:windowBackground">@drawable/rounded_dialog_background</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowTitleStyle">@null</item>
+        <item name="android:windowAnimationStyle">@style/DialogAnimation</item>
+        <item name="android:backgroundDimEnabled">true</item>
+        <item name="android:backgroundDimAmount">0.6</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="buttonBarPositiveButtonStyle">@style/DangerButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/SecondaryButton</item>
+    </style>
 </resources>

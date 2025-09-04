@@ -22,6 +22,26 @@ class ProductBase(BaseModel):
     manufacturer: Optional[str] = None
     pharmacy_name: Optional[str] = None
     sales_count: int = 0
+    # 增加缺少的字段以匹配数据库模型
+    slug: Optional[str] = None
+    short_description: Optional[str] = None
+    department_id: Optional[int] = None
+    original_price: Optional[float] = None
+    min_stock_level: Optional[int] = None
+    sku: Optional[str] = None
+    barcode: Optional[str] = None
+    weight: Optional[float] = None
+    dimensions: Optional[str] = None
+    gallery_images: Optional[str] = None
+    tags: Optional[str] = None
+    status: Optional[str] = None
+    is_featured: Optional[bool] = False
+    is_prescription_required: Optional[bool] = False
+    expiry_date: Optional[datetime] = None
+    usage_instructions: Optional[str] = None
+    side_effects: Optional[str] = None
+    contraindications: Optional[str] = None
+    views_count: Optional[int] = 0
 
 class ProductCreate(ProductBase):
     pass
@@ -34,7 +54,28 @@ class ProductUpdate(BaseModel):
     category_id: Optional[int] = None
     stock_quantity: Optional[int] = None
     manufacturer: Optional[str] = None
+    pharmacy_name: Optional[str] = None
     sales_count: Optional[int] = None
+    # 增加缺少的字段
+    slug: Optional[str] = None
+    short_description: Optional[str] = None
+    department_id: Optional[int] = None
+    original_price: Optional[float] = None
+    min_stock_level: Optional[int] = None
+    sku: Optional[str] = None
+    barcode: Optional[str] = None
+    weight: Optional[float] = None
+    dimensions: Optional[str] = None
+    gallery_images: Optional[str] = None
+    tags: Optional[str] = None
+    status: Optional[str] = None
+    is_featured: Optional[bool] = None
+    is_prescription_required: Optional[bool] = None
+    expiry_date: Optional[datetime] = None
+    usage_instructions: Optional[str] = None
+    side_effects: Optional[str] = None
+    contraindications: Optional[str] = None
+    views_count: Optional[int] = None
 
 class Product(ProductBase):
     id: int
@@ -363,3 +404,53 @@ class HospitalListResponse(BaseModel):
     total: int
     page: int
     size: int
+
+# 收货地址相关模式 - 基于Address.java模型类
+class AddressBase(BaseModel):
+    """地址基础模型 - 与Address.java字段对应"""
+    name: str  # 收件人姓名
+    phone: str  # 联系电话
+    province: str  # 省份
+    city: str  # 城市
+    district: str  # 区县
+    detail_address: str  # 详细地址
+    is_default: bool = False  # 是否默认地址
+    latitude: Optional[str] = None  # 纬度
+    longitude: Optional[str] = None  # 经度
+
+class AddressCreate(AddressBase):
+    """创建地址模型"""
+    user_id: int  # 用户ID
+
+class AddressUpdate(BaseModel):
+    """更新地址模型"""
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    province: Optional[str] = None
+    city: Optional[str] = None
+    district: Optional[str] = None
+    detail_address: Optional[str] = None
+    is_default: Optional[bool] = None
+    latitude: Optional[str] = None
+    longitude: Optional[str] = None
+
+class AddressResponse(AddressBase):
+    """地址响应模型 - 与Address.java完全对应"""
+    id: int  # 地址ID
+    user_id: int  # 用户ID
+    created_time: datetime  # 创建时间
+    updated_time: datetime  # 更新时间
+    
+    class Config:
+        from_attributes = True
+
+# 地址列表响应
+class AddressListResponse(BaseModel):
+    success: bool = True
+    message: str = "获取成功"
+    data: List[AddressResponse]
+    total: int
+    page: int
+    size: int
+
+

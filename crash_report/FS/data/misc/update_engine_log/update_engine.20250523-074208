@@ -1,0 +1,72 @@
+[0523/074208.775182] [INFO:main.cc(54)] A/B Update Engine starting
+[0523/074208.834514] [INFO:pow_manger_update.cc(28)] A/B Update Engine acquire wake lock
+[0523/074208.919278] [INFO:boot_control_android.cc(64)] Loaded boot control hal.
+[0523/074208.983377] [INFO:battery.cpp(25)] battery level: 88 charge status: 0
+[0523/074209.006951] rmt_oeminfo_read[201]:ReadOeminfoFromCmdline success, idx = 18, dst:all/cn
+[0523/074209.070492] [ERROR:update_attempter_android.cc(1394)] prefs_->GetInt64(kPrefsPreviousSlot, &previous_slot) failed.
+[0523/074209.118918] [INFO:update_attempter_android.cc(284)] OTAResult::NOT_ATTEMPTED
+[0523/074209.171534] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:27798, shell_frame:28600, shell_front:27740, soc-cpu-1-0:47600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/074209.230228] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 1
+[0523/074209.275966] [INFO:update_attempter_android.cc(1750)] Scheduling CleanupPreviousUpdateAction.
+[0523/074209.331730] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 11 progress: 0 OUC progress : 0
+shell_back:27798, shell_frame:28600, shell_front:27740, soc-cpu-1-0:48300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/074209.359004] [INFO:action_processor.cc(51)] ActionProcessor: starting CleanupPreviousUpdateAction
+[0523/074209.385162] [INFO:cleanup_previous_update_action.cc(161)] Starting/resuming CleanupPreviousUpdateAction
+[0523/074209.398489] [INFO:cleanup_previous_update_action.cc(201)] Boot completed, waiting on markBootSuccessful()
+[0523/074209.411235] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0523/074209.433483] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0523/074209.445775] [INFO:ota_extend.cpp(124)] can not get OEMINFO_TMP_VENDORCOUNTRY, ret is -1
+[0523/074209.448087] [INFO:ota_extend.cpp(343)] no need to change vc.
+[0523/074209.490509] [INFO:cleanup_previous_update_action.cc(280)] Waiting for any previous merge request to complete. This can take up to several minutes.
+[0523/074209.517043] [INFO:cleanup_previous_update_action.cc(324)] Can't find any snapshot to merge.
+[0523/074209.564354] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0523/074209.581777] [INFO:cleanup_previous_update_action.cc(649)] Not reporting merge stats because state is None
+[0523/074209.643141] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0523/074209.646900] [INFO:action_processor.cc(116)] ActionProcessor: finished CleanupPreviousUpdateAction with code ErrorCode::kSuccess
+[0523/074209.675245] [INFO:action_processor.cc(145)] ActionProcessor: starting PartitionsCopyAction
+[0523/074209.709240] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0523/074209.732810] rmt_oeminfo_read_for_reused_aidl[211]:aidl service connect fail, attempt to use hidl
+
+[0523/074209.764980] [WARNING:overwrite_partition.cpp(80)] read fail, no last partision-copy, -2
+[0523/074209.787851] [INFO:action_processor.cc(116)] ActionProcessor: finished PartitionsCopyAction with code ErrorCode::kSuccess
+[0523/074209.799470] [INFO:action_processor.cc(145)] ActionProcessor: starting MergeVerifyAction
+[0523/074209.802439] [INFO:action_processor.cc(116)] ActionProcessor: finished last action MergeVerifyAction with code ErrorCode::kSuccess
+[0523/074209.810857] [INFO:update_attempter_android.cc(908)] Processing Done.
+[0523/074209.824159] [INFO:update_attempter_android.cc(1286)] Clearing update complete marker.
+[0523/074209.831355] [INFO:update_attempter_android.cc(1108)] Terminating cleanup previous update. ErrorCode::kSuccess
+[0523/074209.834663] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:27798, shell_frame:28600, shell_front:27740, soc-cpu-1-0:48600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/074209.837583] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 0
+[0523/074209.853253] [INFO:pow_manger_update.cc(38)] A/B Update Engine release wake lock
+[0523/074209.878042] [GetUpdatePackageState]: file /data/update/update_status not found
+
+[0523/074209.924414] [WARNING:bi_report.cpp(141)] read fail
+[0523/074209.974442] [INFO:update_attempter_android.cc(307)] Init End, ready for binder
+shell_back:27798, shell_frame:28600, shell_front:27740, soc-cpu-1-0:47600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/074210.013828] [INFO:update_attempter_android.cc(2002)] OverwriteColdPatchPartitions successfully, tid = 0x76dbd26cb0[0523/074210.014404] 
+[INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 200 progress: 0
+shell_back:27798, shell_frame:28600, shell_front:27740, soc-cpu-1-0:47600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/074210.035054] [INFO:update_attempter_android.cc(1971)] Overwrite Cold Patch Partitions Thread Starting, pid = 13527, tid = 0x76dbd26cb0
+[0523/074210.051230] [INFO:overwrite_partition.cpp(110)] current slot 0 need overwrite to target slot 1
+[0523/074210.103324] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0523/074210.120780] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0523/074210.149588] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0523/074210.153265] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0523/074210.183559] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0523/074210.188130] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0523/074217.665876] [INFO:overwrite_partition.cpp(143)] overwrite ok.
+[0523/074217.672170] [INFO:overwrite_partition.cpp(155)] overwrite super metadata done.
+[0523/074217.681872] [INFO:overwrite_partition.cpp(168)] Overwrite patch Partitions ok.
+[0523/074217.690847] [INFO:update_attempter_android.cc(1975)] Overwrite Cold Patch Partitions finish with result: 1
+[0523/074217.697657] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 201 progress: 0
+shell_back:27981, shell_frame:28312, shell_front:27224, soc-cpu-1-0:46600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 

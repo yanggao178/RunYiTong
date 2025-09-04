@@ -191,3 +191,24 @@ class Hospital(Base):
     wechat_id = Column(String(100))  # 微信号
     created_time = Column(DateTime, default=datetime.utcnow)
     updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+# 收货地址模型 - 与Address.java保持一致
+class Address(Base):
+    __tablename__ = "addresses"
+    
+    id = Column(Integer, primary_key=True, index=True)  # 地址ID
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)  # 用户ID
+    name = Column(String(100), nullable=False)  # 收件人姓名
+    phone = Column(String(20), nullable=False)  # 联系电话
+    province = Column(String(50), nullable=False)  # 省份
+    city = Column(String(50), nullable=False)  # 城市
+    district = Column(String(50), nullable=False)  # 区县
+    detail_address = Column(String(500), nullable=False)  # 详细地址
+    is_default = Column(Boolean, default=False)  # 是否默认地址
+    latitude = Column(String(20))  # 纬度
+    longitude = Column(String(20))  # 经度
+    created_time = Column(DateTime, default=datetime.utcnow)
+    updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 关联关系
+    user = relationship("User", foreign_keys=[user_id])

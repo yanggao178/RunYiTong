@@ -1,0 +1,59 @@
+[0318/084430.578292] [INFO:main.cc(54)] A/B Update Engine starting
+[0318/084430.705870] [INFO:pow_manger_update.cc(28)] A/B Update Engine acquire wake lock
+[0318/084430.771580] [INFO:boot_control_android.cc(64)] Loaded boot control hal.
+[0318/084430.850555] [INFO:battery.cpp(25)] battery level: 86 charge status: 0
+[0318/084430.903792] rmt_oeminfo_read[201]:ReadOeminfoFromCmdline success, idx = 18, dst:all/cn
+[0318/084430.954274] [ERROR:update_attempter_android.cc(1394)] prefs_->GetInt64(kPrefsPreviousSlot, &previous_slot) failed.
+[0318/084430.993003] [INFO:update_attempter_android.cc(284)] OTAResult::NOT_ATTEMPTED
+[0318/084431.021065] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:20087, shell_frame:21024, shell_front:20002, soc-cpu-1-0:40300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0318/084431.043335] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 1
+[0318/084431.055259] [INFO:update_attempter_android.cc(1750)] Scheduling CleanupPreviousUpdateAction.
+[0318/084431.092203] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 11 progress: 0 OUC progress : 0
+shell_back:20087, shell_frame:21024, shell_front:20002, soc-cpu-1-0:40900, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0318/084431.148409] [INFO:action_processor.cc(51)] ActionProcessor: starting CleanupPreviousUpdateAction
+[0318/084431.201921] [INFO:cleanup_previous_update_action.cc(161)] Starting/resuming CleanupPreviousUpdateAction
+[0318/084431.225601] [INFO:cleanup_previous_update_action.cc(201)] Boot completed, waiting on markBootSuccessful()
+[0318/084431.281555] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0318/084431.301599] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0318/084431.348633] [INFO:ota_extend.cpp(124)] can not get OEMINFO_TMP_VENDORCOUNTRY, ret is -1
+[0318/084431.356660] [INFO:ota_extend.cpp(343)] no need to change vc.
+[0318/084431.409277] [INFO:cleanup_previous_update_action.cc(280)] Waiting for any previous merge request to complete. This can take up to several minutes.
+[0318/084431.445247] [INFO:cleanup_previous_update_action.cc(324)] Can't find any snapshot to merge.
+[0318/084431.499795] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0318/084431.557754] [INFO:cleanup_previous_update_action.cc(649)] Not reporting merge stats because state is None
+[0318/084431.616470] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0318/084431.639104] [INFO:action_processor.cc(116)] ActionProcessor: finished CleanupPreviousUpdateAction with code ErrorCode::kSuccess
+[0318/084431.647273] [INFO:action_processor.cc(145)] ActionProcessor: starting PartitionsCopyAction
+[0318/084431.665428] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0318/084431.670231] rmt_oeminfo_read_for_reused_aidl[211]:aidl service connect fail, attempt to use hidl
+
+[0318/084431.689836] [WARNING:overwrite_partition.cpp(80)] read fail, no last partision-copy, -2
+[0318/084431.698049] [INFO:action_processor.cc(116)] ActionProcessor: finished PartitionsCopyAction with code ErrorCode::kSuccess
+[0318/084431.708236] [INFO:action_processor.cc(145)] ActionProcessor: starting MergeVerifyAction
+[0318/084431.746651] [INFO:action_processor.cc(116)] ActionProcessor: finished last action MergeVerifyAction with code ErrorCode::kSuccess
+[0318/084431.890123] [INFO:update_attempter_android.cc(908)] Processing Done.
+[0318/084432.035478] [INFO:update_attempter_android.cc(1286)] Clearing update complete marker.
+[0318/084432.081459] [INFO:update_attempter_android.cc(1108)] Terminating cleanup previous update. ErrorCode::kSuccess
+[0318/084432.127766] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:20087, shell_frame:21024, shell_front:20002, soc-cpu-1-0:40300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0318/084432.163363] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 0
+[0318/084432.197538] [INFO:pow_manger_update.cc(38)] A/B Update Engine release wake lock
+[0318/084432.226056] [GetUpdatePackageState]: file /data/update/update_status not found
+
+[0318/084432.247470] [INFO:update_attempter_android.cc(307)] Init End, ready for binder
+shell_back:20087, shell_frame:21024, shell_front:20002, soc-cpu-1-0:40600, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+bi-report:
+301:2025-03-18 02:57:33
+303:2025-03-18 02:59:10
+304:97
+401:2025-03-18 02:59:10
+403:2025-03-18 02:59:26
+404:15
+
+[0318/084432.285535] [INFO:update_attempter_android.cc(1612)] client get CleanupSuccessfulUpdate
+[0318/084432.356759] [INFO:update_attempter_android.cc(1615)] Get  kPrefsPreviousCleanupResult:ErrorCode::kSuccess
+[0318/084432.396724] [INFO:update_attempter_android.cc(1620)] CleanupSuccessfulUpdate has previously completed with ErrorCode::kSuccess

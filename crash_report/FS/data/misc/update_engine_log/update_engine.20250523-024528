@@ -1,0 +1,60 @@
+[0523/024528.886349] [INFO:main.cc(54)] A/B Update Engine starting
+[0523/024528.955020] [INFO:pow_manger_update.cc(28)] A/B Update Engine acquire wake lock
+[0523/024528.991712] [INFO:boot_control_android.cc(64)] Loaded boot control hal.
+[0523/024529.040363] [INFO:battery.cpp(25)] battery level: 91 charge status: 0
+[0523/024529.105272] rmt_oeminfo_read[201]:ReadOeminfoFromCmdline success, idx = 18, dst:all/cn
+[0523/024529.216286] [ERROR:update_attempter_android.cc(1394)] prefs_->GetInt64(kPrefsPreviousSlot, &previous_slot) failed.
+[0523/024529.241728] [INFO:update_attempter_android.cc(284)] OTAResult::NOT_ATTEMPTED
+[0523/024529.291688] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:25000, shell_frame:25000, shell_front:25000, soc-cpu-1-0:47300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/024529.366009] [INFO:update_attempter_android.cc(1286)] Clearing update complete marker.
+[0523/024529.402885] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 1
+[0523/024529.475360] [INFO:update_attempter_android.cc(1750)] Scheduling CleanupPreviousUpdateAction.
+[0523/024529.496242] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 11 progress: 0 OUC progress : 0
+shell_back:25000, shell_frame:25000, shell_front:25000, soc-cpu-1-0:47300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/024529.510211] [INFO:action_processor.cc(51)] ActionProcessor: starting CleanupPreviousUpdateAction
+[0523/024529.540180] [INFO:cleanup_previous_update_action.cc(161)] Starting/resuming CleanupPreviousUpdateAction
+[0523/024529.569960] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 2 for WaitBootCompleted
+[0523/024529.593389] [GetUpdatePackageState]: file /data/update/update_status not found
+
+[0523/024529.631304] [WARNING:bi_report.cpp(141)] read fail
+[0523/024529.670958] [INFO:update_attempter_android.cc(307)] Init End, ready for binder
+shell_back:25000, shell_frame:25000, shell_front:25000, soc-cpu-1-0:47300, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/024531.571230] [INFO:cleanup_previous_update_action.cc(121)] Executing task 2
+[0523/024531.574965] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 4 for WaitBootCompleted
+[0523/024533.577361] [INFO:cleanup_previous_update_action.cc(121)] Executing task 4
+[0523/024533.628222] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 5 for WaitBootCompleted
+[0523/024535.641225] [INFO:cleanup_previous_update_action.cc(121)] Executing task 5
+[0523/024535.655109] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 6 for WaitBootCompleted
+[0523/024537.658143] [INFO:cleanup_previous_update_action.cc(121)] Executing task 6
+[0523/024537.703201] [INFO:cleanup_previous_update_action.cc(136)] CleanupPreviousUpdateAction scheduled task ID 7 for WaitBootCompleted
+[0523/024539.706776] [INFO:cleanup_previous_update_action.cc(121)] Executing task 7
+[0523/024539.717212] [INFO:cleanup_previous_update_action.cc(201)] Boot completed, waiting on markBootSuccessful()
+[0523/024539.727168] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0523/024539.739343] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0523/024539.761356] [INFO:ota_extend.cpp(124)] can not get OEMINFO_TMP_VENDORCOUNTRY, ret is -1
+[0523/024539.770918] [INFO:ota_extend.cpp(343)] no need to change vc.
+[0523/024539.774901] [INFO:cleanup_previous_update_action.cc(280)] Waiting for any previous merge request to complete. This can take up to several minutes.
+[0523/024539.796514] [INFO:cleanup_previous_update_action.cc(324)] Can't find any snapshot to merge.
+[0523/024539.802757] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0523/024539.818131] [INFO:cleanup_previous_update_action.cc(649)] Not reporting merge stats because state is None
+[0523/024539.820498] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0523/024539.822725] [INFO:action_processor.cc(116)] ActionProcessor: finished CleanupPreviousUpdateAction with code ErrorCode::kSuccess
+[0523/024539.824880] [INFO:action_processor.cc(145)] ActionProcessor: starting PartitionsCopyAction
+[0523/024539.831709] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0523/024539.837413] rmt_oeminfo_read_for_reused_aidl[211]:aidl service connect fail, attempt to use hidl
+
+[0523/024539.861581] [WARNING:overwrite_partition.cpp(80)] read fail, no last partision-copy, -2
+[0523/024539.873024] [INFO:action_processor.cc(116)] ActionProcessor: finished PartitionsCopyAction with code ErrorCode::kSuccess
+[0523/024539.879866] [INFO:action_processor.cc(145)] ActionProcessor: starting MergeVerifyAction
+[0523/024539.885578] [INFO:action_processor.cc(116)] ActionProcessor: finished last action MergeVerifyAction with code ErrorCode::kSuccess
+[0523/024539.898051] [INFO:update_attempter_android.cc(908)] Processing Done.
+[0523/024539.918661] [INFO:update_attempter_android.cc(1286)] Clearing update complete marker.
+[0523/024539.930000] [INFO:update_attempter_android.cc(1108)] Terminating cleanup previous update. ErrorCode::kSuccess
+[0523/024539.945640] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:28297, shell_frame:28291, shell_front:26462, soc-cpu-1-0:48900, freq(M):1958 1958 1958 1958 1958 1958 2208 2208 
+[0523/024539.959528] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 0
+[0523/024539.973229] [INFO:pow_manger_update.cc(38)] A/B Update Engine release wake lock

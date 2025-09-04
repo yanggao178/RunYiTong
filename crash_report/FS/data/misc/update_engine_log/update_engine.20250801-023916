@@ -1,0 +1,92 @@
+[0801/023916.537087] [INFO:main.cc(54)] A/B Update Engine starting
+[0801/023916.547949] [INFO:pow_manger_update.cc(28)] A/B Update Engine acquire wake lock
+[0801/023916.561010] [INFO:boot_control_android.cc(64)] Loaded boot control hal.
+[0801/023916.570251] [INFO:battery.cpp(25)] battery level: 100 charge status: 0
+[0801/023916.574911] rmt_oeminfo_read[201]:ReadOeminfoFromCmdline success, idx = 18, dst:all/cn
+[0801/023916.583295] [ERROR:update_attempter_android.cc(1394)] prefs_->GetInt64(kPrefsPreviousSlot, &previous_slot) failed.
+[0801/023916.588544] [INFO:update_attempter_android.cc(284)] OTAResult::NOT_ATTEMPTED
+[0801/023916.604050] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:42300, freq(M):1632 1632 1632 1632 1632 1632 691 691 
+[0801/023916.609953] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 1
+[0801/023916.614124] [INFO:update_attempter_android.cc(1750)] Scheduling CleanupPreviousUpdateAction.
+[0801/023916.619203] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 11 progress: 0 OUC progress : 0
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:42600, freq(M):1632 1632 1632 1632 1632 1632 691 691 
+[0801/023916.622727] [INFO:action_processor.cc(51)] ActionProcessor: starting CleanupPreviousUpdateAction
+[0801/023916.625997] [INFO:cleanup_previous_update_action.cc(161)] Starting/resuming CleanupPreviousUpdateAction
+[0801/023916.629608] [INFO:cleanup_previous_update_action.cc(201)] Boot completed, waiting on markBootSuccessful()
+[0801/023916.638344] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0801/023916.643806] rmt_oeminfo_read_aidl[125]:aidl service connect fail, attempt to use hidl
+
+[0801/023916.695753] [INFO:ota_extend.cpp(124)] can not get OEMINFO_TMP_VENDORCOUNTRY, ret is -1
+[0801/023916.700915] [INFO:ota_extend.cpp(343)] no need to change vc.
+[0801/023916.708784] [INFO:cleanup_previous_update_action.cc(280)] Waiting for any previous merge request to complete. This can take up to several minutes.
+[0801/023916.713424] [INFO:cleanup_previous_update_action.cc(324)] Can't find any snapshot to merge.
+[0801/023916.718443] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0801/023916.724623] [INFO:cleanup_previous_update_action.cc(649)] Not reporting merge stats because state is None
+[0801/023916.730494] [INFO:cleanup_previous_update_action.cc(142)] Stopping/suspending/completing CleanupPreviousUpdateAction
+[0801/023916.736529] [INFO:action_processor.cc(116)] ActionProcessor: finished CleanupPreviousUpdateAction with code ErrorCode::kSuccess
+[0801/023916.741148] [INFO:action_processor.cc(145)] ActionProcessor: starting PartitionsCopyAction
+[0801/023916.746453] vendor.honor.hardware.hwfactoryinterface.IHwFactoryInterface/hwfactoryinterface_hal connect fail
+
+[0801/023916.750713] rmt_oeminfo_read_for_reused_aidl[211]:aidl service connect fail, attempt to use hidl
+
+[0801/023916.782121] [WARNING:overwrite_partition.cpp(80)] read fail, no last partision-copy, -2
+[0801/023916.786897] [INFO:action_processor.cc(116)] ActionProcessor: finished PartitionsCopyAction with code ErrorCode::kSuccess
+[0801/023916.790267] [INFO:action_processor.cc(145)] ActionProcessor: starting MergeVerifyAction
+[0801/023916.793931] [INFO:action_processor.cc(116)] ActionProcessor: finished last action MergeVerifyAction with code ErrorCode::kSuccess
+[0801/023916.797662] [INFO:update_attempter_android.cc(908)] Processing Done.
+[0801/023916.811605] [INFO:update_attempter_android.cc(1286)] Clearing update complete marker.
+[0801/023916.815564] [INFO:update_attempter_android.cc(1108)] Terminating cleanup previous update. ErrorCode::kSuccess
+[0801/023916.820805] [INFO:update_attempter_android.cc(1202)] SetStatusAndNotify status: 0 progress: 0 OUC progress : 0
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:41900, freq(M):1286 1286 1286 1286 1286 1286 691 691 
+[0801/023916.825299] [INFO:update_engine_virtual_ab.cpp(160)] set: vab update running-state 0
+[0801/023916.829710] [INFO:pow_manger_update.cc(38)] A/B Update Engine release wake lock
+[0801/023916.836497] [GetUpdatePackageState]: file /data/update/update_status not found
+
+[0801/023916.960737] [WARNING:bi_report.cpp(141)] read fail
+[0801/023916.966059] [INFO:update_attempter_android.cc(307)] Init End, ready for binder
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:42300, freq(M):1094 1094 1094 1094 1094 1094 1190 1190 
+[0801/023916.974179] [INFO:update_attempter_android.cc(1919)] startUpdateParaZip Starting...
+[0801/023916.979357] [INFO:update_attempter_android.cc(1938)] cota para Update pthread create successfully, tid = 0x7af6039cb0
+[0801/023916.980743] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 200 progress: 0
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:41600, freq(M):1094 1094 1094 1094 1094 1094 691 691 
+[0801/023916.990746] [INFO:update_attempter_android.cc(576)] Update Package Thread Starting, pid = 19406, tid = 0x7af6039cb0
+[0801/023916.995628] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 200 progress: 5
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:41900, freq(M):1478 1478 1478 1478 1478 1478 691 691 
+[0801/023917.008676] fwrite failed!
+[0801/023917.027072] PARAM update, NO need version verify
+[0801/023917.063761] push binary errno: [166]
+[0801/023917.071433] [0801/023917.072223] push binary errno: [166][INFO:process_reaper.cc(76)] Untracked process 19417 terminated with status 0 (code = 1)
+
+[0801/023917.089950] push binary errno: [166]
+[0801/023917.098785] push binary errno: [167]
+[0801/023917.107707] push binary errno: [168]
+[0801/023924.869499] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 200 progress: 14
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:38300, freq(M):1286 1286 1286 1286 1286 1286 691 691 
+[0801/023924.875227] push binary errno: [208]
+[0801/023924.879441] push binary errno: [209]
+[0801/023924.883577] push binary errno: [211]
+[0801/023924.887534] push binary errno: [212]
+[0801/023924.891439] push binary errno: [214]
+[0801/023924.895595] push binary errno: [215]
+[0801/023924.899222] push binary errno: [213]
+[0801/023924.903194] push binary errno: [216]
+[0801/023924.907509] push binary errno: [222]
+[0801/023924.912952] push binary errno: [184]
+[0801/023924.917420] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 200 progress: 81
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:38900, freq(M):1632 1632 1632 1632 1632 1632 691 691 
+[0801/023924.921429] push binary errno: [217]
+[0801/023924.924929] push binary errno: [222]
+[0801/023924.929267] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 200 progress: 90
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:38900, freq(M):1478 1478 1478 1478 1478 1478 960 960 
+[0801/023924.934132] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 200 progress: 100
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:38900, freq(M):1478 1478 1478 1478 1478 1478 960 960 
+[0801/023924.939832] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 200 progress: 100
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:38900, freq(M):1286 1286 1286 1286 1286 1286 691 691 
+[0801/023924.951747] [ERROR:update_engine_install.cpp(1309)] Failed to unlink /data/update/conUpdateFlag
+[0801/023924.955840] [INFO:update_attempter_android.cc(585)] update finish with result: 0
+[0801/023924.961180] [INFO:update_attempter_android.cc(599)] hot patch or cota, not set targetSlot: 1
+[0801/023924.968046] [INFO:update_attempter_android.cc(1222)] SetPatchStatusAndNotify status: 201 progress: 100
+shell_back:36432, shell_frame:36755, shell_front:35446, soc-cpu-1-0:38900, freq(M):806 806 806 806 806 806 691 691 
+[0801/023924.973648] [INFO:update_attempter_android.cc(1188)] UpdateFinishNotify error_code: 0

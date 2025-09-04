@@ -115,15 +115,45 @@
                 android:layout_marginTop="6dp"
                 android:lineSpacingExtra="2dp" />
 
-            <!-- 药店名 -->
-            <TextView
-                android:id="@+id/pharmacy_name"
+            <!-- 药店名区域 -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="10sp"
-                android:textColor="#999999"
-                android:layout_marginTop="4dp"
-                android:text="药店: 未知" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+                
+                <TextView
+                    android:id="@+id/pharmacy_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textSize="10sp"
+                    android:textColor="#999999"
+                    android:text="药店: 未知" />
+                
+                <!-- 进店标识 -->
+                <TextView
+                    android:id="@+id/pharmacy_enter_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="进店"
+                    android:textSize="9sp"
+                    android:textColor="#FF6B6B"
+                    android:background="@drawable/input_background"
+                    android:backgroundTint="#FFF0F0"
+                    android:paddingHorizontal="4dp"
+                    android:paddingVertical="1dp"
+                    android:layout_marginEnd="2dp" />
+                
+                <!-- 箭头图标 -->
+                <ImageView
+                    android:id="@+id/pharmacy_arrow_icon"
+                    android:layout_width="8dp"
+                    android:layout_height="8dp"
+                    android:src="@drawable/ic_arrow_right"
+                    android:tint="#FF6B6B" />            
+            </LinearLayout>
 
             <!-- 功能标签 -->
             <LinearLayout

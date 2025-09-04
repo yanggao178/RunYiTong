@@ -20,53 +20,46 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <!-- 地址列表区域 -->
-        <ScrollView
+        <!-- 地址列表RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_addresses"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/btn_add_address"
-            android:padding="16dp">
+            android:padding="16dp" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
+        <!-- 暂无地址提示 -->
+        <LinearLayout
+            android:id="@+id/tv_empty_address"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="visible">
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/ic_location"
+                app:tint="#BDC3C7"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:text="暂无收货地址"
+                android:textSize="16sp"
+                android:textColor="#7F8C8D"
+                android:layout_marginBottom="8dp" />
 
-                <!-- 暂无地址提示 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:layout_marginTop="100dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="点击下方按钮添加收货地址"
+                android:textSize="14sp"
+                android:textColor="#95A5A6" />
 
-                    <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:src="@drawable/ic_location"
-                        app:tint="#BDC3C7"
-                        android:layout_marginBottom="16dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="暂无收货地址"
-                        android:textSize="16sp"
-                        android:textColor="#7F8C8D"
-                        android:layout_marginBottom="8dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="点击下方按钮添加收货地址"
-                        android:textSize="14sp"
-                        android:textColor="#95A5A6" />
-
-                </LinearLayout>
-
-            </LinearLayout>
-
-        </ScrollView>
+        </LinearLayout>
 
         <!-- 添加地址按钮 -->
         <Button

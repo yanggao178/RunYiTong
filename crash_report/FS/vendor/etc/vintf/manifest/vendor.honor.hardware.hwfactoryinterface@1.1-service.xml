@@ -1,0 +1,11 @@
+<manifest version="1.0" type="device">
+    <hal format="hidl">
+        <name>vendor.honor.hardware.hwfactoryinterface</name>
+        <transport>hwbinder</transport>
+        <version>1.1</version>
+        <interface>
+            <name>IHwFactoryInterface</name>
+            <instance>hwfactoryinterface_hal</instance>
+        </interface>
+    </hal>
+</manifest>

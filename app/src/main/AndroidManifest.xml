@@ -106,6 +106,10 @@
             android:name=".activity.SetPaymentPasswordActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SecuritySettingsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
             
         <activity
             android:name=".activity.LoginActivity"
@@ -149,6 +153,12 @@
             
         <activity
             android:name=".activity.ReportViewerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+            
+        <!-- 药店商品列表Activity -->
+        <activity
+            android:name=".activity.PharmacyProductsActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
             

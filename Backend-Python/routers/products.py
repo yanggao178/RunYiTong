@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Query
 from database import get_db
 from models import Product as ProductModel
 from schemas import Product, ProductCreate, ProductUpdate, PaginatedResponse, BaseResponse
@@ -33,9 +34,28 @@ async def get_products(
     # 分页
     products = query.offset(skip).limit(limit).all()
     
+    # 手动构造商品数据，确保字段匹配
+    items = []
+    for product in products:
+        item = {
+            "id": product.id,
+            "name": product.name,
+            "price": float(product.price) if product.price else 0.0,
+            "description": product.description or "",
+            "featured_image_url": product.featured_image_url or "",
+            "category_id": product.category_id,
+            "stock_quantity": product.stock_quantity or 0,
+            "manufacturer": product.manufacturer or "",
+            "pharmacy_name": product.pharmacy_name or "",
+            "sales_count": product.sales_count or 0,
+            "created_at": product.created_at.isoformat() if product.created_at else None,
+            "updated_at": product.updated_at.isoformat() if product.updated_at else None
+        }
+        items.append(item)
+    
     # 构造ProductListResponse格式的数据
     product_list_data = {
-        "items": [Product.from_orm(product).dict() for product in products],
+        "items": items,
         "total": total,
         "skip": skip,
         "limit": limit
@@ -47,6 +67,59 @@ async def get_products(
         "data": product_list_data
     }
 
+# 根据药店名称获取商品列表（必须在{product_id}路由之前定义）
+@router.get("/pharmacy")
+async def get_products_by_pharmacy(
+    pharmacy_name: str = Query(..., description="药店名称"),
+    db: Session = Depends(get_db)
+):
+    """根据药店名称获取商品列表"""
+    try:
+        # 检查药店名称是否为空
+        if not pharmacy_name or pharmacy_name.strip() == "":
+            raise HTTPException(status_code=400, detail="药店名称不能为空")
+        
+        # 查询指定药店的所有商品
+        products = db.query(ProductModel).filter(ProductModel.pharmacy_name == pharmacy_name).all()
+        
+        # 手动构造商品数据，确保字段匹配
+        items = []
+        for product in products:
+            item = {
+                "id": product.id,
+                "name": product.name,
+                "price": float(product.price) if product.price else 0.0,
+                "description": product.description or "",
+                "featured_image_url": product.featured_image_url or "",
+                "category_id": product.category_id,
+                "stock_quantity": product.stock_quantity or 0,
+                "manufacturer": product.manufacturer or "",
+                "pharmacy_name": product.pharmacy_name or "",
+                "sales_count": product.sales_count or 0,
+                "created_at": product.created_at.isoformat() if product.created_at else None,
+                "updated_at": product.updated_at.isoformat() if product.updated_at else None
+            }
+            items.append(item)
+        
+        # 构造ProductListResponse格式的数据
+        product_list_data = {
+            "items": items,
+            "total": len(items),
+            "skip": 0,
+            "limit": len(items)
+        }
+        
+        # 返回符合BaseResponse格式的响应
+        return {
+            "success": True,
+            "message": f"获取{pharmacy_name}的商品列表成功",
+            "data": product_list_data
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"服务器内部错误: {str(e)}")
+
 # 获取单个商品详情
 @router.get("/{product_id}")
 async def get_product(product_id: int, db: Session = Depends(get_db)):
@@ -55,10 +128,26 @@ async def get_product(product_id: int, db: Session = Depends(get_db)):
     if not product:
         raise HTTPException(status_code=404, detail="商品不存在")
     
+    # 手动构造商品数据
+    product_data = {
+        "id": product.id,
+        "name": product.name,
+        "price": float(product.price) if product.price else 0.0,
+        "description": product.description or "",
+        "featured_image_url": product.featured_image_url or "",
+        "category_id": product.category_id,
+        "stock_quantity": product.stock_quantity or 0,
+        "manufacturer": product.manufacturer or "",
+        "pharmacy_name": product.pharmacy_name or "",
+        "sales_count": product.sales_count or 0,
+        "created_at": product.created_at.isoformat() if product.created_at else None,
+        "updated_at": product.updated_at.isoformat() if product.updated_at else None
+    }
+    
     return {
         "success": True,
         "message": "获取商品详情成功",
-        "data": Product.from_orm(product).dict()
+        "data": product_data
     }
 
 # 创建商品
@@ -119,7 +208,8 @@ async def purchase_product(product_id: int, db: Session = Depends(get_db)):
     if not db_product:
         raise HTTPException(status_code=404, detail="商品不存在")
     
-    db_product.purchase_count += 1
+    db_product.sales_count += 1  # 修复：使用正确的字段名
     db.commit()
     db.refresh(db_product)
-    return {"message": "购买成功", "purchase_count": db_product.purchase_count}
+    return {"message": "购买成功", "purchase_count": db_product.sales_count}  # 保持API响应兼容性
+

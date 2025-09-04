@@ -1,0 +1,20 @@
+<manifest version="1.0" type="device">
+    <!-- NFC HAL service -->
+    <hal format="hidl" override="true">
+       <name>android.hardware.nfc</name>
+       <transport>hwbinder</transport>
+    </hal>
+    <hal format="hidl" override="true">
+        <name>vendor.honor.hardware.nfc</name>
+        <transport>hwbinder</transport>
+    </hal>
+   <hal format="aidl" override="true">
+        <name>vendor.honor.hardware.hnchipsrvhertz</name>
+    </hal>
+    <hal format="aidl" override="true">
+        <name>vendor.honor.hardware.hnchipsrvlog</name>
+    </hal>
+    <hal format="aidl" override="true">
+        <name>vendor.honor.hardware.hnchipsrvsat</name>
+    </hal>
+</manifest>

@@ -1,0 +1,31 @@
+<manifest version="1.0" type="device">
+    <!-- secure element -->
+    <hal format="hidl" override="true">
+       <name>android.hardware.secure_element</name>
+       <transport>hwbinder</transport>
+       <version>1.2</version>
+       <interface>
+           <name>ISecureElement</name>
+           <instance>SIM1</instance>
+       </interface>
+    </hal>
+    <hal format="hidl">
+        <name>vendor.honor.hardware.nxpnfc</name>
+        <transport>hwbinder</transport>
+        <version>2.0</version>
+        <interface>
+            <name>INxpNfc</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="aidl" override="true">
+        <name>vendor.honor.hardware.hnchipsrvhertz</name>
+    </hal>
+    <hal format="aidl" override="true">
+        <name>vendor.honor.hardware.hnchipsrvlog</name>
+    </hal>
+    <hal format="aidl" override="true">
+        <name>vendor.honor.hardware.hnchipsrvsat</name>
+    </hal>
+
+</manifest>

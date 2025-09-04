@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 import com.wenteng.frontend_android.R;
+import com.wenteng.frontend_android.activity.SecuritySettingsActivity;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -102,7 +103,9 @@ public class SettingsActivity extends AppCompatActivity {
         });
         
         layoutSecurity.setOnClickListener(v -> {
-            android.widget.Toast.makeText(this, "账号与安全功能开发中", android.widget.Toast.LENGTH_SHORT).show();
+            // 跳转到账号与安全页面
+            Intent intent = new Intent(this, SecuritySettingsActivity.class);
+            startActivity(intent);
         });
         
         // 认证与支付点击事件
@@ -116,6 +119,8 @@ public class SettingsActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
+    
+
     
     private void loadSettings() {
         // 从SharedPreferences加载设置

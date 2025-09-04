@@ -1,0 +1,15 @@
+<!--/*
+ * Copyright (c) Honor Device Co., Ltd 2022-2022. All rights reserved.
+ * Description: Manifest file for hnradio aidl interface.
+ * Author: l00011993
+ * Create: 2022-10-18
+ */
+-->
+
+<manifest version="1.0" type="device">
+    <hal format="aidl">
+        <name>vendor.honor.hardware.hnchipsrvsat</name>
+        <version>2</version>
+        <fqname>IHnChipSrvSat/hnchipsrv_sat</fqname>
+    </hal>
+</manifest>

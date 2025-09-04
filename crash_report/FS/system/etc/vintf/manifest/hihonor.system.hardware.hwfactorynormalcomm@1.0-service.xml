@@ -1,0 +1,11 @@
+<manifest version="1.0" type="framework">
+    <hal>
+        <name>honor.system.hardware.hwfactorynormalcomm</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IHwFactoryNormalComm</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</manifest>
