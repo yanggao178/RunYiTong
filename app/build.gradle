@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.wenxing.xunyitong'
+    namespace 'com.wenxing.runyitong'
     compileSdk 34
     
     configurations.all {
@@ -14,7 +14,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.wenxing.xunyitong"
+        applicationId "com.wenxing.runyitong"
         minSdk 24
         targetSdk 34
         versionCode 1

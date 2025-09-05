@@ -7,4 +7,4 @@
     android:canRetrieveWindowContent="true"
     android:canRequestTouchExplorationMode="true"
     android:notificationTimeout="100"
-    android:settingsActivity="com.wenxing.xunyitong.MainActivity" />
+    android:settingsActivity="com.wenxing.runyitong.MainActivity" />

@@ -179,7 +179,7 @@
         <!-- FileProvider for camera functionality -->
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.wenxing.xunyitong.fileprovider"
+            android:authorities="com.wenxing.runyitong.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
