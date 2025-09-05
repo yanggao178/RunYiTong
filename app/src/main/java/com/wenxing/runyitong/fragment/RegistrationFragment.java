@@ -39,7 +39,6 @@ public class RegistrationFragment extends Fragment {
     private RecyclerView recyclerViewHospitals, recyclerViewDoctors, recyclerViewDepartments;
     private Spinner spinnerTimeSlots;
     private EditText editTextSymptoms, editTextPatientName, editTextPatientPhone, editTextPatientId;
-    private Button btnConfirmAppointment;
     private ProgressBar progressBar;
     private TextView textViewSelectedInfo;
     
@@ -90,7 +89,6 @@ public class RegistrationFragment extends Fragment {
         editTextPatientName = view.findViewById(R.id.edit_patient_name);
         editTextPatientPhone = view.findViewById(R.id.edit_patient_phone);
         editTextPatientId = view.findViewById(R.id.edit_patient_id);
-        btnConfirmAppointment = view.findViewById(R.id.btn_confirm_appointment);
         progressBar = view.findViewById(R.id.progress_bar);
         textViewSelectedInfo = view.findViewById(R.id.text_selected_info);
         
@@ -122,9 +120,6 @@ public class RegistrationFragment extends Fragment {
                 showDoctorRegistration();
             }
         });
-        
-        // 确认预约按钮点击
-        btnConfirmAppointment.setOnClickListener(v -> confirmAppointment());
     }
     
     private void updateButtonSelection() {
@@ -138,15 +133,21 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void showHospitalRegistration() {
-        // 显示医院列表容器和医院列表，隐藏医生列表
+        // 显示医院列表，隐藏医生列表
         layoutHospitalList.setVisibility(View.VISIBLE);
         recyclerViewHospitals.setVisibility(View.VISIBLE);
         recyclerViewDoctors.setVisibility(View.GONE);
-        recyclerViewDepartments.setVisibility(View.GONE);
+        textViewSelectedInfo.setText("请选择医院");
         
-        android.util.Log.d("RegistrationFragment", "显示医院挂号界面，RecyclerView可见性: " + recyclerViewHospitals.getVisibility());
+        // 隐藏医生列表容器 - 添加getView()空检查以避免空指针异常
+        if (getView() != null) {
+            View layoutDoctorList = getView().findViewById(R.id.layout_doctor_list);
+            if (layoutDoctorList != null) {
+                layoutDoctorList.setVisibility(View.GONE);
+            }
+        }
         
-        updateButtonSelection();
+        // 加载医院列表数据
         loadHospitals();
     }
     
@@ -564,53 +565,7 @@ public class RegistrationFragment extends Fragment {
         textViewSelectedInfo.setText(info.toString());
     }
     
-    private void confirmAppointment() {
-        // 验证输入
-        String patientName = editTextPatientName.getText().toString().trim();
-        String patientPhone = editTextPatientPhone.getText().toString().trim();
-        String patientId = editTextPatientId.getText().toString().trim();
-        String symptoms = editTextSymptoms.getText().toString().trim();
-        
-        if (patientName.isEmpty() || patientPhone.isEmpty() || patientId.isEmpty()) {
-            showError("请填写完整的患者信息");
-            return;
-        }
-        
-        if (selectedDoctor == null) {
-            showError("请选择医生");
-            return;
-        }
-        
-        if (selectedTimeSlot == null || selectedTimeSlot.isEmpty()) {
-            showError("请选择预约时间");
-            return;
-        }
-        
-        // 创建预约对象
-        Appointment appointment = new Appointment();
-        appointment.setPatientName(patientName);
-        appointment.setPatientPhone(patientPhone);
-        appointment.setPatientIdCard(patientId);
-        appointment.setDoctorId(selectedDoctor.getId());
-        appointment.setDoctorName(selectedDoctor.getName());
-        appointment.setHospitalId(selectedDoctor.getHospitalId());
-        appointment.setHospitalName(selectedDoctor.getHospitalName());
-        appointment.setDepartmentId(selectedDoctor.getDepartmentId());
-        appointment.setDepartmentName(selectedDoctor.getDepartmentName());
-        appointment.setAppointmentTime(selectedTimeSlot);
-        appointment.setSymptoms(symptoms);
-        appointment.setStatus("待确认");
-        
-        // 显示预约成功信息
-        showSuccess("预约成功！" + System.lineSeparator() +
-                   "医生：" + selectedDoctor.getName() + System.lineSeparator() +
-                   "医院：" + selectedDoctor.getHospitalName() + System.lineSeparator() +
-                   "科室：" + selectedDoctor.getDepartmentName() + System.lineSeparator() +
-                   "时间：" + selectedTimeSlot);
-        
-        // 清空表单
-        clearForm();
-    }
+
     
     private void clearForm() {
         editTextPatientName.setText("");

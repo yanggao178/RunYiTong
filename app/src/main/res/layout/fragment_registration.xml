@@ -142,7 +142,7 @@
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recycler_hospitals"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="1200dp"
                         android:nestedScrollingEnabled="false" />
 
                 </LinearLayout>
@@ -392,33 +392,9 @@
                         android:inputType="textMultiLine"
                         android:layout_marginBottom="24dp" />
 
-                    <EditText
-                        android:id="@+id/edit_symptoms"
-                        android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:background="@drawable/edittext_background"
-                        android:padding="12dp"
-                        android:hint="请简要描述您的症状..."
-                        android:textSize="12sp"
-                        android:gravity="top|start"
-                        android:inputType="textMultiLine"
-                        android:maxLines="4"
-                        android:visibility="gone" />
-
                 </LinearLayout>
 
-                <!-- 确认预约按钮 -->
-                <Button
-                    android:id="@+id/btn_confirm_appointment"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:text="确认预约"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:background="@drawable/button_primary"
-                    android:layout_marginTop="24dp"
-                    android:layout_marginBottom="16dp" />
+                <!-- 确认预约按钮已移除 -->
 
             </LinearLayout>
 
