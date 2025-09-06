@@ -201,24 +201,30 @@
 
             <Button
                 android:id="@+id/btn_view_details"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
                 android:text="查看详情"
-                android:textSize="10sp"
+                android:textSize="12sp"
                 android:background="@drawable/button_enhanced_primary"
                 android:textColor="@android:color/white"
-                android:paddingHorizontal="12dp"
-                android:layout_marginEnd="8dp" />
+                android:paddingHorizontal="8dp"
+                android:layout_marginEnd="4dp"
+                android:singleLine="true"
+                android:ellipsize="none" />
 
             <Button
                 android:id="@+id/btn_update_status"
-                android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
                 android:text="更新状态"
-                android:textSize="10sp"
+                android:textSize="12sp"
                 android:background="@drawable/button_secondary"
                 android:textColor="@android:color/white"
-                android:paddingHorizontal="12dp" />
+                android:paddingHorizontal="8dp"
+                android:singleLine="true"
+                android:ellipsize="none" />
 
         </LinearLayout>
 
