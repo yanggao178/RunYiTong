@@ -155,37 +155,7 @@
                     android:tint="#FF6B6B" />            
             </LinearLayout>
 
-            <!-- 功能标签 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="8dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🏥 医保"
-                    android:textSize="9sp"
-                    android:textColor="#4CAF50"
-                    android:background="@drawable/input_background"
-                    android:backgroundTint="#E8F5E8"
-                    android:paddingHorizontal="6dp"
-                    android:paddingVertical="2dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="🚚 包邮"
-                    android:textSize="9sp"
-                    android:textColor="#2196F3"
-                    android:background="@drawable/input_background"
-                    android:backgroundTint="#E3F2FD"
-                    android:paddingHorizontal="6dp"
-                    android:paddingVertical="2dp"
-                    android:layout_marginStart="6dp" />
-
-            </LinearLayout>
 
         </LinearLayout>
 
