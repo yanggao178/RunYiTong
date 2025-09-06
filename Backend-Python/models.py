@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Boolean, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Boolean, Text, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
@@ -212,3 +213,22 @@ class Address(Base):
     
     # 关联关系
     user = relationship("User", foreign_keys=[user_id])
+
+# 订单模型 - 与ai_medical.db orders表结构保持一致
+class Order(Base):
+    __tablename__ = "orders"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    order_id = Column(String(100), nullable=False, unique=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    product_name = Column(String(255), nullable=False)
+    status = Column(String(20), nullable=False, index=True)
+    price = Column(String(50), nullable=False)
+    create_time = Column(String(50))
+    pay_time = Column(String(50))
+    shipping_address = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # 关联关系
+    user = relationship("User")

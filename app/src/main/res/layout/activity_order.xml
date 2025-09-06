@@ -74,45 +74,38 @@
 
     </LinearLayout>
 
-    <!-- 订单列表 -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/orders_recycler_view"
+    <!-- 订单列表内容容器 -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp" />
+        android:layout_height="match_parent">
 
-    <!-- 空状态提示 -->
-    <LinearLayout
-        android:id="@+id/empty_state"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:visibility="gone">
+        <!-- 订单列表 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/orders_recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp" />
 
-        <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/ic_launcher_background"
-            android:alpha="0.3"
-            android:contentDescription="@string/empty_order_image_desc" />
-
-        <TextView
+        <!-- 加载进度条 -->
+        <ProgressBar
+            android:id="@+id/progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/empty_order_title"
-            android:textSize="18sp"
-            android:textColor="@android:color/darker_gray" />
+            android:layout_gravity="center"
+            android:visibility="gone" />
 
+        <!-- 空状态提示 -->
         <TextView
+            android:id="@+id/empty_state_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/empty_order_message"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray" />
-
-    </LinearLayout>
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:padding="24dp"
+            android:text="暂无订单记录"
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray"
+            android:visibility="gone" />
+    </FrameLayout>
 
 </LinearLayout>

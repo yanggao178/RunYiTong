@@ -1,10 +1,8 @@
-from pydantic import BaseModel, EmailStr
 from datetime import datetime
-from typing import Optional, List
-from pydantic import BaseModel, EmailStr
+from typing import Any, List, Optional
+from pydantic import BaseModel, EmailStr, Field
 
 # 基础响应模型
-from typing import Any
 
 class BaseResponse(BaseModel):
     success: bool = True
@@ -449,6 +447,47 @@ class AddressListResponse(BaseModel):
     success: bool = True
     message: str = "获取成功"
     data: List[AddressResponse]
+    total: int
+    page: int
+    size: int
+
+
+# 订单相关模式 - 基于Order.java模型类
+class OrderBase(BaseModel):
+    """订单基础模型 - 与Order.java字段对应"""
+    order_id: str
+    user_id: int
+    product_name: str
+    status: str
+    price: str
+    create_time: Optional[str] = None
+    pay_time: Optional[str] = None
+    shipping_address: Optional[str] = None
+
+class OrderCreate(OrderBase):
+    """创建订单模型"""
+    pass
+
+class OrderUpdate(BaseModel):
+    """更新订单模型"""
+    status: Optional[str] = None
+    pay_time: Optional[str] = None
+    shipping_address: Optional[str] = None
+
+class OrderResponse(OrderBase):
+    """订单响应模型 - 与Order.java完全对应"""
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+# 订单列表响应
+class OrderListResponse(BaseModel):
+    success: bool = True
+    message: str = "获取成功"
+    data: List[OrderResponse]
     total: int
     page: int
     size: int

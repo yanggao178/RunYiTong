@@ -20,6 +20,8 @@ import com.wenxing.runyitong.model.PrescriptionItem;
 import com.wenxing.runyitong.model.PaymentOrderRequest;
 import com.wenxing.runyitong.model.PaymentOrderResponse;
 import com.wenxing.runyitong.model.Address;
+import com.wenxing.runyitong.model.Order;
+import com.wenxing.runyitong.api.OrderListResponse;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -454,6 +456,34 @@ public interface ApiService {
      */
     @GET("api/v1/prescriptions/health")
     Call<Object> healthCheck();
+    
+    // ==================== 订单相关接口 ====================
+    
+    /**
+     * 获取用户订单列表
+     * @param userId 用户ID
+     * @param skip 跳过数量
+     * @param limit 限制数量
+     * @param status 订单状态（可选，全部/待发货/待收货/已完成）
+     * @return 订单列表响应（直接返回，不经过ApiResponse包装）
+     */
+    @GET("api/v1/orders/user/{user_id}")
+    Call<OrderListResponse> getUserOrders(
+        @Path("user_id") int userId,
+        @Query("skip") int skip,
+        @Query("limit") int limit,
+        @Query("status") String status
+    );
+    
+    /**
+     * 根据订单ID获取订单详情
+     * @param orderId 订单ID
+     * @return 订单详情响应
+     */
+    @GET("api/v1/orders/{order_id}")
+    Call<ApiResponse<Order>> getOrderDetail(
+        @Path("order_id") String orderId
+    );
     
     // ==================== 处方相关接口 ====================
     
