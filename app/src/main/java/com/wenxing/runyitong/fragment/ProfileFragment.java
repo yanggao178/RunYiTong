@@ -28,7 +28,7 @@ import com.wenxing.runyitong.activity.HealthRecordActivity;
 
 public class ProfileFragment extends Fragment {
 
-    private Button btnExpressOrders, btnLogin, btnLogout;
+    private Button btnExpressOrders, btnLogin, btnLogout, btnBecomeMember;
     private CardView cardSettings, cardMyAppointments, cardMyPrescriptions, cardHealthRecord;
     private TextView tvUsername, tvWelcome;
     private SharedPreferences sharedPreferences;
@@ -55,6 +55,7 @@ public class ProfileFragment extends Fragment {
         btnExpressOrders = view.findViewById(R.id.btn_express_orders);
         btnLogin = view.findViewById(R.id.btn_login);
         btnLogout = view.findViewById(R.id.btn_logout);
+        btnBecomeMember = view.findViewById(R.id.btn_become_member);
         cardSettings = view.findViewById(R.id.card_settings);
         tvUsername = view.findViewById(R.id.tv_username);
         tvWelcome = view.findViewById(R.id.tv_welcome);
@@ -70,6 +71,9 @@ public class ProfileFragment extends Fragment {
         // 检查关键视图是否找到
         if (btnLogin == null) {
             android.util.Log.e("ProfileFragment", "btnLogin not found in layout");
+        }
+        if (btnBecomeMember == null) {
+            android.util.Log.e("ProfileFragment", "btnBecomeMember not found in layout");
         }
         if (btnExpressOrders == null) {
             android.util.Log.e("ProfileFragment", "btnExpressOrders not found in layout");
@@ -89,6 +93,7 @@ public class ProfileFragment extends Fragment {
         }
         
         updateLoginStatus();
+        updateMemberButtonVisibility();
     }
     
     private void setupClickListeners() {
@@ -126,6 +131,27 @@ public class ProfileFragment extends Fragment {
                     if (isAdded() && getContext() != null) {
                         Toast.makeText(getContext(), "启动登录页面时发生错误：" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
+                }
+            });
+        }
+        
+        // 成为会员按钮点击事件
+        if (btnBecomeMember != null) {
+            btnBecomeMember.setOnClickListener(v -> {
+                try {
+                    android.util.Log.d("ProfileFragment", "Become member button clicked");
+                    
+                    // 检查用户是否登录
+                    if (!getLoginState()) {
+                        showLoginDialog();
+                        return;
+                    }
+                    
+                    // 实现会员申请功能
+                    showMemberApplication();
+                } catch (Exception e) {
+                    android.util.Log.e("ProfileFragment", "打开会员申请页面失败: " + e.getMessage(), e);
+                    Toast.makeText(getActivity(), "无法打开会员申请页面，请重试", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -479,6 +505,25 @@ public class ProfileFragment extends Fragment {
                 btnLogout.setVisibility(View.GONE);
             }
         }
+    }
+    
+    /**
+     * 更新会员按钮可见性
+     */
+    private void updateMemberButtonVisibility() {
+        if (btnBecomeMember != null) {
+            btnBecomeMember.setVisibility(View.VISIBLE);
+        }
+    }
+    
+    /**
+     * 显示会员申请功能
+     */
+    private void showMemberApplication() {
+        android.util.Log.d("ProfileFragment", "打开会员申请功能");
+        
+        // 目前只显示一个Toast提示，实际应用中可以跳转到会员申请相关的Activity
+        Toast.makeText(getActivity(), "会员申请功能即将上线", Toast.LENGTH_SHORT).show();
     }
     
     @Override

@@ -493,3 +493,44 @@ class OrderListResponse(BaseModel):
     size: int
 
 
+# 实名认证相关模式
+class IdentityVerificationBase(BaseModel):
+    """实名认证基础模型"""
+    real_name: str  # 真实姓名
+    id_card_number: str  # 身份证号
+
+class IdentityVerificationCreate(IdentityVerificationBase):
+    """创建实名认证模型"""
+    pass
+
+class IdentityVerificationUpdate(BaseModel):
+    """更新实名认证模型"""
+    real_name: Optional[str] = None
+    id_card_number: Optional[str] = None
+    status: Optional[str] = None
+    verification_time: Optional[datetime] = None
+
+class IdentityVerificationResponse(IdentityVerificationBase):
+    """实名认证响应模型"""
+    id: int
+    user_id: int
+    status: str
+    verification_time: Optional[datetime] = None
+    created_at: datetime
+    updated_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class IdentityVerificationCreateRequest(BaseModel):
+    """客户端发送的实名认证请求"""
+    real_name: str  # 真实姓名
+    id_card_number: str  # 身份证号（将在服务端加密）
+
+class IdentityVerificationResult(BaseModel):
+    """实名认证结果响应"""
+    success: bool = True
+    message: str = "认证信息已提交，等待审核"
+    data: Optional[IdentityVerificationResponse] = None
+
+

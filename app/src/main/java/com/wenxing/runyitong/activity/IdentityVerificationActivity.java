@@ -1,23 +1,37 @@
 package com.wenxing.runyitong.activity;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.wenxing.runyitong.R;
+import com.wenxing.runyitong.api.ApiClient;
+import com.wenxing.runyitong.api.ApiService;
+import com.wenxing.runyitong.model.IdentityVerificationRequest;
+import com.wenxing.runyitong.model.IdentityVerificationResult;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class IdentityVerificationActivity extends AppCompatActivity {
+    private static final String TAG = "IdentityVerificationActivity";
 
     private ImageView ivBack;
     private EditText etRealName;
     private EditText etIdCard;
     private Button btnSubmit;
     private String actualIdCard = ""; // 存储实际的身份证号
+    
+    private ApiService apiService;
+    private SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +39,7 @@ public class IdentityVerificationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_identity_verification);
         
         initViews();
+        initData();
         loadVerificationInfo();
         setupClickListeners();
     }
@@ -34,6 +49,11 @@ public class IdentityVerificationActivity extends AppCompatActivity {
         etRealName = findViewById(R.id.et_real_name);
         etIdCard = findViewById(R.id.et_id_card);
         btnSubmit = findViewById(R.id.btn_submit);
+    }
+    
+    private void initData() {
+        apiService = ApiClient.getApiService();
+        sharedPreferences = getSharedPreferences("user_login_state", MODE_PRIVATE);
     }
 
     private void setupClickListeners() {
@@ -48,6 +68,7 @@ public class IdentityVerificationActivity extends AppCompatActivity {
     }
     
     private void setupIdCardMask() {
+        // 简单处理：直接存储实际输入的身份证号，不做实时掩码
         etIdCard.addTextChangedListener(new TextWatcher() {
             private boolean isUpdating = false;
             
@@ -64,29 +85,29 @@ public class IdentityVerificationActivity extends AppCompatActivity {
                 isUpdating = true;
                 String input = s.toString();
                 
-                // 移除所有星号，获取实际输入的数字和字母
-                StringBuilder actualInput = new StringBuilder();
-                for (char c : input.toCharArray()) {
-                    if (c != '*') {
-                        actualInput.append(c);
-                    }
-                }
+                // 直接存储实际输入的身份证号
+                actualIdCard = input;
                 
-                actualIdCard = actualInput.toString();
-                
-                // 如果长度超过10位，后面的用星号替换显示
-                if (actualIdCard.length() > 10) {
+                isUpdating = false;
+            }
+        });
+        
+        // 只有在失去焦点时才应用掩码，让用户可以正常输入完整的18位身份证号
+        etIdCard.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus && !TextUtils.isEmpty(actualIdCard) && actualIdCard.length() > 10) {
+                    // 当失去焦点且身份证号长度超过10位时，显示掩码
                     StringBuilder maskedId = new StringBuilder();
                     maskedId.append(actualIdCard.substring(0, 10));
                     for (int i = 10; i < actualIdCard.length(); i++) {
                         maskedId.append('*');
                     }
-                    s.replace(0, s.length(), maskedId.toString());
-                } else {
-                    s.replace(0, s.length(), actualIdCard);
+                    etIdCard.setText(maskedId.toString());
+                } else if (hasFocus && !TextUtils.isEmpty(actualIdCard)) {
+                    // 当获得焦点时，显示完整的身份证号，方便用户编辑
+                    etIdCard.setText(actualIdCard);
                 }
-                
-                isUpdating = false;
             }
         });
     }
@@ -115,15 +136,96 @@ public class IdentityVerificationActivity extends AppCompatActivity {
             return;
         }
         
-        // 这里可以添加实际的提交逻辑
-        // 目前只是显示成功提示
-        Toast.makeText(this, "实名认证信息已提交，等待审核", Toast.LENGTH_LONG).show();
+        // 检查用户是否登录
+        String accessToken = sharedPreferences.getString("access_token", "");
+        if (TextUtils.isEmpty(accessToken)) {
+            Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         
-        // 可以保存到SharedPreferences或发送到服务器
-        saveVerificationInfo(realName, idCard);
+        // 禁用提交按钮，防止重复提交
+        btnSubmit.setEnabled(false);
+        btnSubmit.setText("正在提交...");
         
-        // 返回上一页
-        finish();
+        // 发送网络请求
+        submitToServer(realName, idCard);
+    }
+    
+    /**
+     * 发送实名认证信息到服务器
+     */
+    private void submitToServer(String realName, String idCard) {
+        Log.d(TAG, "开始提交实名认证信息: " + realName + ", " + idCard.substring(0, 6) + "****");
+        
+        IdentityVerificationRequest request = new IdentityVerificationRequest(realName, idCard);
+        
+        Call<IdentityVerificationResult> call = apiService.submitIdentityVerification(request);
+        call.enqueue(new Callback<IdentityVerificationResult>() {
+            @Override
+            public void onResponse(Call<IdentityVerificationResult> call, Response<IdentityVerificationResult> response) {
+                Log.d(TAG, "网络请求响应: " + response.code());
+                
+                // 恢复按钮状态
+                runOnUiThread(() -> {
+                    btnSubmit.setEnabled(true);
+                    btnSubmit.setText("提交认证");
+                });
+                
+                if (response.isSuccessful() && response.body() != null) {
+                    IdentityVerificationResult result = response.body();
+                    Log.d(TAG, "请求成功: " + result.getMessage());
+                    
+                    runOnUiThread(() -> {
+                        if (result.isSuccess()) {
+                            Toast.makeText(IdentityVerificationActivity.this, 
+                                result.getMessage(), Toast.LENGTH_LONG).show();
+                            
+                            // 保存到本地缓存
+                            saveVerificationInfo(realName, idCard);
+                            
+                            // 返回上一页
+                           // finish();
+                        } else {
+                            Toast.makeText(IdentityVerificationActivity.this, 
+                                "提交失败: " + result.getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else {
+                    Log.e(TAG, "服务器响应失败: " + response.code() + " - " + response.message());
+                    runOnUiThread(() -> {
+                        String errorMsg = "提交失败，请稍后重试";
+                        if (response.code() == 401) {
+                            errorMsg = "登录状态已过期，请重新登录";
+                        } else if (response.code() == 400) {
+                            errorMsg = "请求参数有误，请检查输入信息";
+                        }
+                        Toast.makeText(IdentityVerificationActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    });
+                }
+            }
+            
+            @Override
+            public void onFailure(Call<IdentityVerificationResult> call, Throwable t) {
+                Log.e(TAG, "网络请求失败: " + t.getMessage(), t);
+                
+                runOnUiThread(() -> {
+                    // 恢复按钮状态
+                    btnSubmit.setEnabled(true);
+                    btnSubmit.setText("提交认证");
+                    
+                    String errorMsg = "网络错误，请检查网络连接";
+                    if (t.getMessage() != null) {
+                        if (t.getMessage().contains("timeout")) {
+                            errorMsg = "请求超时，请稍后重试";
+                        } else if (t.getMessage().contains("Connection refused")) {
+                            errorMsg = "无法连接到服务器";
+                        }
+                    }
+                    Toast.makeText(IdentityVerificationActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                });
+            }
+        });
     }
     
     /**

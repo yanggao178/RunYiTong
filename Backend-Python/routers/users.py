@@ -7,10 +7,12 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
 from database import get_db
-from models import User as UserModel, HealthRecord as HealthRecordModel
-from schemas import User, UserCreate, UserUpdate, HealthRecord, HealthRecordCreate, SmsCodeResponse, SmsRegisterRequest, RegisterResponse, SmsCodeRequest, LoginRequest
+from models import User as UserModel, HealthRecord as HealthRecordModel, IdentityVerification as IdentityVerificationModel
+from schemas import User, UserCreate, UserUpdate, HealthRecord, HealthRecordCreate, SmsCodeResponse, SmsRegisterRequest, RegisterResponse, SmsCodeRequest, LoginRequest, IdentityVerificationCreateRequest, IdentityVerificationResult, IdentityVerificationResponse
 import os
 import base64
+import hashlib
+from cryptography.fernet import Fernet
 
 router = APIRouter()
 
@@ -37,6 +39,25 @@ def verify_password(plain_password, hashed_password):
 
 def get_password_hash(password):
     return pwd_context.hash(password)
+
+# 加密工具函数 - 用于敏感数据（如身份证号）的加密和解密
+def generate_encryption_key():
+    # 在实际生产环境中，密钥应该从环境变量或安全的密钥管理服务中获取
+    # 这里为了演示，使用基于SECRET_KEY生成的密钥
+    key_hash = hashlib.sha256(SECRET_KEY.encode()).digest()
+    return base64.urlsafe_b64encode(key_hash)
+
+# 获取加密密钥
+ENCRYPTION_KEY = generate_encryption_key()
+fernet = Fernet(ENCRYPTION_KEY)
+
+def encrypt_sensitive_data(data):
+    """加密敏感数据"""
+    return fernet.encrypt(data.encode()).decode()
+
+def decrypt_sensitive_data(encrypted_data):
+    """解密敏感数据"""
+    return fernet.decrypt(encrypted_data.encode()).decode()
 
 # JWT工具函数
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -481,3 +502,103 @@ async def change_password(
     db.commit()
     
     return {"message": "密码修改成功"}
+
+# 创建或更新实名认证信息
+@router.post("/me/identity-verification", response_model=IdentityVerificationResult)
+async def create_identity_verification(
+    verification_data: IdentityVerificationCreateRequest,
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """创建或更新用户实名认证信息"""
+    # 检查用户是否已提交实名认证
+    existing_verification = db.query(IdentityVerificationModel).filter(
+        IdentityVerificationModel.user_id == current_user.id
+    ).first()
+    
+    # 加密身份证号
+    encrypted_id_card = encrypt_sensitive_data(verification_data.id_card_number)
+    
+    if existing_verification:
+        # 更新现有实名认证信息
+        existing_verification.real_name = verification_data.real_name
+        existing_verification.id_card_number = encrypted_id_card
+        existing_verification.status = "pending"
+        existing_verification.updated_at = datetime.now()
+        db.commit()
+        db.refresh(existing_verification)
+        verification = existing_verification
+    else:
+        # 创建新的实名认证记录
+        verification = IdentityVerificationModel(
+            user_id=current_user.id,
+            real_name=verification_data.real_name,
+            id_card_number=encrypted_id_card,
+            status="pending",
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        db.add(verification)
+        db.commit()
+        db.refresh(verification)
+    
+    # 构建响应对象，注意不要返回完整的身份证号
+    verification_response = IdentityVerificationResponse(
+        id=verification.id,
+        user_id=verification.user_id,
+        real_name=verification.real_name,
+        id_card_number="****" + verification_data.id_card_number[-4:],  # 只显示最后4位
+        status=verification.status,
+        verification_time=verification.verification_time,
+        created_at=verification.created_at,
+        updated_at=verification.updated_at
+    )
+    
+    return {
+        "success": True,
+        "message": "认证信息已提交，等待审核",
+        "data": verification_response
+    }
+
+# 获取实名认证状态
+@router.get("/me/identity-verification", response_model=IdentityVerificationResult)
+async def get_identity_verification_status(
+    current_user: UserModel = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """获取用户实名认证状态"""
+    verification = db.query(IdentityVerificationModel).filter(
+        IdentityVerificationModel.user_id == current_user.id
+    ).first()
+    
+    if not verification:
+        return {
+            "success": False,
+            "message": "未提交实名认证信息",
+            "data": None
+        }
+    
+    # 解密身份证号以获取最后4位
+    try:
+        decrypted_id_card = decrypt_sensitive_data(verification.id_card_number)
+        last_four_digits = decrypted_id_card[-4:]
+    except:
+        last_four_digits = "****"
+    
+    # 构建响应对象
+    verification_response = IdentityVerificationResponse(
+        id=verification.id,
+        user_id=verification.user_id,
+        real_name=verification.real_name,
+        id_card_number="****" + last_four_digits,  # 只显示最后4位
+        status=verification.status,
+        verification_time=verification.verification_time,
+        created_at=verification.created_at,
+        updated_at=verification.updated_at
+    )
+    
+    return {
+        "success": True,
+        "message": "获取认证状态成功",
+        "data": verification_response
+    }

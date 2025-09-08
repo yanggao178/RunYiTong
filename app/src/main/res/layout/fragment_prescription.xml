@@ -42,13 +42,14 @@
             <TextView
                     android:id="@+id/tv_ai_tongue_diagnosis"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_height="48dp"
                     android:text="AI中医舌面诊"
                     android:textColor="@android:color/white"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:background="@drawable/button_background"
-                    android:padding="8dp"
+                    android:paddingHorizontal="16dp"
+                    android:gravity="center_vertical"
                     android:clickable="true"
                     android:focusable="true" />
                 
@@ -230,8 +231,8 @@
 
                     <ImageButton
                         android:id="@+id/btn_select_image_source"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:layout_marginStart="8dp"
                         android:src="@drawable/ic_image"
                         android:background="@drawable/button_circle"
@@ -241,8 +242,8 @@
 
                     <ImageButton
                         android:id="@+id/btn_upload_prescription"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
                         android:layout_marginStart="8dp"
                         android:src="@drawable/ic_upload"
                         android:background="@drawable/button_circle"
@@ -325,7 +326,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="💡 提示：您可以输入文字描述或上传处方图片进行AI分析"
+                android:text="💡 提示：您可以输入文字描述或上传医学影像进行AI分析"
                 android:textSize="10sp"
                 android:textColor="#666666"
                 android:gravity="center" />

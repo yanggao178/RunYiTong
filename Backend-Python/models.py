@@ -232,3 +232,19 @@ class Order(Base):
     
     # 关联关系
     user = relationship("User")
+
+# 实名认证模型
+class IdentityVerification(Base):
+    __tablename__ = "identity_verifications"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True, index=True)  # 用户ID，唯一
+    real_name = Column(String(100), nullable=False)  # 真实姓名
+    id_card_number = Column(String(50), nullable=False)  # 身份证号（加密存储）
+    status = Column(String(20), default="pending", nullable=False)  # 认证状态：pending, verified, rejected
+    verification_time = Column(DateTime)  # 认证时间
+    created_at = Column(DateTime, default=datetime.utcnow)  # 创建时间
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)  # 更新时间
+    
+    # 关联关系
+    user = relationship("User")

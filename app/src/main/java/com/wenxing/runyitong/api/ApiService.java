@@ -38,6 +38,8 @@ import retrofit2.http.Part;
 import retrofit2.http.Streaming;
 import okhttp3.ResponseBody;
 import java.util.List;
+import com.wenxing.runyitong.model.IdentityVerificationRequest;
+import com.wenxing.runyitong.model.IdentityVerificationResult;
 
 public interface ApiService {
     
@@ -594,4 +596,21 @@ public interface ApiService {
      */
     @DELETE("api/v1/health-records/physical-exams/{report_id}")
     Call<ApiResponse<Object>> deletePhysicalExamReport(@Path("report_id") int reportId);
+    
+    // ==================== 实名认证相关接口 ====================
+    
+    /**
+     * 提交实名认证信息
+     * @param request 实名认证请求
+     * @return 认证结果响应
+     */
+    @POST("api/v1/users/me/identity-verification")
+    Call<IdentityVerificationResult> submitIdentityVerification(@Body IdentityVerificationRequest request);
+    
+    /**
+     * 获取实名认证状态
+     * @return 认证状态响应
+     */
+    @GET("api/v1/users/me/identity-verification")
+    Call<IdentityVerificationResult> getIdentityVerificationStatus();
 }

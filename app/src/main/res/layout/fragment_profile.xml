@@ -73,8 +73,7 @@
                         android:layout_height="wrap_content"
                         android:text="请登录以使用完整功能"
                         android:textSize="12sp"
-                        android:textColor="#7F8C8D"
-                        android:layout_marginTop="4dp" />
+                        android:textColor="#7F8C8D" />
 
                 </LinearLayout>
 
@@ -104,6 +103,29 @@
                  android:layout_gravity="center"
                  android:layout_marginBottom="20dp"
                  android:visibility="gone" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="25dp"
+                app:cardElevation="4dp"
+                android:backgroundTint="@color/primary_color"
+                android:layout_marginBottom="16dp">
+
+                <Button
+                    android:id="@+id/btn_become_member"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@android:color/transparent"
+                    android:text="成为会员"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:drawableLeft="@drawable/ic_person"
+                    android:drawablePadding="8dp"
+                    android:gravity="center" />
+
+            </androidx.cardview.widget.CardView>
 
             <!-- 快递订单按钮 -->
             <androidx.cardview.widget.CardView
