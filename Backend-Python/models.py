@@ -193,6 +193,38 @@ class Hospital(Base):
     created_time = Column(DateTime, default=datetime.utcnow)
     updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+# 科室模型 - 与ai_medical.db departments表结构保持一致
+class Department(Base):
+    __tablename__ = "departments"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False, index=True)  # 科室名称
+    description = Column(Text)  # 科室描述
+    
+    # 关联关系
+    doctors = relationship("Doctor", back_populates="department")
+
+# 医生模型 - 与ai_medical.db doctors表结构保持一致
+class Doctor(Base):
+    __tablename__ = "doctors"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False, index=True)  # 医生姓名
+    title = Column(String(100))  # 职称
+    department_id = Column(Integer, ForeignKey("departments.id"))  # 科室ID
+    department_name = Column(String(200))  # 科室名称
+    hospital_id = Column(Integer, ForeignKey("hospitals.id"))  # 医院ID
+    hospital_name = Column(String(200))  # 医院名称
+    specialties = Column(Text)  # 专长
+    experience_years = Column(Integer)  # 工作年限
+    education = Column(Text)  # 教育背景
+    introduction = Column(Text)  # 医生介绍
+    available_times = Column(Text)  # 出诊时间（JSON字符串）
+    
+    # 关联关系
+    department = relationship("Department", back_populates="doctors")
+    hospital = relationship("Hospital")
+
 # 收货地址模型 - 与Address.java保持一致
 class Address(Base):
     __tablename__ = "addresses"

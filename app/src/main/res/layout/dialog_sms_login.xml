@@ -21,7 +21,7 @@
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:src="@drawable/ic_phone"
-            android:tint="@color/gradient_start"
+            app:tint="@color/gradient_start"
             android:layout_marginEnd="12dp" />
         
         <!-- 标题文字 -->

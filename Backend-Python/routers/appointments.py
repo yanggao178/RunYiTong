@@ -3,8 +3,9 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, timedelta
 from database import get_db
-from models import Appointment as AppointmentModel, Hospital
+from models import Appointment as AppointmentModel, Hospital, Department, Doctor
 from schemas import Appointment, AppointmentCreate, AppointmentUpdate, PaginatedResponse, Hospital as HospitalSchema
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 router = APIRouter()
 
@@ -73,24 +74,16 @@ async def get_hospitals(
     # 获取所有医院
     hospitals = query.all()
     
-    # 序列化医院数据并处理departments字段
+    # 序列化医院数据，不包含科室信息
     serialized_hospitals = []
     for hospital in hospitals:
-        # 使用HospitalSchema序列化基本字段
-        hospital_data = HospitalSchema.from_orm(hospital)
+        # 转换为字典并移除departments字段
+        hospital_dict = HospitalSchema.from_orm(hospital).dict()
+        # 删除departments字段
+        if 'departments' in hospital_dict:
+            del hospital_dict['departments']
         
-        # 将departments字符串转换为字符串列表
-        if hospital.departments:
-            # 分割逗号分隔的字符串
-            dept_ids = hospital.departments.split(',')
-            # 移除可能的空白字符
-            dept_ids = [dept_id.strip() for dept_id in dept_ids]
-            # 更新departments字段为列表
-            hospital_data.departments = dept_ids
-        else:
-            hospital_data.departments = []
-        
-        serialized_hospitals.append(hospital_data)
+        serialized_hospitals.append(hospital_dict)
     
     # 返回符合客户端期望格式的响应
     return {
@@ -99,84 +92,102 @@ async def get_hospitals(
         "data": {"hospitals": serialized_hospitals}
     }
 
+# 获取指定医院的科室列表
+@router.get("/hospitals/{hospital_id}/departments")
+async def get_hospital_departments(
+    hospital_id: int, 
+    db: Session = Depends(get_db)
+):
+    """获取指定医院的科室列表"""
+    # 1. 查询指定的医院
+    hospital = db.query(Hospital).filter(Hospital.id == hospital_id).first()
+    
+    if not hospital:
+        raise HTTPException(status_code=404, detail="医院不存在")
+    
+    # 2. 获取医院关联的科室ID列表
+    department_ids = []
+    if hospital.departments:
+        # 同时支持全角逗号和半角逗号的分割
+        # 先将所有全角逗号替换为半角逗号
+        departments_str = hospital.departments.replace('，', ',')
+        # 分割半角逗号并转换为整数
+        department_ids = [int(dept_id.strip()) for dept_id in departments_str.split(',') if dept_id.strip().isdigit()]
+    
+    # 3. 查询departments表获取科室详情
+    departments = []
+    if department_ids:
+        departments_query = db.query(Department).filter(Department.id.in_(department_ids)).order_by(Department.id)
+        departments = [
+            {
+                "id": dept.id,
+                "name": dept.name,
+                "description": dept.description
+            }
+            for dept in departments_query.all()
+        ]
+    
+    # 4. 返回符合客户端期望格式的响应
+    return {
+        "success": True,
+        "message": "获取科室列表成功",
+        "data": {
+            "departments": departments,
+            "hospital_id": hospital_id,
+            "hospital_name": hospital.name
+        }
+    }
+
 # 获取医生列表
 @router.get("/doctors")
 async def get_doctors(
     department_id: Optional[int] = Query(None, description="科室ID"),
-    hospital_id: Optional[int] = Query(None, description="医院ID")
+    hospital_id: Optional[int] = Query(None, description="医院ID"),
+    db: Session = Depends(get_db)
 ):
     """获取医生列表"""
-    doctors = [
-        {
-            "id": 1,
-            "name": "张医生",
-            "title": "主任医师",
-            "department_id": 1,
-            "department_name": "内科",
-            "hospital_id": 1,
-            "hospital_name": "北京协和医院",
-            "specialties": ["心血管疾病", "高血压"],
-            "experience_years": 15,
-            "education": "北京医科大学博士",
-            "introduction": "擅长心血管疾病的诊断和治疗",
-            "available_times": ["09:00-12:00", "14:00-17:00"]
-        },
-        {
-            "id": 2,
-            "name": "李医生",
-            "title": "副主任医师",
-            "department_id": 2,
-            "department_name": "外科",
-            "hospital_id": 1,
-            "hospital_name": "北京协和医院",
-            "specialties": ["普通外科", "腹腔镜手术"],
-            "experience_years": 12,
-            "education": "清华大学医学院硕士",
-            "introduction": "擅长普通外科手术",
-            "available_times": ["08:00-12:00", "13:30-17:30"]
-        },
-        {
-            "id": 3,
-            "name": "王医生",
-            "title": "主治医师",
-            "department_id": 3,
-            "department_name": "儿科",
-            "hospital_id": 2,
-            "hospital_name": "北京大学第一医院",
-            "specialties": ["儿童呼吸系统疾病", "小儿感冒"],
-            "experience_years": 8,
-            "education": "北京大学医学部硕士",
-            "introduction": "擅长儿童呼吸系统疾病的诊治",
-            "available_times": ["09:30-12:00", "14:30-17:00"]
-        },
-        {
-            "id": 4,
-            "name": "赵医生",
-            "title": "主任医师",
-            "department_id": 4,
-            "department_name": "妇产科",
-            "hospital_id": 2,
-            "hospital_name": "北京大学第一医院",
-            "specialties": ["妇科肿瘤", "妇科内分泌"],
-            "experience_years": 20,
-            "education": "协和医科大学博士",
-            "introduction": "擅长妇科肿瘤的诊断和治疗",
-            "available_times": ["08:30-11:30", "14:00-16:30"]
-        }
-    ]
+    # 从数据库中查询医生
+    query = db.query(Doctor)
     
-    # 根据参数过滤医生
-    filtered_doctors = doctors
+    # 根据参数过滤
     if hospital_id is not None:
-        filtered_doctors = [d for d in filtered_doctors if d["hospital_id"] == hospital_id]
+        query = query.filter(Doctor.hospital_id == hospital_id)
     if department_id is not None:
-        # 这里简化处理，实际应该根据department_id查询对应的科室名称
-        department_names = {
-            1: "内科", 2: "外科", 3: "儿科", 4: "妇产科",
-            5: "眼科", 6: "耳鼻喉科", 7: "皮肤科", 8: "神经科"
-        }
-        if department_id in department_names:
-            filtered_doctors = [d for d in filtered_doctors if d["department_id"] == department_id]
+        query = query.filter(Doctor.department_id == department_id)
+    
+    # 执行查询
+    doctors = query.all()
+    
+    # 处理查询结果，将数据库模型转换为前端需要的格式
+    filtered_doctors = []
+    for doctor in doctors:
+        # 处理specialties字段，从文本转换为列表
+        specialties = []
+        if doctor.specialties:
+            # 尝试按逗号分隔
+            specialties = [s.strip() for s in doctor.specialties.split(',') if s.strip()]
+        
+        # 处理available_times字段，从文本转换为列表
+        available_times = []
+        if doctor.available_times:
+            # 尝试按逗号分隔
+            available_times = [t.strip() for t in doctor.available_times.split(',') if t.strip()]
+        
+        # 添加到结果列表
+        filtered_doctors.append({
+            "id": doctor.id,
+            "name": doctor.name,
+            "title": doctor.title,
+            "department_id": doctor.department_id,
+            "department_name": doctor.department_name,
+            "hospital_id": doctor.hospital_id,
+            "hospital_name": doctor.hospital_name,
+            "specialties": specialties,
+            "experience_years": doctor.experience_years,
+            "education": doctor.education,
+            "introduction": doctor.introduction,
+            "available_times": available_times
+        })
     
     return {
         "success": True,

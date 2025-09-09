@@ -1,5 +1,6 @@
 package com.wenxing.runyitong.fragment;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -99,7 +100,7 @@ public class RegistrationFragment extends Fragment {
     }
     
     private void initApiService() {
-        apiService = ApiClient.getInstance().getApiService();
+        apiService = ApiClient.getApiService();
     }
     
     private void setupClickListeners() {
@@ -411,10 +412,31 @@ public class RegistrationFragment extends Fragment {
     private void setupHospitalAdapter() {
 
         android.util.Log.d("RegistrationFragment", "设置医院适配器，医院列表大小: " + (hospitalList != null ? hospitalList.size() : 0));
-        hospitalAdapter = new HospitalAdapter(getContext(), hospitalList, hospital -> {
+        // 使用RegistrationFragment.this作为上下文，避免getContext()可能返回null的问题
+        hospitalAdapter = new HospitalAdapter(getActivity(), hospitalList, hospital -> {
+            if (hospital == null) {
+                android.util.Log.e("RegistrationFragment", "医院对象为空，无法跳转");
+                return;
+            }
             selectedHospital = hospital;
             updateSelectedInfo();
-            loadDepartmentsByHospital(hospital.getId());
+            // 跳转到HospitalDepartmentListActivity
+            Activity activity = getActivity();
+            if (activity == null) {
+                android.util.Log.e("RegistrationFragment", "Activity上下文为空，无法启动新的Activity");
+                return;
+            }
+           // loadDepartmentsByHospital(hospital.getId());
+            Intent intent = new Intent(activity, com.wenxing.runyitong.activity.HospitalDepartmentListActivity.class);
+            intent.putExtra(com.wenxing.runyitong.activity.HospitalDepartmentListActivity.EXTRA_HOSPITAL_ID, hospital.getId());
+            // 处理可能为null的医院名称
+            String hospitalName = hospital.getName() != null ? hospital.getName() : "未知医院";
+            intent.putExtra(com.wenxing.runyitong.activity.HospitalDepartmentListActivity.EXTRA_HOSPITAL_NAME, hospitalName);
+            // 安全地拼接地址和电话，处理可能为null的情况
+            String address = hospital.getAddress() != null ? hospital.getAddress() : "";
+            String phone = hospital.getPhone() != null ? hospital.getPhone() : "";
+            intent.putExtra(com.wenxing.runyitong.activity.HospitalDepartmentListActivity.EXTRA_HOSPITAL_INFO, address + " " + phone);
+            startActivity(intent);
         });
         recyclerViewHospitals.setAdapter(hospitalAdapter);
         android.util.Log.d("RegistrationFragment", "医院适配器设置完成");

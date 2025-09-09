@@ -403,6 +403,83 @@ class HospitalListResponse(BaseModel):
     page: int
     size: int
 
+# 科室相关模式
+class DepartmentBase(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class DepartmentCreate(DepartmentBase):
+    pass
+
+class DepartmentUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+
+class Department(DepartmentBase):
+    id: int
+    created_time: datetime
+    updated_time: datetime
+    
+    class Config:
+        from_attributes = True
+
+# 科室列表响应
+class DepartmentListResponse(BaseModel):
+    success: bool = True
+    message: str = "获取成功"
+    data: List[Department]
+    total: int
+    page: int
+    size: int
+
+# 医生相关模式
+class DoctorBase(BaseModel):
+    name: str
+    title: Optional[str] = None
+    department_id: Optional[int] = None
+    department_name: Optional[str] = None
+    hospital_id: Optional[int] = None
+    hospital_name: Optional[str] = None
+    specialties: Optional[str] = None
+    experience_years: Optional[int] = None
+    education: Optional[str] = None
+    introduction: Optional[str] = None
+    available_times: Optional[str] = None
+
+class DoctorCreate(DoctorBase):
+    pass
+
+class DoctorUpdate(BaseModel):
+    name: Optional[str] = None
+    title: Optional[str] = None
+    department_id: Optional[int] = None
+    department_name: Optional[str] = None
+    hospital_id: Optional[int] = None
+    hospital_name: Optional[str] = None
+    specialties: Optional[str] = None
+    experience_years: Optional[int] = None
+    education: Optional[str] = None
+    introduction: Optional[str] = None
+    available_times: Optional[str] = None
+
+class Doctor(DoctorBase):
+    id: int
+    created_time: datetime
+    updated_time: datetime
+    
+    class Config:
+        from_attributes = True
+
+# 医生列表响应
+class DoctorListResponse(BaseModel):
+    success: bool = True
+    message: str = "获取成功"
+    data: List[Doctor]
+    total: int
+    page: int
+    size: int
+
+
 # 收货地址相关模式 - 基于Address.java模型类
 class AddressBase(BaseModel):
     """地址基础模型 - 与Address.java字段对应"""

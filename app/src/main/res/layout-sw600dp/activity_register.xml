@@ -297,7 +297,7 @@
                         android:layout_height="80dp"
                         android:src="@drawable/ic_medical_services"
                         android:layout_marginBottom="24dp"
-                        android:tint="@color/primary_blue" />
+                        app:tint="@color/primary_blue" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -322,7 +322,7 @@
                         android:layout_height="60dp"
                         android:src="@drawable/ic_health"
                         android:layout_marginBottom="16dp"
-                        android:tint="@color/accent_green" />
+                        app:tint="@color/accent_green" />
 
                     <TextView
                         android:layout_width="wrap_content"

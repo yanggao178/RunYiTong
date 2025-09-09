@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 禁用状态 -->
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/disabled_color" />
+            <corners android:radius="8dp" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/disabled_border_color" />
+        </shape>
+    </item>
+    
+    <!-- 按下状态 -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/pressed_color" />
+            <corners android:radius="8dp" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/primary_color" />
+        </shape>
+    </item>
+    
+    <!-- 默认状态 -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/white" />
+            <corners android:radius="8dp" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/input_border" />
+        </shape>
+    </item>
+</selector>

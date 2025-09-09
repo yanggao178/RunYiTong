@@ -99,14 +99,14 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
             Hospital clickedHospital = hospitalList.get(adapterPosition);
             
             // 打开微信公众号 - 传递完整的医院对象
-            openWeChatPublicAccount(clickedHospital);
+            // openWeChatPublicAccount(clickedHospital);
             
-            // 跳转到无障碍设置页面
-            if (context instanceof Activity) {
-                Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
-            }
+            // // 跳转到无障碍设置页面
+            // if (context instanceof Activity) {
+            //     Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+            //     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            //     context.startActivity(intent);
+            // }
             
             if (listener != null) {
                 listener.onHospitalClick(clickedHospital);
@@ -125,6 +125,7 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
         private TextView textHospitalLevel;
         private TextView textHospitalAddress;
         private TextView textHospitalPhone;
+        private TextView textHospitalDepartments;
         
         public HospitalViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -133,6 +134,7 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
             textHospitalLevel = itemView.findViewById(R.id.text_hospital_level);
             textHospitalAddress = itemView.findViewById(R.id.text_hospital_address);
             textHospitalPhone = itemView.findViewById(R.id.text_hospital_phone);
+            textHospitalDepartments = itemView.findViewById(R.id.text_hospital_departments);
         }
         
         public void bind(Hospital hospital, boolean isSelected) {
@@ -140,6 +142,23 @@ public class HospitalAdapter extends RecyclerView.Adapter<HospitalAdapter.Hospit
             textHospitalLevel.setText(hospital.getLevel());
             textHospitalAddress.setText(hospital.getAddress());
             textHospitalPhone.setText(hospital.getPhone());
+            
+            // 显示科室信息
+            List<String> departments = hospital.getDepartments();
+            if (departments != null && !departments.isEmpty()) {
+                StringBuilder departmentsStr = new StringBuilder();
+                for (int i = 0; i < departments.size(); i++) {
+                    departmentsStr.append(departments.get(i));
+                    if (i < departments.size() - 1) {
+                        departmentsStr.append("、");
+                    }
+                }
+                textHospitalDepartments.setText(departmentsStr.toString());
+                textHospitalDepartments.setVisibility(View.VISIBLE);
+            } else {
+                // 科室信息为空时隐藏该行，不显示'暂无科室信息'
+                textHospitalDepartments.setVisibility(View.GONE);
+            }
             
             // 设置选中状态的视觉效果
             if (isSelected) {

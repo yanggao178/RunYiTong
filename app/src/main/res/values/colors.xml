@@ -96,6 +96,12 @@
     <color name="accent_green">#4CAF50</color>
     <color name="card_background_secondary">#F8F9FA</color>
     
+    <!-- 下拉选择框相关颜色 -->
+    <color name="disabled_color">#E0E0E0</color>
+    <color name="disabled_border_color">#BDBDBD</color>
+    <color name="pressed_color">#E8F0FE</color>
+    <color name="text_disabled">#9E9E9E</color>
+    
     <!-- PDF阅读器颜色 -->
     <color name="pdf_reader_background">#F5F5F5</color>
     <color name="pdf_page_background">#FFFFFF</color>

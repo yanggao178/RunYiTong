@@ -36,13 +36,14 @@ public class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.DoctorView
     
     @Override
     public void onBindViewHolder(@NonNull DoctorViewHolder holder, int position) {
-        Doctor doctor = doctorList.get(position);
-        android.util.Log.d("DoctorAdapter", "绑定医生数据，位置: " + position + ", 医生: " + doctor.getName());
-        holder.bind(doctor, position == selectedPosition);
+        int adapterPosition = holder.getAdapterPosition();
+        Doctor doctor = doctorList.get(adapterPosition);
+        android.util.Log.d("DoctorAdapter", "绑定医生数据，位置: " + adapterPosition + ", 医生: " + doctor.getName());
+        holder.bind(doctor, adapterPosition == selectedPosition);
         
         holder.itemView.setOnClickListener(v -> {
             int previousPosition = selectedPosition;
-            selectedPosition = position;
+            selectedPosition = adapterPosition;
             
             // 更新选中状态
             notifyItemChanged(previousPosition);
