@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('cms', '0041_alter_pageurl_unique_together_pageurl_site_and_more'),
+        ('cms', '0022_auto_20180620_1551'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         migrations.swappable_dependency(settings.FILER_IMAGE_MODEL),
     ]

@@ -1,9 +1,16 @@
 import os
+import warnings
 from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
+
+# 禁用Django CMS API弃用警告
+warnings.filterwarnings('ignore', 
+                       message='This API function will be removed in django CMS 4',
+                       category=UserWarning,
+                       module='cms')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -107,7 +114,7 @@ WSGI_APPLICATION = 'cms_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'cms_medical.db',
+        'NAME': BASE_DIR / 'ai_medical.db',
     }
 }
 
@@ -166,16 +173,22 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Django CMS Settings
-CMS_CONFIRM_VERSION4 = True
+# CMS_CONFIRM_VERSION4 = True  # 注释掉此行以避免版本4的API警告
+
+# CMS版本兼容性设置
+CMS_PERMISSION = True
+CMS_PLACEHOLDER_CONF = {}
+
+# 禁用版本4的新功能警告
+# 这将保持与当前Django CMS 3.x的兼容性
+# CMS_CONFIRM_VERSION4 = False
+
 CMS_TEMPLATES = [
     ('base.html', '基础模板'),
     ('medical_page.html', '医疗页面模板'),
     ('news_page.html', '新闻页面模板'),
     ('contact_page.html', '联系页面模板'),
 ]
-
-CMS_PERMISSION = True
-CMS_PLACEHOLDER_CONF = {}
 
 # Site ID
 SITE_ID = 1

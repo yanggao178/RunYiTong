@@ -124,3 +124,61 @@ D:\sourcecode\AIMedical\Frontend-Android\Backend-Python\cms_project\settings.py 
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\migrations\0001_initial.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\migrations\0002_productcategory_productlistplugin_product.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /zh-hans/favicon.ico/
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Internal Server Error: /zh-hans/
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\views.py", line 197, in details
+    page_path = page.get_absolute_url(request_language)
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\models\pagemodel.py", line 445, in get_absolute_url
+    return reverse('pages-details-by-slug', kwargs={"slug": path})
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\urls\resolvers.py", line 828, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'pages-details-by-slug' with keyword arguments '{'slug': ''}' not found. 1 pattern(s) tried: ['zh\\-hans/(?P<slug>[0-9A-Za-z-_.//]+)/$']
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader

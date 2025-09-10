@@ -15,6 +15,8 @@ from decimal import Decimal
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'cms_project.settings')
 django.setup()
 
+from cms.api import create_page, publish_page
+
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
 from cms.models import Page
@@ -201,12 +203,14 @@ def create_cms_pages():
     """创建CMS页面"""
     print("创建CMS页面...")
     
-    # 检查是否已存在首页
+    from django.contrib.auth.models import User
     from cms.models import Page
-    existing_pages = Page.objects.filter(pagecontent_set__title='首页')
-    if existing_pages.exists():
-        home_page = existing_pages.first()
-        print("  ✓ 首页已存在，跳过创建")
+    
+    # 获取或创建首页
+    home_pages = Page.objects.filter(is_home=True)
+    if home_pages.exists():
+        home_page = home_pages.first()
+        print(f"  ✓ 首页已存在: {home_page.get_title()} (id: {home_page.id})")
     else:
         # 创建首页
         home_page = create_page(
@@ -216,10 +220,13 @@ def create_cms_pages():
             slug='',  # 首页使用空slug
             in_navigation=True
         )
+        # 设置为首页
+        home_page.is_home = True
+        home_page.save()
         print("  ✓ 创建首页")
     
     # 创建医疗服务页面
-    existing_medical = Page.objects.filter(pagecontent_set__title='医疗服务')
+    existing_medical = Page.objects.filter(title_set__title='医疗服务')
     if existing_medical.exists():
         medical_page = existing_medical.first()
         print("  ✓ 医疗服务页面已存在，跳过创建")
@@ -232,10 +239,17 @@ def create_cms_pages():
             slug='medical-services',
             in_navigation=True
         )
+        # 发布页面
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user:
+            try:
+                publish_page(medical_page, admin_user, 'zh-hans')
+            except:
+                pass  # 忽略发布错误
         print("  ✓ 创建医疗服务页面")
     
     # 创建专家团队页面
-    existing_experts = Page.objects.filter(pagecontent_set__title='专家团队')
+    existing_experts = Page.objects.filter(title_set__title='专家团队')
     if existing_experts.exists():
         experts_page = existing_experts.first()
         print("  ✓ 专家团队页面已存在，跳过创建")
@@ -248,10 +262,17 @@ def create_cms_pages():
             slug='experts',
             in_navigation=True
         )
+        # 发布页面
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user:
+            try:
+                publish_page(experts_page, admin_user, 'zh-hans')
+            except:
+                pass  # 忽略发布错误
         print("  ✓ 创建专家团队页面")
     
     # 创建新闻中心页面
-    existing_news = Page.objects.filter(pagecontent_set__title='新闻中心')
+    existing_news = Page.objects.filter(title_set__title='新闻中心')
     if existing_news.exists():
         news_page = existing_news.first()
         print("  ✓ 新闻中心页面已存在，跳过创建")
@@ -264,10 +285,17 @@ def create_cms_pages():
             slug='news',
             in_navigation=True
         )
+        # 发布页面
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user:
+            try:
+                publish_page(news_page, admin_user, 'zh-hans')
+            except:
+                pass  # 忽略发布错误
         print("  ✓ 创建新闻中心页面")
     
     # 创建联系我们页面
-    existing_contact = Page.objects.filter(pagecontent_set__title='联系我们')
+    existing_contact = Page.objects.filter(title_set__title='联系我们')
     if existing_contact.exists():
         contact_page = existing_contact.first()
         print("  ✓ 联系我们页面已存在，跳过创建")
@@ -280,6 +308,13 @@ def create_cms_pages():
             slug='contact',
             in_navigation=True
         )
+        # 发布页面
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user:
+            try:
+                publish_page(contact_page, admin_user, 'zh-hans')
+            except:
+                pass  # 忽略发布错误
         print("  ✓ 创建联系我们页面")
     
     print("✓ CMS页面创建完成")
