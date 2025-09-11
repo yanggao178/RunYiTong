@@ -2,39 +2,30 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from django.conf.urls.i18n import i18n_patterns
-from cms.sitemaps import CMSSitemap
-from django.contrib.sitemaps.views import sitemap
-
-# Sitemaps
-sitemaps = {
-    'cmspages': CMSSitemap,
-}
+# Import for django CMS
+sitemap_urlpatterns = []
+if 'django.contrib.sitemaps' in settings.INSTALLED_APPS and 'cms' in settings.INSTALLED_APPS:
+    from cms.sitemaps import CMSSitemap
+    from django.contrib.sitemaps.views import sitemap
+    sitemap_urlpatterns = [
+        path('sitemap.xml', sitemap, {'sitemaps': {'cmspages': CMSSitemap}}, name='django.contrib.sitemaps.views.sitemap'),
+    ]
 
 # Non-translatable URLs
 urlpatterns = [
     # Admin interface
     path('admin/', admin.site.urls),
     
+    # django CMS URLs
+    path('', include('cms.urls')),
+    
     # API endpoints
     path('api/', include('medical_cms.urls')),
     path('api-auth/', include('rest_framework.urls')),
     
-    # File handling
-    path('filer/', include('filer.urls')),
-    
-    # Sitemap
-    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
-    
     # Health check endpoint (待实现)
     # path('health/', include('medical_cms.health.urls')),
 ]
-
-# Translatable URLs with i18n patterns
-urlpatterns += i18n_patterns(
-    # Django CMS URLs (must be last)
-    path('', include('cms.urls')),
-)
 
 # Serve media files in development
 if settings.DEBUG:

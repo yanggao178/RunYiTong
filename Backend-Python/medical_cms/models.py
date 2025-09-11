@@ -1,8 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from cms.models import CMSPlugin
-from filer.fields.image import FilerImageField
-from filer.fields.file import FilerFileField
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
@@ -15,11 +12,11 @@ class MedicalDepartment(models.Model):
     """医疗科室模型"""
     name = models.CharField(_('科室名称'), max_length=100)
     description = models.TextField(_('科室描述'), blank=True)
-    image = FilerImageField(
+    image = models.ImageField(
         verbose_name=_('科室图片'),
+        upload_to='department_images/',
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL
+        null=True
     )
     created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
     updated_at = models.DateTimeField(_('更新时间'), auto_now=True)
@@ -52,11 +49,11 @@ class Doctor(models.Model):
     )
     specialization = models.CharField(_('专业特长'), max_length=200, blank=True)
     bio = models.TextField(_('个人简介'), blank=True)
-    photo = FilerImageField(
+    photo = models.ImageField(
         verbose_name=_('医生照片'),
+        upload_to='doctor_photos/',
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL
+        null=True
     )
     phone = models.CharField(_('联系电话'), max_length=20, blank=True)
     email = models.EmailField(_('邮箱'), blank=True)
@@ -79,11 +76,11 @@ class MedicalNews(models.Model):
     slug = models.SlugField(_('URL别名'), unique=True)
     content = models.TextField(_('内容'))
     excerpt = models.TextField(_('摘要'), max_length=300, blank=True)
-    featured_image = FilerImageField(
+    featured_image = models.ImageField(
         verbose_name=_('特色图片'),
+        upload_to='news_images/',
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL
+        null=True
     )
     author = models.ForeignKey(
         User,
@@ -118,11 +115,11 @@ class MedicalService(models.Model):
     )
     price = models.DecimalField(_('价格'), max_digits=10, decimal_places=2, blank=True, null=True)
     duration = models.PositiveIntegerField(_('服务时长(分钟)'), blank=True, null=True)
-    image = FilerImageField(
+    image = models.ImageField(
         verbose_name=_('服务图片'),
+        upload_to='service_images/',
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL
+        null=True
     )
     is_active = models.BooleanField(_('是否启用'), default=True)
     created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
@@ -137,98 +134,18 @@ class MedicalService(models.Model):
         return f"{self.department.name} - {self.name}"
 
 
-# CMS插件模型
-class DoctorListPlugin(CMSPlugin):
-    """医生列表插件"""
-    department = models.ForeignKey(
-        MedicalDepartment,
-        on_delete=models.CASCADE,
-        verbose_name=_('科室'),
-        blank=True,
-        null=True,
-        help_text=_('留空显示所有科室的医生')
-    )
-    limit = models.PositiveIntegerField(_('显示数量'), default=6)
-    show_photo = models.BooleanField(_('显示照片'), default=True)
-    show_bio = models.BooleanField(_('显示简介'), default=True)
-    
-    class Meta:
-        verbose_name = _('医生列表插件')
-        verbose_name_plural = _('医生列表插件')
-    
-    def __str__(self):
-        if self.department:
-            return f"医生列表 - {self.department.name}"
-        return "医生列表 - 所有科室"
-
-
-class NewsListPlugin(CMSPlugin):
-    """新闻列表插件"""
-    category = models.CharField(_('分类'), max_length=50, blank=True)
-    limit = models.PositiveIntegerField(_('显示数量'), default=5)
-    show_excerpt = models.BooleanField(_('显示摘要'), default=True)
-    show_image = models.BooleanField(_('显示图片'), default=True)
-    
-    class Meta:
-        verbose_name = _('新闻列表插件')
-        verbose_name_plural = _('新闻列表插件')
-    
-    def __str__(self):
-        if self.category:
-            return f"新闻列表 - {self.category}"
-        return "新闻列表 - 所有分类"
-
-
-class ServiceListPlugin(CMSPlugin):
-    """服务列表插件"""
-    department = models.ForeignKey(
-        MedicalDepartment,
-        on_delete=models.CASCADE,
-        verbose_name=_('科室'),
-        blank=True,
-        null=True,
-        help_text=_('留空显示所有科室的服务')
-    )
-    limit = models.PositiveIntegerField(_('显示数量'), default=8)
-    show_price = models.BooleanField(_('显示价格'), default=True)
-    show_image = models.BooleanField(_('显示图片'), default=True)
-    
-    class Meta:
-        verbose_name = _('服务列表插件')
-        verbose_name_plural = _('服务列表插件')
-    
-    def __str__(self):
-        if self.department:
-            return f"服务列表 - {self.department.name}"
-        return "服务列表 - 所有科室"
-
-
-class ContactFormPlugin(CMSPlugin):
-    """联系表单插件"""
-    title = models.CharField(_('表单标题'), max_length=100, default=_('联系我们'))
-    email_to = models.EmailField(_('接收邮箱'))
-    success_message = models.TextField(
-        _('成功消息'),
-        default=_('感谢您的留言，我们会尽快回复您！')
-    )
-    
-    class Meta:
-        verbose_name = _('联系表单插件')
-        verbose_name_plural = _('联系表单插件')
-    
-    def __str__(self):
-        return self.title
+# 原CMS插件模型已移除，因为Django CMS已被卸载
 
 
 class ProductCategory(models.Model):
     """商品分类模型"""
     name = models.CharField(_('分类名称'), max_length=100)
     description = models.TextField(_('分类描述'), blank=True)
-    image = FilerImageField(
+    image = models.ImageField(
         verbose_name=_('分类图片'),
+        upload_to='category_images/',
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL
+        null=True
     )
     parent = models.ForeignKey(
         'self',
@@ -253,6 +170,20 @@ class ProductCategory(models.Model):
             return f"{self.parent.name} - {self.name}"
         return self.name
 
+
+class ProductImage(models.Model):
+    """商品图库图片模型"""
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='gallery_images')
+    image = models.ImageField(upload_to='product_gallery/')
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+        verbose_name = _('商品图库图片')
+        verbose_name_plural = _('商品图库图片')
+    
+    def __str__(self):
+        return f"{self.product.name} - 图片 {self.order}"
 
 class Product(models.Model):
     """商品模型"""
@@ -287,18 +218,11 @@ class Product(models.Model):
     barcode = models.CharField(_('条形码'), max_length=100, blank=True)
     weight = models.DecimalField(_('重量(克)'), max_digits=8, decimal_places=2, blank=True, null=True)
     dimensions = models.CharField(_('尺寸(长x宽x高cm)'), max_length=100, blank=True)
-    featured_image = FilerImageField(
+    featured_image = models.ImageField(
         verbose_name=_('主图片'),
+        upload_to='product_images/',
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name='product_featured'
-    )
-    gallery_images = models.ManyToManyField(
-        'filer.Image',
-        verbose_name=_('商品图库'),
-        blank=True,
-        related_name='product_gallery'
+        null=True
     )
     tags = models.CharField(_('标签'), max_length=200, blank=True, help_text=_('用逗号分隔多个标签'))
     status = models.CharField(_('状态'), max_length=20, choices=STATUS_CHOICES, default='draft')
@@ -352,46 +276,7 @@ class Product(models.Model):
         return 0
 
 
-class ProductListPlugin(CMSPlugin):
-    """商品列表插件"""
-    category = models.ForeignKey(
-        ProductCategory,
-        on_delete=models.CASCADE,
-        verbose_name=_('商品分类'),
-        blank=True,
-        null=True,
-        help_text=_('留空显示所有分类的商品')
-    )
-    department = models.ForeignKey(
-        MedicalDepartment,
-        on_delete=models.CASCADE,
-        verbose_name=_('相关科室'),
-        blank=True,
-        null=True,
-        help_text=_('留空显示所有科室的商品')
-    )
-    limit = models.PositiveIntegerField(_('显示数量'), default=12)
-    show_featured_only = models.BooleanField(_('仅显示推荐商品'), default=False)
-    show_price = models.BooleanField(_('显示价格'), default=True)
-    show_stock = models.BooleanField(_('显示库存'), default=True)
-    show_description = models.BooleanField(_('显示描述'), default=True)
-    
-    class Meta:
-        verbose_name = _('商品列表插件')
-        verbose_name_plural = _('商品列表插件')
-    
-    def __str__(self):
-        parts = []
-        if self.category:
-            parts.append(f"分类:{self.category.name}")
-        if self.department:
-            parts.append(f"科室:{self.department.name}")
-        if self.show_featured_only:
-            parts.append("推荐商品")
-        
-        if parts:
-            return f"商品列表 - {' | '.join(parts)}"
-        return "商品列表 - 全部商品"
+# 原商品列表插件已移除，因为Django CMS已被卸载
 
 
 # 信号处理器：同步商品数据到ai_medical.db

@@ -1,16 +1,9 @@
 import os
-import warnings
 from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-
-# 禁用Django CMS API弃用警告
-warnings.filterwarnings('ignore', 
-                       message='This API function will be removed in django CMS 4',
-                       category=UserWarning,
-                       module='cms')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +18,10 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,0.0.0.0,10.0.2.2
 
 # Application definition
 INSTALLED_APPS = [
-    'djangocms_admin_style',  # Must be before 'django.contrib.admin'
+    # Django CMS admin style
+    'djangocms_admin_style',
+    
+    # Django apps
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -33,15 +29,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.sitemaps',
+    'django.contrib.redirects',
     
-    # Django CMS
+    # Django CMS core
     'cms',
     'menus',
     'sekizai',
     'treebeard',
     'djangocms_text_ckeditor',
-    'filer',
-    'easy_thumbnails',
+    
+    # Django CMS plugins
     'djangocms_picture',
     'djangocms_link',
     'djangocms_file',
@@ -49,6 +47,11 @@ INSTALLED_APPS = [
     'djangocms_googlemap',
     'djangocms_style',
     'djangocms_column',
+    
+    # Media handling
+    'filer',
+    'easy_thumbnails',
+    'easy_thumbnails.optimize',
     
     # Third party apps
     'rest_framework',
@@ -59,7 +62,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     
     # Custom apps
-    'medical_cms',  # Our custom CMS app
+    'medical_cms',  # 自定义应用
 ]
 
 MIDDLEWARE = [
@@ -80,6 +83,7 @@ MIDDLEWARE = [
     'cms.middleware.page.CurrentPageMiddleware',
     'cms.middleware.toolbar.ToolbarMiddleware',
     'cms.middleware.language.LanguageCookieMiddleware',
+    'django.contrib.redirects.middleware.RedirectFallbackMiddleware',
 ]
 
 ROOT_URLCONF = 'cms_project.urls'
@@ -114,7 +118,7 @@ WSGI_APPLICATION = 'cms_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'ai_medical.db',
+        'NAME': BASE_DIR / 'cms_medical.db',
     }
 }
 
@@ -155,8 +159,9 @@ USE_TZ = True
 # Languages for Django CMS
 LANGUAGES = [
     ('zh-hans', '简体中文'),
-    ('en', 'English'),
 ]
+
+
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
@@ -169,26 +174,99 @@ STATICFILES_DIRS = [
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# Django CMS settings
+CMS_CONFIRM_VERSION4 = True
+CMS_PERMISSION = True
+CMS_PLUGIN_PROCESSORS = [
+    'cms.plugin_processors.parent_plugins',
+]
+CMS_PLACEHOLDER_CONF = {
+    'content': {
+        'name': '内容区域',
+        'plugins': [
+            'TextPlugin', 'PicturePlugin', 'LinkPlugin', 
+            'FilePlugin', 'VideoPlugin', 'GoogleMapPlugin',
+            'StylePlugin', 'ColumnPlugin',
+        ],
+        'default_plugins': [],
+        'limits': {}
+    },
+    'sidebar': {
+        'name': '侧边栏',
+        'plugins': [
+            'TextPlugin', 'LinkPlugin', 'PicturePlugin',
+        ],
+        'default_plugins': [],
+        'limits': {}
+    },
+}
+
+# Django CMS templates
+CMS_TEMPLATES = (
+    ('base.html', '基础模板'),
+    ('cms/standard_page.html', '标准页面'),
+    ('cms/landing_page.html', '着陆页'),
+    ('cms/sidebar_page.html', '侧边栏页面'),
+)
+
+# Easy Thumbnails settings
+THUMBNAIL_PROCESSORS = (
+    'easy_thumbnails.processors.colorspace',
+    'easy_thumbnails.processors.autocrop',
+    'filer.thumbnail_processors.scale_and_crop_with_subject_location',
+    'easy_thumbnails.processors.filters',
+    'easy_thumbnails.processors.background',
+)
+
+THUMBNAIL_ALIASES = {
+    '': {
+        'admin_thumb': {'size': (150, 150), 'crop': True},
+        'small': {'size': (200, 150), 'crop': True},
+        'medium': {'size': (400, 300), 'crop': True},
+        'large': {'size': (800, 600), 'crop': True},
+    },
+}
+
+THUMBNAIL_OPTIMIZE_COMMAND = {
+    'gif': ['gifsicle', '-b', '-O3', '%(filename)s'],
+    'jpeg': ['jpegoptim', '-f', '--strip-all', '%(filename)s'],
+    'png': ['optipng', '-force', '-o7', '%(filename)s'],
+    'svg': ['scour', '--no-line-breaks', '--remove-comments', '-i', '%(filename)s', '-o', '%(filename)s']
+}
+
+# Filer settings
+FILER_CANONICAL_URL = 'sharing/'
+FILER_ENABLE_PERMISSIONS = False
+FILER_STORAGES = {
+    'public': {
+        'main': {
+            'ENGINE': 'filer.storage.PublicFileSystemStorage',
+            'OPTIONS': {
+                'location': MEDIA_ROOT,
+                'base_url': MEDIA_URL,
+            },
+            'UPLOAD_TO': 'filer.utils.generate_filename.randomized',
+            'UPLOAD_TO_PREFIX': 'filer_public',
+        },
+        'thumbnails': {
+            'ENGINE': 'filer.storage.PublicFileSystemStorage',
+            'OPTIONS': {
+                'location': MEDIA_ROOT,
+                'base_url': MEDIA_URL,
+            },
+            'THUMBNAIL_OPTIONS': {
+                'base_dir': 'filer_public_thumbnails',
+            },
+            'UPLOAD_TO_PREFIX': 'filer_public_thumbnails',
+        },
+    },
+}
+
+# CKEditor settings
+TEXT_CKEDITOR_FILER_IGNORE_EMPTY_SELECT = True
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Django CMS Settings
-# CMS_CONFIRM_VERSION4 = True  # 注释掉此行以避免版本4的API警告
-
-# CMS版本兼容性设置
-CMS_PERMISSION = True
-CMS_PLACEHOLDER_CONF = {}
-
-# 禁用版本4的新功能警告
-# 这将保持与当前Django CMS 3.x的兼容性
-# CMS_CONFIRM_VERSION4 = False
-
-CMS_TEMPLATES = [
-    ('base.html', '基础模板'),
-    ('medical_page.html', '医疗页面模板'),
-    ('news_page.html', '新闻页面模板'),
-    ('contact_page.html', '联系页面模板'),
-]
 
 # Site ID
 SITE_ID = 1
@@ -215,42 +293,6 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 CORS_ALLOW_CREDENTIALS = True
-
-# Easy Thumbnails
-THUMBNAIL_HIGH_RESOLUTION = True
-THUMBNAIL_PROCESSORS = [
-    'easy_thumbnails.processors.colorspace',
-    'easy_thumbnails.processors.autocrop',
-    'filer.thumbnail_processors.scale_and_crop_with_subject_location',
-    'easy_thumbnails.processors.filters',
-]
-
-# Filer settings
-FILER_CANONICAL_URL = 'sharing/'
-FILER_FILE_MODELS = (
-    'filer.models.filemodels.File',
-    'filer.models.imagemodels.Image',
-)
-
-# CKEditor settings
-CKEDITOR_SETTINGS = {
-    'language': 'zh-cn',
-    'toolbar_CMS': [
-        ['Undo', 'Redo'],
-        ['cmsplugins', '-', 'ShowBlocks'],
-        ['Format', 'Styles'],
-        ['TextColor', 'BGColor', '-', 'PasteText', 'PasteFromWord'],
-        ['Maximize', ''],
-        '/',
-        ['Bold', 'Italic', 'Underline', '-', 'Subscript', 'Superscript', '-', 'RemoveFormat'],
-        ['JustifyLeft', 'JustifyCenter', 'JustifyRight'],
-        ['HorizontalRule'],
-        ['Link', 'Unlink'],
-        ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'Table'],
-        ['Source']
-    ],
-    'skin': 'moono-lisa',
-}
 
 # Logging
 LOGGING = {

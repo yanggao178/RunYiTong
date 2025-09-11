@@ -1,12 +1,9 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 from django.utils.html import format_html
-from cms.plugin_base import CMSPluginBase
-from cms.plugin_pool import plugin_pool
 from .models import (
     MedicalDepartment, Doctor, MedicalNews, MedicalService,
-    DoctorListPlugin, NewsListPlugin, ServiceListPlugin, ContactFormPlugin,
-    ProductCategory, Product, ProductListPlugin
+    ProductCategory, Product, ProductImage
 )
 
 
@@ -112,28 +109,7 @@ class MedicalServiceAdmin(admin.ModelAdmin):
     )
 
 
-# CMS插件管理
-@admin.register(DoctorListPlugin)
-class DoctorListPluginAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'department', 'limit', 'show_photo', 'show_bio']
-    list_filter = ['department', 'show_photo', 'show_bio']
-
-
-@admin.register(NewsListPlugin)
-class NewsListPluginAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'category', 'limit', 'show_excerpt', 'show_image']
-    list_filter = ['category', 'show_excerpt', 'show_image']
-
-
-@admin.register(ServiceListPlugin)
-class ServiceListPluginAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'department', 'limit', 'show_price', 'show_image']
-    list_filter = ['department', 'show_price', 'show_image']
-
-
-@admin.register(ContactFormPlugin)
-class ContactFormPluginAdmin(admin.ModelAdmin):
-    list_display = ['title', 'email_to']
+# 原CMS插件管理代码已移除，因为Django CMS已被卸载
 
 
 @admin.register(ProductCategory)
@@ -162,6 +138,15 @@ class ProductCategoryAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related('parent')
 
 
+# 商品图片内联模型
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+    fields = ('image', 'order')
+    verbose_name = _('商品图库图片')
+    verbose_name_plural = _('商品图库图片')
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = [
@@ -177,8 +162,8 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = ['slug', 'sku', 'views_count', 'sales_count', 'created_at', 'updated_at']
     prepopulated_fields = {}
     raw_id_fields = []
-    filter_horizontal = ['gallery_images']
     date_hierarchy = 'created_at'
+    inlines = [ProductImageInline]
     
     fieldsets = (
         (_('基本信息'), {
@@ -191,7 +176,7 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('weight', 'dimensions', 'manufacturer', 'expiry_date', 'tags')
         }),
         (_('图片'), {
-            'fields': ('featured_image', 'gallery_images')
+            'fields': ('featured_image',)
         }),
         (_('医疗信息'), {
             'fields': ('is_prescription_required', 'usage_instructions', 'side_effects', 'contraindications'),
@@ -237,56 +222,10 @@ class ProductAdmin(admin.ModelAdmin):
     get_discount_info.short_description = _('折扣')
 
 
-@admin.register(ProductListPlugin)
-class ProductListPluginAdmin(admin.ModelAdmin):
-    list_display = ['__str__', 'category', 'department', 'limit', 'show_featured_only']
-    list_filter = ['category', 'department', 'show_featured_only']
-
-
-# 注册CMS插件
-@plugin_pool.register_plugin
-class ContactFormPluginPublisher(CMSPluginBase):
-    model = ContactFormPlugin
-    name = _("联系表单")
-    render_template = "medical_cms/plugins/contact_form.html"
-    cache = False
-    
-    def render(self, context, instance, placeholder):
-        context.update({
-            'instance': instance,
-        })
-        return context
-
-@plugin_pool.register_plugin
-class ProductListPluginPublisher(CMSPluginBase):
-    model = ProductListPlugin
-    name = _("商品列表")
-    render_template = "medical_cms/plugins/product_list.html"
-    cache = False
-    
-    def render(self, context, instance, placeholder):
-        products = Product.objects.filter(status='active')
-        
-        # 根据分类筛选
-        if instance.category:
-            products = products.filter(category=instance.category)
-        
-        # 根据科室筛选
-        if instance.department:
-            products = products.filter(department=instance.department)
-        
-        # 限制显示数量
-        if instance.limit > 0:
-            products = products[:instance.limit]
-        
-        context.update({
-            'instance': instance,
-            'products': products,
-        })
-        return context
+# 原CMS插件和插件发布者代码已移除，因为Django CMS已被卸载
 
 
 # 自定义管理后台标题
 admin.site.site_header = _('AI医疗管理系统')
-admin.site.site_title = _('AI医疗CMS')
-admin.site.index_title = _('内容管理')
+admin.site.site_title = _('AI医疗管理系统')
+admin.site.index_title = _('管理首页')
