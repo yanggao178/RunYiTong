@@ -19,6 +19,14 @@ urlpatterns = [
     path('categories/', api_views.ProductCategoryListAPIView.as_view(), name='category-list'),
     path('departments/', api_views.MedicalDepartmentListAPIView.as_view(), name='department-list'),
     
+    # 书籍相关API端点
+    path('books/', api_views.BookListAPIView.as_view(), name='book-list'),
+    path('books/<slug:slug>/', api_views.BookDetailAPIView.as_view(), name='book-detail'),
+    path('books/search/', api_views.search_books, name='search-books'),
+    path('books/stats/', api_views.book_stats, name='book-stats'),
+    path('book-tags/', api_views.BookTagListAPIView.as_view(), name='book-tag-list'),
+    path('book-categories/', api_views.BookCategoryListAPIView.as_view(), name='book-category-list'),
+    
     # AI医疗数据库商品API
     path('ai-products/', api_views.ai_products_list, name='ai-products-list'),
     path('ai-products/<int:product_id>/', api_views.ai_product_detail, name='ai-product-detail'),

@@ -1,15 +1,21 @@
-from rest_framework import generics, filters, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import generics
+from rest_framework import status, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from .models import Product, ProductCategory, MedicalDepartment
+from .models import Product, ProductCategory, MedicalDepartment, Book, BookTag, BookCategory
 from .serializers import (
     ProductSerializer, 
     ProductListSerializer, 
     ProductCategorySerializer,
-    MedicalDepartmentSerializer
+    MedicalDepartmentSerializer,
+    BookSerializer,
+    BookListSerializer,
+    BookTagSerializer,
+    BookCategorySerializer
 )
 
 # 导入SQLAlchemy相关模块用于连接ai_medical.db
@@ -93,6 +99,52 @@ class MedicalDepartmentListAPIView(generics.ListAPIView):
     ordering = ['name']
 
 
+class BookListAPIView(generics.ListAPIView):
+    """书籍列表API"""
+    queryset = Book.objects.all()
+    serializer_class = BookListSerializer
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category']
+    search_fields = ['name', 'author', 'description']
+    ordering_fields = ['created_time', 'publish_date']
+    ordering = ['-created_time']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # 按分类筛选
+        category = self.request.query_params.get('category')
+        if category:
+            queryset = queryset.filter(category=category)
+            
+        return queryset
+
+
+class BookDetailAPIView(generics.RetrieveAPIView):
+    """书籍详情API"""
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'id'
+
+
+class BookTagListAPIView(generics.ListAPIView):
+    """书籍标签列表API"""
+    queryset = BookTag.objects.all()
+    serializer_class = BookTagSerializer
+    permission_classes = [AllowAny]
+    ordering = ['name']
+
+
+class BookCategoryListAPIView(generics.ListAPIView):
+    """书籍分类列表API"""
+    queryset = BookCategory.objects.filter(is_active=True)
+    serializer_class = BookCategorySerializer
+    permission_classes = [AllowAny]
+    ordering = ['sort_order', 'name']
+
+
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def featured_products(request):
@@ -107,6 +159,43 @@ def featured_products(request):
     return Response({
         'count': len(products),
         'results': serializer.data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def search_books(request):
+    """书籍搜索API"""
+    query = request.GET.get('q', '')
+    if not query:
+        return Response({'error': '搜索关键词不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    books = Book.objects.filter(
+        Q(name__icontains=query) |
+        Q(author__icontains=query) |
+        Q(description__icontains=query)
+    )
+    
+    serializer = BookListSerializer(books, many=True)
+    return Response({
+        'query': query,
+        'count': len(books),
+        'results': serializer.data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def book_stats(request):
+    """书籍统计信息API"""
+    total_books = Book.objects.count()
+    categories_count = Book.objects.values('category').distinct().count()
+    tags_count = BookTag.objects.count()
+    
+    return Response({
+        'total_books': total_books,
+        'categories_count': categories_count,
+        'tags_count': tags_count
     })
 
 

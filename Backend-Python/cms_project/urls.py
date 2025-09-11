@@ -15,14 +15,12 @@ if 'django.contrib.sitemaps' in settings.INSTALLED_APPS and 'cms' in settings.IN
 urlpatterns = [
     # Admin interface
     path('admin/', admin.site.urls),
-    
-    # django CMS URLs
-    path('', include('cms.urls')),
-    
     # API endpoints
     path('api/', include('medical_cms.urls')),
     path('api-auth/', include('rest_framework.urls')),
-    
+    # django CMS URLs
+    path('', include('cms.urls')),
+
     # Health check endpoint (待实现)
     # path('health/', include('medical_cms.health.urls')),
 ]

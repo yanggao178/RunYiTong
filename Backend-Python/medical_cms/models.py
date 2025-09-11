@@ -1,11 +1,119 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+import json
+from django.utils import timezone
 import sqlite3
 import os
-from datetime import datetime
+import datetime
+
+# 自定义UserManager
+class CustomUserManager(BaseUserManager):
+    """自定义用户管理器，支持邮箱和用户名登录"""
+    
+    def create_user(self, username, email, password=None, **extra_fields):
+        """创建并保存普通用户"""
+        if not email:
+            raise ValueError(_('用户必须有邮箱地址'))
+        if not username:
+            raise ValueError(_('用户必须有用户名'))
+        
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        """创建并保存超级用户"""
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError(_('超级用户必须设置 is_staff=True'))
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError(_('超级用户必须设置 is_superuser=True'))
+        
+        return self.create_user(username, email, password, **extra_fields)
+
+# 自定义User模型，基于AbstractUser但使用ai_medical.db中的users表结构
+class User(AbstractUser):
+    """自定义用户模型，与ai_medical.db中的users表结构对应"""
+    # 删除Django默认的first_name和last_name字段
+    first_name = None
+    last_name = None
+    
+    # 重写password字段，与数据库中的hashed_password对应
+    password = models.CharField(max_length=255, verbose_name=_('密码'), blank=True)
+    
+    # 使用full_name替代first_name和last_name
+    full_name = models.CharField(max_length=255, verbose_name=_('全名'), blank=True, null=True)
+    phone = models.CharField(max_length=20, verbose_name=_('手机号码'), blank=True, null=True)
+    avatar_url = models.CharField(max_length=500, verbose_name=_('头像URL'), blank=True, null=True)
+    created_time = models.DateTimeField(verbose_name=_('创建时间'), default=timezone.now)
+    updated_time = models.DateTimeField(verbose_name=_('更新时间'), auto_now=True)
+    
+    # 数据库字段映射
+    hashed_password = models.CharField(max_length=255, verbose_name=_('哈希密码'), blank=True)
+    
+    # 添加last_login字段，与AbstractUser兼容
+    last_login = models.DateTimeField(verbose_name=_('最后登录时间'), blank=True, null=True)
+    
+    # 添加is_superuser字段，与AbstractUser兼容
+    is_superuser = models.BooleanField(verbose_name=_('是否超级用户'), default=False)
+    
+    # 添加is_staff字段，与AbstractUser兼容
+    is_staff = models.BooleanField(verbose_name=_('是否工作人员'), default=False)
+    
+    # 添加date_joined字段，与AbstractUser兼容
+    date_joined = models.DateTimeField(verbose_name=_('加入时间'), default=timezone.now)
+    
+    # 重写password的getter和setter方法
+    def _get_password(self):
+        return self.hashed_password
+    
+    def _set_password(self, raw_password):
+        # 调用AbstractUser的set_password方法来处理密码加密
+        from django.contrib.auth.hashers import make_password
+        self.hashed_password = make_password(raw_password)
+    
+    password = property(_get_password, _set_password)
+    
+    # 设置自定义管理器
+    objects = CustomUserManager()
+    
+    # 解决反向访问器冲突
+    groups = models.ManyToManyField(
+        'auth.Group',
+        verbose_name=_('groups'),
+        blank=True,
+        help_text=_('The groups this user belongs to. A user will get all permissions granted to each of their groups.'),
+        related_name='medical_user_set',
+        related_query_name='user',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        verbose_name=_('user permissions'),
+        blank=True,
+        help_text=_('Specific permissions for this user.'),
+        related_name='medical_user_set',
+        related_query_name='user',
+    )
+    
+    class Meta:
+        verbose_name = _('用户')
+        verbose_name_plural = _('用户')
+        db_table = 'users'  # 指向已有的users表
+    
+    def __str__(self):
+        return self.username
+    
+    def save(self, *args, **kwargs):
+        # 确保更新时间总是被设置
+        self.updated_time = timezone.now()
+        super().save(*args, **kwargs)
 
 
 class MedicalDepartment(models.Model):
@@ -287,6 +395,7 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
     新表结构字段映射说明:
     - Django Product -> ai_medical.db products 完整字段映射
     - 支持所有Django CMS Product模型字段同步到新的表结构
+    - 当ai_medical.db中已存在相同名称的商品时，不进行同步
     """
     try:
         # 获取ai_medical.db路径
@@ -299,8 +408,17 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
+        # 检查ai_medical.db中是否已存在相同名称的商品
+        cursor.execute("SELECT COUNT(*) FROM products WHERE name = ?", (instance.name[:200],))
+        exists_count = cursor.fetchone()[0]
+        
+        if exists_count > 0:
+            print(f"⚠️ 跳过同步商品 '{instance.name}'（ID: {instance.id}）：ai_medical.db中已存在相同名称的商品")
+            conn.close()
+            return
+        
         # 准备数据
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         # 映射Django分类ID到AI数据库分类ID
         category_id = instance.category.id if instance.category else None
@@ -435,4 +553,336 @@ def delete_product_from_ai_db(sender, instance, **kwargs):
         conn.close()
         
     except Exception as e:
-        print(f"⚠️ 从ai_medical.db删除商品失败: {e}")
+            print(f"⚠️ 从ai_medical.db删除商品失败: {e}")
+
+
+# 信号处理器：同步用户数据到ai_medical.db
+@receiver(post_save, sender=User)
+@receiver(post_save, sender='auth.User')
+def sync_user_to_ai_db(sender, instance, created, **kwargs):
+    """当User模型保存时，同步数据到ai_medical.db
+    
+    同步所有Django CMS User模型的增删改查操作到ai_medical.db的users表
+    """
+    try:
+        # 获取ai_medical.db路径
+        db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai_medical.db')
+        
+        if not os.path.exists(db_path):
+            print(f"Warning: ai_medical.db not found at {db_path}")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 准备数据
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 准备所有字段数据
+        # 处理可能是auth.User或medical_cms.User的情况
+        if hasattr(instance, 'full_name'):
+            full_name = instance.full_name or ''
+            phone = instance.phone or ''
+            avatar_url = instance.avatar_url or ''
+            hashed_password = instance.hashed_password or ''
+            created_time = instance.created_time.strftime('%Y-%m-%d %H:%M:%S') if instance.created_time else now
+        else:
+            # 如果是auth.User，则使用first_name和last_name组合成full_name
+            full_name = f"{instance.first_name or ''} {instance.last_name or ''}".strip()
+            phone = ''
+            avatar_url = ''
+            hashed_password = instance.password or ''
+            created_time = now
+        
+        # 处理last_login
+        last_login = instance.last_login.strftime('%Y-%m-%d %H:%M:%S') if instance.last_login else None
+        
+        user_data = {
+            'username': (instance.username or '')[:150],
+            'email': (instance.email or '')[:254],
+            'hashed_password': hashed_password,
+            'full_name': full_name[:255],
+            'phone': phone[:20],
+            'avatar_url': avatar_url[:500],
+            'is_active': 1 if instance.is_active else 0,
+            'created_time': created_time,
+            'updated_time': now,
+            'last_login': last_login,
+            'is_superuser': 1 if instance.is_superuser else 0,
+            'is_staff': 1 if instance.is_staff else 0,
+        }
+        
+        if created:
+            # 新建用户：插入到ai_medical.db
+            columns = ', '.join(user_data.keys())
+            placeholders = ', '.join(['?' for _ in user_data])
+            values = list(user_data.values())
+            
+            cursor.execute(f"""
+                INSERT INTO users ({columns})
+                VALUES ({placeholders})
+            """, values)
+            print(f"✓ 新用户已同步到ai_medical.db: {user_data['username']}")
+        else:
+            # 更新用户：根据用户名更新ai_medical.db中的记录
+            set_clause = ', '.join([f'{key} = ?' for key in user_data.keys() if key != 'created_time'])
+            update_values = [value for key, value in user_data.items() if key != 'created_time']
+            
+            cursor.execute(f"""
+                UPDATE users SET {set_clause}
+                WHERE username = ?
+            """, update_values + [user_data['username']])
+            
+            if cursor.rowcount > 0:
+                print(f"✓ 用户已更新到ai_medical.db: {user_data['username']}")
+            else:
+                # 如果更新失败，插入新记录
+                columns = ', '.join(user_data.keys())
+                placeholders = ', '.join(['?' for _ in user_data])
+                values = list(user_data.values())
+                
+                cursor.execute(f"""
+                    INSERT INTO users ({columns})
+                    VALUES ({placeholders})
+                """, values)
+                print(f"✓ 新用户已插入到ai_medical.db: {user_data['username']}")
+        
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        print(f"⚠️ 同步用户到ai_medical.db失败: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+@receiver(post_delete, sender=User)
+@receiver(post_delete, sender='auth.User')
+def delete_user_from_ai_db(sender, instance, **kwargs):
+    """当User模型删除时，从ai_medical.db中删除对应记录"""
+    try:
+        # 获取ai_medical.db路径
+        db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai_medical.db')
+        
+        if not os.path.exists(db_path):
+            print(f"Warning: ai_medical.db not found at {db_path}")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 根据用户名删除记录
+        cursor.execute("DELETE FROM users WHERE username = ?", (instance.username,))
+        
+        if cursor.rowcount > 0:
+            print(f"✓ 用户已从ai_medical.db删除: {instance.username}")
+        else:
+            print(f"⚠️ 在ai_medical.db中未找到用户: {instance.username}")
+        
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        print(f"⚠️ 从ai_medical.db删除用户失败: {e}")
+
+
+class BookCategory(models.Model):
+    """书籍分类模型"""
+    name = models.CharField(_('分类名称'), max_length=100)
+    description = models.TextField(_('分类描述'), blank=True)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        verbose_name=_('父分类'),
+        blank=True,
+        null=True,
+        related_name='children'
+    )
+    is_active = models.BooleanField(_('是否启用'), default=True)
+    sort_order = models.PositiveIntegerField(_('排序'), default=0)
+    created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('更新时间'), auto_now=True)
+    
+    class Meta:
+        verbose_name = _('书籍分类')
+        verbose_name_plural = _('书籍分类')
+        ordering = ['sort_order', 'name']
+    
+    def __str__(self):
+        if self.parent:
+            return f"{self.parent.name} - {self.name}"
+        return self.name
+
+
+class BookTag(models.Model):
+    """书籍标签模型"""
+    name = models.CharField(_('标签名称'), max_length=50, unique=True)
+    created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('更新时间'), auto_now=True)
+    
+    class Meta:
+        verbose_name = _('书籍标签')
+        verbose_name_plural = _('书籍标签')
+        ordering = ['name']
+    
+    def __str__(self):
+        return self.name
+
+
+class BookTagRelation(models.Model):
+    """书籍和标签的多对多关系模型"""
+    book = models.ForeignKey('Book', on_delete=models.CASCADE, verbose_name=_('书籍'), related_name='tag_relations')
+    tag = models.ForeignKey('BookTag', on_delete=models.CASCADE, verbose_name=_('标签'), related_name='book_relations')
+    created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
+    
+    class Meta:
+        verbose_name = _('书籍-标签关系')
+        verbose_name_plural = _('书籍-标签关系')
+        unique_together = ('book', 'tag')
+    
+    def __str__(self):
+        return f"{self.book.name} - {self.tag.name}"
+
+
+class Book(models.Model):
+    """书籍模型"""
+    name = models.CharField(_('书籍名称'), max_length=255)
+    author = models.CharField(_('作者'), max_length=255)
+    category = models.CharField(_('分类'), max_length=100, blank=True, null=True)  # 为了与ai_medical.db兼容，使用CharField
+    description = models.TextField(_('书籍描述'), blank=True)
+    cover_url = models.CharField(_('封面URL'), max_length=500, blank=True)
+    pdf_file_path = models.CharField(_('PDF文件路径'), max_length=500, blank=True)
+    file_size = models.IntegerField(_('文件大小(字节)'), blank=True, null=True)
+    publish_date = models.DateTimeField(_('出版日期'), blank=True, null=True)
+    created_time = models.DateTimeField(_('创建时间'), auto_now_add=True)
+    updated_time = models.DateTimeField(_('更新时间'), auto_now=True)
+    
+    # 标签通过中间表关联
+    tags = models.ManyToManyField(BookTag, through='BookTagRelation', verbose_name=_('标签'), blank=True)
+    
+    class Meta:
+        verbose_name = _('书籍')
+        verbose_name_plural = _('书籍')
+        ordering = ['-created_time']
+    
+    def __str__(self):
+        return self.name
+
+
+# 信号处理器：同步书籍数据到ai_medical.db
+@receiver(post_save, sender=Book)
+@receiver(post_save, sender=BookTagRelation)
+@receiver(post_delete, sender=BookTagRelation)
+def sync_book_to_ai_db(sender, instance, created, **kwargs):
+    """当Book模型或BookTagRelation模型保存/删除时，同步数据到ai_medical.db的books表
+    
+    新表结构字段映射说明:
+    - Django Book -> ai_medical.db books 完整字段映射
+    - 支持所有Django CMS Book模型字段同步到新的表结构
+    - 自动处理标签信息
+    """
+    try:
+        # 如果是BookTagRelation实例，则获取对应的Book实例
+        if isinstance(instance, BookTagRelation):
+            book = instance.book
+            is_tag_change = True
+        else:
+            book = instance
+            is_tag_change = False
+        
+        # 获取ai_medical.db路径
+        db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai_medical.db')
+        
+        if not os.path.exists(db_path):
+            print(f"Warning: ai_medical.db not found at {db_path}")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 准备数据
+        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 获取标签信息（用逗号分隔）
+        tag_names = [tag.name for tag in book.tags.all()]
+        tags_str = ','.join(tag_names)
+        
+        # 准备所有字段数据
+        book_data = {
+            'name': book.name[:255] if book.name else '',
+            'author': book.author[:255] if book.author else '',
+            'category': book.category[:100] if book.category else '',
+            'description': book.description or '',
+            'cover_url': book.cover_url[:500] if book.cover_url else '',
+            'pdf_file_path': book.pdf_file_path[:500] if book.pdf_file_path else '',
+            'file_size': int(book.file_size) if book.file_size is not None else 0,
+            'publish_date': book.publish_date.strftime('%Y-%m-%d %H:%M:%S') if book.publish_date else None,
+            'created_time': book.created_time.strftime('%Y-%m-%d %H:%M:%S') if book.created_time else now,
+            'updated_time': now
+        }
+        
+        # 检查是否已存在该书籍
+        cursor.execute("SELECT id FROM books WHERE name = ? AND author = ?", (book_data['name'], book_data['author']))
+        existing_book = cursor.fetchone()
+        
+        if existing_book:
+            # 更新现有书籍
+            set_clause = ', '.join([f'{key} = ?' for key in book_data.keys() if key != 'created_time'])
+            update_values = [value for key, value in book_data.items() if key != 'created_time']
+            update_values.append(existing_book[0])
+            
+            cursor.execute(f"""
+                UPDATE books SET {set_clause}
+                WHERE id = ?
+            """, update_values)
+            
+            if cursor.rowcount > 0:
+                print(f"✓ 书籍已更新到ai_medical.db: {book_data['name']}")
+        else:
+            # 插入新书籍
+            columns = ', '.join(book_data.keys())
+            placeholders = ', '.join(['?' for _ in book_data])
+            values = list(book_data.values())
+            
+            cursor.execute(f"""
+                INSERT INTO books ({columns})
+                VALUES ({placeholders})
+            """, values)
+            print(f"✓ 新书籍已同步到ai_medical.db: {book_data['name']}")
+        
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        print(f"⚠️ 同步书籍到ai_medical.db失败: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+@receiver(post_delete, sender=Book)
+def delete_book_from_ai_db(sender, instance, **kwargs):
+    """当Book模型删除时，从ai_medical.db中删除对应记录"""
+    try:
+        # 获取ai_medical.db路径
+        db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai_medical.db')
+        
+        if not os.path.exists(db_path):
+            print(f"Warning: ai_medical.db not found at {db_path}")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 根据名称和作者删除记录
+        cursor.execute("DELETE FROM books WHERE name = ? AND author = ?", (instance.name, instance.author))
+        
+        if cursor.rowcount > 0:
+            print(f"✓ 书籍已从ai_medical.db删除: {instance.name}")
+        else:
+            print(f"⚠️ 在ai_medical.db中未找到书籍: {instance.name}")
+        
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        print(f"⚠️ 从ai_medical.db删除书籍失败: {e}")

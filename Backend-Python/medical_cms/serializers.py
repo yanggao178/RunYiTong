@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, ProductCategory, MedicalDepartment
+from .models import Product, ProductCategory, MedicalDepartment, Book, BookTag, BookCategory
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -34,6 +34,22 @@ class MedicalDepartmentSerializer(serializers.ModelSerializer):
         else:
             data['image'] = None
         return data
+
+
+class BookTagSerializer(serializers.ModelSerializer):
+    """书籍标签序列化器"""
+    
+    class Meta:
+        model = BookTag
+        fields = ['id', 'name']
+
+
+class BookCategorySerializer(serializers.ModelSerializer):
+    """书籍分类序列化器"""
+    
+    class Meta:
+        model = BookCategory
+        fields = ['id', 'name', 'description', 'parent', 'is_active', 'sort_order']
 
 
 class ProductSerializer(serializers.ModelSerializer):
@@ -94,3 +110,27 @@ class ProductListSerializer(serializers.ModelSerializer):
         else:
             data['featured_image'] = None
         return data
+
+
+class BookSerializer(serializers.ModelSerializer):
+    """书籍序列化器"""
+    tags = BookTagSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Book
+        fields = [
+            'id', 'name', 'author', 'category', 'description',
+            'cover_url', 'pdf_file_path', 'file_size', 'publish_date',
+            'tags', 'created_time', 'updated_time'
+        ]
+
+
+class BookListSerializer(serializers.ModelSerializer):
+    """书籍列表序列化器（简化版）"""
+    
+    class Meta:
+        model = Book
+        fields = [
+            'id', 'name', 'author', 'category', 'description',
+            'cover_url', 'publish_date', 'created_time'
+        ]
