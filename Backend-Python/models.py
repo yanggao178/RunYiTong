@@ -177,7 +177,7 @@ class PhysicalExamReport(Base):
     # 关联关系
     health_record = relationship("HealthRecord", back_populates="physical_exam_reports")
 
-# 医院模型
+# 医院模型 - 与ai_medical.db hospitals表结构保持一致
 class Hospital(Base):
     __tablename__ = "hospitals"
     
@@ -192,6 +192,19 @@ class Hospital(Base):
     wechat_id = Column(String(100))  # 微信号
     created_time = Column(DateTime, default=datetime.utcnow)
     updated_time = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    slug = Column(String(200))  # 医院唯一标识符
+    short_description = Column(Text)  # 医院简短描述
+    category_id = Column(Integer)  # 医院类别ID
+    department_id = Column(Integer)  # 医院科室ID
+    email = Column(String(255))  # 医院邮箱
+    website = Column(String(500))  # 医院网站
+    rating = Column(Float, default=0)  # 医院评分
+    featured_image_url = Column(String(500))  # 特色图片URL
+    services_offered = Column(Text)  # 提供的服务
+    tags = Column(String(500))  # 标签
+    status = Column(String(50))  # 状态
+    is_featured = Column(Integer, default=0)  # 是否推荐，0否1是
+    is_affiliated = Column(Integer, default=0)  # 是否附属，0否1是
 
 # 科室模型 - 与ai_medical.db departments表结构保持一致
 class Department(Base):

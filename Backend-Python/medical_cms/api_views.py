@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
-from .models import Product, ProductCategory, MedicalDepartment, Book, BookTag, BookCategory
+from .models import Product, ProductCategory, MedicalDepartment, Book, BookTag, BookCategory, Hospital, HospitalCategory
 from .serializers import (
     ProductSerializer, 
     ProductListSerializer, 
@@ -15,7 +15,10 @@ from .serializers import (
     BookSerializer,
     BookListSerializer,
     BookTagSerializer,
-    BookCategorySerializer
+    BookCategorySerializer,
+    HospitalSerializer,
+    HospitalListSerializer,
+    HospitalCategorySerializer
 )
 
 # 导入SQLAlchemy相关模块用于连接ai_medical.db
@@ -310,6 +313,139 @@ def ai_products_list(request):
         )
     finally:
         db.close()
+
+
+# ===== 医院相关API =====
+
+class HospitalListAPIView(generics.ListAPIView):
+    """医院列表API"""
+    queryset = Hospital.objects.filter(status='active')
+    serializer_class = HospitalListSerializer
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category', 'department', 'is_featured', 'is_affiliated']
+    search_fields = ['name', 'description', 'short_description', 'tags', 'address', 'services_offered']
+    ordering_fields = ['created_at', 'rating', 'name']
+    ordering = ['-created_at']
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # 按分类筛选
+        category_id = self.request.query_params.get('category_id')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+            
+        # 按科室筛选
+        department_id = self.request.query_params.get('department_id')
+        if department_id:
+            queryset = queryset.filter(department_id=department_id)
+            
+        # 按评分范围筛选
+        min_rating = self.request.query_params.get('min_rating')
+        max_rating = self.request.query_params.get('max_rating')
+        if min_rating:
+            queryset = queryset.filter(rating__gte=min_rating)
+        if max_rating:
+            queryset = queryset.filter(rating__lte=max_rating)
+            
+        # 按状态筛选
+        status = self.request.query_params.get('status')
+        if status:
+            queryset = queryset.filter(status=status)
+            
+        # 按是否特色医院筛选
+        featured = self.request.query_params.get('featured')
+        if featured and featured.lower() == 'true':
+            queryset = queryset.filter(is_featured=True)
+            
+        # 按是否合作医院筛选
+        affiliated = self.request.query_params.get('affiliated')
+        if affiliated and affiliated.lower() == 'true':
+            queryset = queryset.filter(is_affiliated=True)
+            
+        return queryset.select_related('category', 'department')
+
+
+class HospitalDetailAPIView(generics.RetrieveAPIView):
+    """医院详情API"""
+    queryset = Hospital.objects.filter(status='active')
+    serializer_class = HospitalSerializer
+    permission_classes = [AllowAny]
+    lookup_field = 'slug'
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+
+class HospitalCategoryListAPIView(generics.ListAPIView):
+    """医院分类列表API"""
+    queryset = HospitalCategory.objects.filter(is_active=True)
+    serializer_class = HospitalCategorySerializer
+    permission_classes = [AllowAny]
+    ordering = ['sort_order', 'name']
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def featured_hospitals(request):
+    """获取推荐医院"""
+    limit = int(request.GET.get('limit', 10))
+    hospitals = Hospital.objects.filter(
+        status='active', 
+        is_featured=True
+    ).select_related('category', 'department')[:limit]
+    
+    serializer = HospitalListSerializer(hospitals, many=True)
+    return Response({
+        'count': len(hospitals),
+        'results': serializer.data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def search_hospitals(request):
+    """医院搜索API"""
+    query = request.GET.get('q', '')
+    if not query:
+        return Response({'error': '搜索关键词不能为空'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    hospitals = Hospital.objects.filter(
+        Q(name__icontains=query) |
+        Q(description__icontains=query) |
+        Q(short_description__icontains=query) |
+        Q(tags__icontains=query) |
+        Q(address__icontains=query) |
+        Q(services_offered__icontains=query),
+        status='active'
+    ).select_related('category', 'department')
+    
+    serializer = HospitalListSerializer(hospitals, many=True)
+    return Response({
+        'query': query,
+        'count': len(hospitals),
+        'results': serializer.data
+    })
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def hospital_stats(request):
+    """医院统计信息API"""
+    total_hospitals = Hospital.objects.filter(status='active').count()
+    featured_hospitals_count = Hospital.objects.filter(status='active', is_featured=True).count()
+    categories_count = HospitalCategory.objects.filter(is_active=True).count()
+    departments_count = MedicalDepartment.objects.filter(is_active=True).count()
+    
+    return Response({
+        'total_hospitals': total_hospitals,
+        'featured_hospitals': featured_hospitals_count,
+        'categories': categories_count,
+        'departments': departments_count
+    })
 
 
 @api_view(['GET'])

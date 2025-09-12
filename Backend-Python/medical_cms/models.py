@@ -245,6 +245,54 @@ class MedicalService(models.Model):
 # 原CMS插件模型已移除，因为Django CMS已被卸载
 
 
+# 医院相关模型
+def get_hospital_image_path(instance, filename):
+    # 文件将被上传到 MEDIA_ROOT/hospital_images/hospital_<id>/<filename>
+    return f'hospital_images/hospital_{instance.id}/{filename}'
+
+def get_hospital_category_image_path(instance, filename):
+    # 文件将被上传到 MEDIA_ROOT/hospital_category_images/<filename>
+    return f'hospital_category_images/{filename}'
+
+class HospitalCategory(models.Model):
+    """医院分类模型"""
+    name = models.CharField(_('分类名称'), max_length=100)
+    description = models.TextField(_('分类描述'), blank=True)
+    image = models.ImageField(
+        verbose_name=_('分类图片'),
+        upload_to=get_hospital_category_image_path,
+        blank=True,
+        null=True
+    )
+    is_active = models.BooleanField(_('是否启用'), default=True)
+    sort_order = models.PositiveIntegerField(_('排序'), default=0)
+    created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('更新时间'), auto_now=True)
+    
+    class Meta:
+        verbose_name = _('医院分类')
+        verbose_name_plural = _('医院分类')
+        ordering = ['sort_order', 'name']
+    
+    def __str__(self):
+        return self.name
+
+class HospitalImage(models.Model):
+    """医院图库图片模型"""
+    hospital = models.ForeignKey('Hospital', on_delete=models.CASCADE, related_name='gallery_images')
+    image = models.ImageField(upload_to=get_hospital_image_path)
+    order = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['order']
+        verbose_name = _('医院图库图片')
+        verbose_name_plural = _('医院图库图片')
+    
+    def __str__(self):
+        return f"{self.hospital.name} - 图片 {self.order}"
+
+
+# 商品相关模型
 class ProductCategory(models.Model):
     """商品分类模型"""
     name = models.CharField(_('分类名称'), max_length=100)
@@ -292,6 +340,210 @@ class ProductImage(models.Model):
     
     def __str__(self):
         return f"{self.product.name} - 图片 {self.order}"
+
+
+class Hospital(models.Model):
+    """医院模型"""
+    STATUS_CHOICES = [
+        ('draft', _('草稿')),
+        ('active', _('已上线')),
+        ('inactive', _('已下线')),
+    ]
+    
+    name = models.CharField(_('医院名称'), max_length=200)
+    slug = models.SlugField(_('URL别名'), unique=True, blank=True)
+    description = models.TextField(_('医院描述'))
+    short_description = models.TextField(_('简短描述'), max_length=500, blank=True)
+    category = models.ForeignKey(
+        HospitalCategory,
+        on_delete=models.CASCADE,
+        verbose_name=_('医院分类')
+    )
+    department = models.ForeignKey(
+        MedicalDepartment,
+        on_delete=models.CASCADE,
+        verbose_name=_('相关科室'),
+        blank=True,
+        null=True
+    )
+    address = models.CharField(_('医院地址'), max_length=500)
+    phone = models.CharField(_('联系电话'), max_length=50)
+    email = models.EmailField(_('邮箱'), blank=True)
+    website = models.URLField(_('网站'), blank=True)
+    rating = models.DecimalField(_('评分'), max_digits=3, decimal_places=1, default=0.0, blank=True)
+    featured_image = models.ImageField(
+        verbose_name=_('特色图片'),
+        upload_to=get_hospital_image_path,
+        blank=True,
+        null=True
+    )
+    services_offered = models.TextField(_('提供服务'), blank=True)
+    tags = models.CharField(_('标签'), max_length=200, blank=True)
+    status = models.CharField(_('状态'), max_length=20, choices=STATUS_CHOICES, default='draft')
+    is_featured = models.BooleanField(_('是否推荐'), default=False)
+    is_affiliated = models.BooleanField(_('是否合作'), default=False)
+    created_at = models.DateTimeField(_('创建时间'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('更新时间'), auto_now=True)
+    
+    class Meta:
+        verbose_name = _('医院')
+        verbose_name_plural = _('医院')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['status', 'is_featured']),
+            models.Index(fields=['category', 'status']),
+            models.Index(fields=['department', 'status']),
+        ]
+    
+    def __str__(self):
+        return self.name
+    
+    def save(self, *args, **kwargs):
+        # 自动生成slug如果为空
+        if not self.slug:
+            self.slug = slugify(self.name)
+        
+        # 确保slug唯一
+        if self.id is None:
+            # 新建对象时检查slug唯一性
+            slug = self.slug
+            counter = 1
+            while Hospital.objects.filter(slug=slug).exists():
+                slug = f"{self.slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        else:
+            # 更新对象时检查slug唯一性（排除当前对象）
+            existing = Hospital.objects.filter(slug=self.slug).exclude(id=self.id).first()
+            if existing:
+                slug = self.slug
+                counter = 1
+                while Hospital.objects.filter(slug=slug).exclude(id=self.id).exists():
+                    slug = f"{self.slug}-{counter}"
+                    counter += 1
+                self.slug = slug
+        
+        super().save(*args, **kwargs)
+
+# 导入信号处理相关模块
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
+import sqlite3
+from datetime import datetime
+
+@receiver(post_save, sender=Hospital)
+@receiver(post_delete, sender=Hospital)
+def sync_hospital_to_ai_db(sender, instance, created=None, **kwargs):
+    """将医院数据同步到ai_medical.db"""
+    # 判断是哪种信号触发的
+    signal_type = kwargs.get('signal')
+    try:
+        # 获取ai_medical.db路径
+        db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai_medical.db')
+        
+        if not os.path.exists(db_path):
+            print(f"Warning: ai_medical.db not found at {db_path}")
+            return
+        
+        # 连接到ai_medical.db
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 创建医院表（如果不存在）
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS hospitals (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                slug TEXT,
+                description TEXT,
+                short_description TEXT,
+                category_id INTEGER,
+                department_id INTEGER,
+                address TEXT,
+                phone TEXT,
+                email TEXT,
+                website TEXT,
+                rating REAL DEFAULT 0,
+                featured_image_url TEXT,
+                services_offered TEXT,
+                tags TEXT,
+                status TEXT,
+                is_featured INTEGER DEFAULT 0,
+                is_affiliated INTEGER DEFAULT 0,
+                created_at TEXT,
+                updated_at TEXT
+            )
+        ''')
+        
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 准备医院数据
+        featured_image_url = str(instance.featured_image.url) if instance.featured_image else ''
+        
+        hospital_data = {
+            'id': instance.id,
+            'name': instance.name[:200],
+            'slug': instance.slug or '',
+            'description': instance.description or '',
+            'short_description': (instance.short_description or '')[:500],
+            'category_id': instance.category.id if instance.category else None,
+            'department_id': instance.department.id if instance.department else None,
+            'address': instance.address[:500],
+            'phone': instance.phone[:50],
+            'email': instance.email or '',
+            'website': instance.website or '',
+            'rating': float(instance.rating) if instance.rating else 0.0,
+            'featured_image_url': featured_image_url,
+            'services_offered': instance.services_offered or '',
+            'tags': (instance.tags or '')[:200],
+            'status': instance.status or 'draft',
+            'is_featured': 1 if instance.is_featured else 0,
+            'is_affiliated': 1 if instance.is_affiliated else 0,
+            'created_at': instance.created_at.strftime('%Y-%m-%d %H:%M:%S') if instance.created_at else now,
+            'updated_at': now
+        }
+        
+        # 根据信号类型执行不同的操作
+        if signal_type == post_save:
+            # 保存操作（创建或更新）
+            # 检查记录是否存在
+            cursor.execute("SELECT id FROM hospitals WHERE id = ?", (instance.id,))
+            exists = cursor.fetchone() is not None
+            
+            if exists:
+                # 更新已有记录
+                update_fields = ', '.join([f"{key} = ?" for key in hospital_data.keys()])
+                values = list(hospital_data.values())
+                
+                cursor.execute(f"""
+                    UPDATE hospitals
+                    SET {update_fields}
+                    WHERE id = ?
+                """, values)
+                print(f"✓ 医院已更新到ai_medical.db: {hospital_data['name']}")
+            else:
+                # 插入新记录
+                columns = ', '.join(hospital_data.keys())
+                placeholders = ', '.join(['?' for _ in hospital_data])
+                values = list(hospital_data.values())
+                
+                cursor.execute(f"""
+                    INSERT INTO hospitals ({columns})
+                    VALUES ({placeholders})
+                """, values)
+                print(f"✓ 新医院已插入到ai_medical.db: {hospital_data['name']}")
+        elif signal_type == post_delete:
+            # 删除操作
+            cursor.execute("DELETE FROM hospitals WHERE id = ?", (instance.id,))
+            print(f"✓ 医院已从ai_medical.db删除: {instance.name}")
+        
+        conn.commit()
+        conn.close()
+        
+    except Exception as e:
+        print(f"⚠️ 同步医院到ai_medical.db失败: {e}")
+        import traceback
+        traceback.print_exc()
 
 class Product(models.Model):
     """商品模型"""

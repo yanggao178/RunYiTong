@@ -362,7 +362,7 @@ class PaginatedResponse(BaseModel):
     size: int
     pages: int
 
-# 医院相关模式
+# 医院相关模式 - 与ai_medical.db hospitals表结构保持一致
 class HospitalBase(BaseModel):
     name: str
     address: Optional[str] = None
@@ -372,6 +372,20 @@ class HospitalBase(BaseModel):
     departments: Optional[str] = None
     official_account_id: Optional[str] = None
     wechat_id: Optional[str] = None
+    # 新增字段
+    slug: Optional[str] = None
+    short_description: Optional[str] = None
+    category_id: Optional[int] = None
+    department_id: Optional[int] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    rating: Optional[float] = 0
+    featured_image_url: Optional[str] = None
+    services_offered: Optional[str] = None
+    tags: Optional[str] = None
+    status: Optional[str] = None
+    is_featured: Optional[bool] = False
+    is_affiliated: Optional[bool] = False
 
 class HospitalCreate(HospitalBase):
     pass
@@ -385,11 +399,25 @@ class HospitalUpdate(BaseModel):
     departments: Optional[str] = None
     official_account_id: Optional[str] = None
     wechat_id: Optional[str] = None
+    # 新增字段
+    slug: Optional[str] = None
+    short_description: Optional[str] = None
+    category_id: Optional[int] = None
+    department_id: Optional[int] = None
+    email: Optional[str] = None
+    website: Optional[str] = None
+    rating: Optional[float] = None
+    featured_image_url: Optional[str] = None
+    services_offered: Optional[str] = None
+    tags: Optional[str] = None
+    status: Optional[str] = None
+    is_featured: Optional[bool] = None
+    is_affiliated: Optional[bool] = None
 
 class Hospital(HospitalBase):
     id: int
-    created_time: datetime
-    updated_time: datetime
+    created_time: Optional[datetime] = None
+    updated_time: Optional[datetime] = None
     
     class Config:
         from_attributes = True

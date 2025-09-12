@@ -30,4 +30,12 @@ urlpatterns = [
     # AI医疗数据库商品API
     path('ai-products/', api_views.ai_products_list, name='ai-products-list'),
     path('ai-products/<int:product_id>/', api_views.ai_product_detail, name='ai-product-detail'),
+    
+    # 医院相关API端点
+    path('hospitals/', api_views.HospitalListAPIView.as_view(), name='hospital-list'),
+    path('hospitals/<slug:slug>/', api_views.HospitalDetailAPIView.as_view(), name='hospital-detail'),
+    path('hospitals/featured/', api_views.featured_hospitals, name='featured-hospitals'),
+    path('hospitals/search/', api_views.search_hospitals, name='search-hospitals'),
+    path('hospitals/stats/', api_views.hospital_stats, name='hospital-stats'),
+    path('hospital-categories/', api_views.HospitalCategoryListAPIView.as_view(), name='hospital-category-list'),
 ]

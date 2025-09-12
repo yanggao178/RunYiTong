@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, ProductCategory, MedicalDepartment, Book, BookTag, BookCategory
+from .models import Product, ProductCategory, MedicalDepartment, Book, BookTag, BookCategory, Hospital, HospitalCategory
 
 
 class ProductCategorySerializer(serializers.ModelSerializer):
@@ -134,3 +134,76 @@ class BookListSerializer(serializers.ModelSerializer):
             'id', 'name', 'author', 'category', 'description',
             'cover_url', 'publish_date', 'created_time'
         ]
+
+
+# 医院相关序列化器
+class HospitalCategorySerializer(serializers.ModelSerializer):
+    """医院分类序列化器"""
+    
+    class Meta:
+        model = HospitalCategory
+        fields = ['id', 'name', 'description', 'image', 'is_active', 'sort_order']
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # 处理图片字段
+        if instance.image:
+            data['image'] = instance.image.url
+        else:
+            data['image'] = None
+        return data
+
+
+class HospitalSerializer(serializers.ModelSerializer):
+    """医院序列化器"""
+    category = HospitalCategorySerializer(read_only=True)
+    department = MedicalDepartmentSerializer(read_only=True)
+    
+    class Meta:
+        model = Hospital
+        fields = [
+            'id', 'name', 'slug', 'description', 'short_description',
+            'category', 'department', 'address', 'phone', 'email',
+            'website', 'rating', 'featured_image', 'gallery_images',
+            'services_offered', 'tags', 'status', 'is_featured', 'is_affiliated',
+            'created_at', 'updated_at'
+        ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # 处理主图片字段
+        if instance.featured_image:
+            data['featured_image'] = instance.featured_image.url
+        else:
+            data['featured_image'] = None
+            
+        # 处理图库图片
+        gallery_urls = []
+        for image in instance.gallery_images.all():
+            gallery_urls.append(image.image.url)
+        data['gallery_images'] = gallery_urls
+        
+        return data
+
+
+class HospitalListSerializer(serializers.ModelSerializer):
+    """医院列表序列化器（简化版）"""
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    department_name = serializers.CharField(source='department.name', read_only=True)
+    
+    class Meta:
+        model = Hospital
+        fields = [
+            'id', 'name', 'slug', 'short_description', 'category_name',
+            'department_name', 'address', 'phone', 'rating', 'featured_image',
+            'status', 'is_featured', 'is_affiliated', 'created_at'
+        ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # 处理主图片字段
+        if instance.featured_image:
+            data['featured_image'] = instance.featured_image.url
+        else:
+            data['featured_image'] = None
+        return data

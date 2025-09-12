@@ -4,7 +4,8 @@ from django.utils.html import format_html
 from .models import (
     MedicalDepartment, Doctor, MedicalNews, MedicalService,
     ProductCategory, Product, ProductImage,
-    BookCategory, BookTag, Book, BookTagRelation
+    BookCategory, BookTag, Book, BookTagRelation,
+    Hospital, HospitalCategory, HospitalImage
 )
 
 
@@ -311,6 +312,90 @@ class BookAdmin(admin.ModelAdmin):
 admin.site.site_header = _('AI医疗管理系统')
 admin.site.site_title = _('AI医疗管理系统')
 admin.site.index_title = _('管理首页')
+
+
+# 医院图片内联模型
+class HospitalImageInline(admin.TabularInline):
+    model = HospitalImage
+    extra = 3
+    fields = ('image', 'order')
+    verbose_name = _('医院图库图片')
+    verbose_name_plural = _('医院图库图片')
+
+
+@admin.register(HospitalCategory)
+class HospitalCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'is_active', 'sort_order', 'created_at', 'updated_at']
+    list_filter = ['is_active', 'created_at']
+    search_fields = ['name', 'description']
+    list_editable = ['is_active', 'sort_order']
+    readonly_fields = ['created_at', 'updated_at']
+    prepopulated_fields = {}
+    
+    fieldsets = (
+        (_('基本信息'), {
+            'fields': ('name', 'description', 'image')
+        }),
+        (_('设置'), {
+            'fields': ('is_active', 'sort_order')
+        }),
+        (_('时间信息'), {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(Hospital)
+class HospitalAdmin(admin.ModelAdmin):
+    list_display = [
+        'name', 'category', 'department', 'address', 'phone', 
+        'rating', 'status', 'is_featured', 'is_affiliated', 
+        'created_at', 'updated_at'
+    ]
+    list_filter = [
+        'category', 'department', 'status', 'is_featured', 
+        'is_affiliated', 'created_at'
+    ]
+    search_fields = ['name', 'description', 'address', 'phone', 'email', 'tags']
+    list_editable = ['status', 'is_featured', 'is_affiliated']
+    readonly_fields = ['slug', 'created_at', 'updated_at']
+    prepopulated_fields = {}
+    date_hierarchy = 'created_at'
+    inlines = [HospitalImageInline]
+    
+    fieldsets = (
+        (_('基本信息'), {
+            'fields': ('name', 'slug', 'category', 'department', 'short_description', 'description')
+        }),
+        (_('联系信息'), {
+            'fields': ('address', 'phone', 'email', 'website')
+        }),
+        (_('服务信息'), {
+            'fields': ('services_offered', 'tags')
+        }),
+        (_('媒体信息'), {
+            'fields': ('featured_image',)
+        }),
+        (_('评分和设置'), {
+            'fields': ('rating', 'status', 'is_featured', 'is_affiliated')
+        }),
+        (_('时间信息'), {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('category', 'department')
+    
+    def save_model(self, request, obj, form, change):
+        # 自动生成slug如果为空
+        if not obj.slug:
+            from django.utils.text import slugify
+            import uuid
+            obj.slug = slugify(obj.name) + '-' + str(uuid.uuid4())[:8]
+        super().save_model(request, obj, form, change)
 
 
 # 自定义User模型的注册和配置
