@@ -165,15 +165,9 @@
                         android:layout_marginBottom="16dp" />
 
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rv_doctors"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
-
-                    <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recycler_doctors"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
+                        android:layout_height="1000dp"
                         android:nestedScrollingEnabled="false" />
 
                 </LinearLayout>
@@ -197,17 +191,10 @@
                         android:layout_marginBottom="16dp" />
 
                     <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rv_departments"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
-
-                    <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recycler_departments"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false"
-                        android:visibility="gone" />
+                        android:nestedScrollingEnabled="false" />
 
                 </LinearLayout>
 
