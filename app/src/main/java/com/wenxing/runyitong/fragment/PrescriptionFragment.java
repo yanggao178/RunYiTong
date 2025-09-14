@@ -508,6 +508,15 @@ public class PrescriptionFragment extends Fragment {
      * 分析症状
      */
     private void analyzeSymptoms() {
+        Log.d(TAG, "=== 开始分析症状 ===");
+        
+        // 检查Fragment状态
+        if (!validateFragmentAndActivityState()) {
+            Log.e(TAG, "Fragment状态异常，无法执行分析");
+            Toast.makeText(getContext(), "页面状态异常，请稍后重试", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
         String symptoms = etSymptoms.getText().toString().trim();
         
         if (TextUtils.isEmpty(symptoms)) {
@@ -533,11 +542,18 @@ public class PrescriptionFragment extends Fragment {
         // 显示加载状态
         showLoading(true);
         
-        // 设置超时处理（30秒）
+        // 先取消之前可能存在的请求
+        if (currentCall != null && !currentCall.isCanceled()) {
+            currentCall.cancel();
+            Log.d(TAG, "取消之前的分析请求");
+        }
+        
+        // 设置超时处理
         timeoutRunnable = new Runnable() {
             @Override
             public void run() {
-                if (currentCall != null && !currentCall.isCanceled()) {
+                if (validateFragmentAndActivityState() && currentCall != null && !currentCall.isCanceled()) {
+                    Log.d(TAG, "请求超时，取消当前分析请求");
                     currentCall.cancel();
                     showLoading(false);
                     tvAnalysisResult.setText("请求超时，请检查网络连接后重试");
@@ -547,14 +563,29 @@ public class PrescriptionFragment extends Fragment {
         };
         timeoutHandler.postDelayed(timeoutRunnable, 90000); // 90秒超时，给AI分析更多时间
         
+        // 记录请求开始时间
+        final long startTime = System.currentTimeMillis();
+        
         // 调用API分析症状
         currentCall = apiService.analyzeSymptoms(symptoms);
+        Log.d(TAG, "API请求已发送，等待响应...");
+        
         currentCall.enqueue(new Callback<ApiResponse<SymptomAnalysis>>() {
             @Override
             public void onResponse(Call<ApiResponse<SymptomAnalysis>> call, Response<ApiResponse<SymptomAnalysis>> response) {
+                // 计算请求耗时
+                long duration = System.currentTimeMillis() - startTime;
+                Log.d(TAG, "API请求响应，耗时: " + duration + "ms, 状态码: " + response.code());
+                
                 // 取消超时处理
                 if (timeoutRunnable != null) {
                     timeoutHandler.removeCallbacks(timeoutRunnable);
+                }
+                
+                // 检查Fragment状态
+                if (!validateFragmentAndActivityState()) {
+                    Log.w(TAG, "Fragment状态异常，忽略响应");
+                    return;
                 }
                 
                 showLoading(false);
@@ -565,10 +596,20 @@ public class PrescriptionFragment extends Fragment {
                         displayAnalysisResult(apiResponse.getData());
                         Toast.makeText(getContext(), "分析完成", Toast.LENGTH_SHORT).show();
                     } else {
+                        Log.e(TAG, "分析失败: " + apiResponse.getMessage());
                         tvAnalysisResult.setText("分析失败: " + apiResponse.getMessage());
                         Toast.makeText(getContext(), "分析失败，请重试", Toast.LENGTH_SHORT).show();
                     }
                 } else {
+                    String errorMsg = "网络请求失败，请检查网络连接";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg += " (" + response.errorBody().string() + ")";
+                        }
+                    } catch (IOException e) {
+                        Log.e(TAG, "读取错误响应失败", e);
+                    }
+                    Log.e(TAG, errorMsg + ", 状态码: " + response.code());
                     tvAnalysisResult.setText("网络请求失败，请检查网络连接");
                     Toast.makeText(getContext(), "网络请求失败", Toast.LENGTH_SHORT).show();
                 }
@@ -576,14 +617,28 @@ public class PrescriptionFragment extends Fragment {
             
             @Override
             public void onFailure(Call<ApiResponse<SymptomAnalysis>> call, Throwable t) {
+                // 计算请求耗时
+                long duration = System.currentTimeMillis() - startTime;
+                Log.d(TAG, "API请求失败，耗时: " + duration + "ms");
+                
                 // 取消超时处理
                 if (timeoutRunnable != null) {
                     timeoutHandler.removeCallbacks(timeoutRunnable);
                 }
                 
+                // 检查Fragment状态
+                if (!validateFragmentAndActivityState()) {
+                    Log.w(TAG, "Fragment状态异常，忽略失败回调");
+                    return;
+                }
+                
                 showLoading(false);
                 
-                if (!call.isCanceled()) {
+                if (call.isCanceled()) {
+                    Log.d(TAG, "请求已被取消: " + t.getMessage());
+                    // 不显示错误消息，因为取消是用户或系统行为
+                } else {
+                    Log.e(TAG, "网络错误: " + t.getMessage(), t);
                     tvAnalysisResult.setText("网络错误: " + t.getMessage());
                     Toast.makeText(getContext(), "网络连接失败，请稍后重试", Toast.LENGTH_SHORT).show();
                 }

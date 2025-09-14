@@ -153,7 +153,7 @@ public class ProductDetailActivity extends AppCompatActivity {
             productDetail.setText(currentProduct.getDescription() + "\n\n这是商品的详细描述信息，包含了商品的使用方法、注意事项等。");
 
             // 这里可以使用图片加载库加载网络图片，例如Glide或Picasso
-            // Glide.with(this).load(currentProduct.getImageUrl()).into(productImage);
+            // Glide.with(this).load(currentProduct.getFeaturedImageFile()).into(productImage);
         }
     }
 

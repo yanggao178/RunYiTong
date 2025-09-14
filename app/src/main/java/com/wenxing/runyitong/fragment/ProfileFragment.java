@@ -1,5 +1,6 @@
 package com.wenxing.runyitong.fragment;
 
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +26,7 @@ import com.wenxing.runyitong.activity.SettingsActivity;
 import com.wenxing.runyitong.activity.MyAppointmentsActivity;
 import com.wenxing.runyitong.activity.MyPrescriptionsActivity;
 import com.wenxing.runyitong.activity.HealthRecordActivity;
+import com.wenxing.runyitong.activity.MemberRegistrationActivity;
 
 public class ProfileFragment extends Fragment {
 
@@ -508,6 +510,25 @@ public class ProfileFragment extends Fragment {
     }
     
     /**
+     * 处理从会员注册Activity返回的结果
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == 1001) { // 与startActivityForResult中的请求码匹配
+            if (resultCode == getActivity().RESULT_OK) {
+                android.util.Log.d("ProfileFragment", "会员注册成功，更新UI状态");
+                // 这里可以添加会员注册成功后的UI更新逻辑
+                // 例如：显示会员标识、隐藏"成为会员"按钮等
+                Toast.makeText(getContext(), "会员开通成功！", Toast.LENGTH_SHORT).show();
+                // 检查并更新会员状态显示
+                checkAndUpdateMemberStatus();
+            }
+        }
+    }
+    
+    /**
      * 更新会员按钮可见性
      */
     private void updateMemberButtonVisibility() {
@@ -517,20 +538,62 @@ public class ProfileFragment extends Fragment {
     }
     
     /**
+     * 检查并更新会员状态显示
+     */
+    private void checkAndUpdateMemberStatus() {
+        // 检查用户是否已经是会员
+        boolean isMember = sharedPreferences.getBoolean("is_member", false);
+        long expireTime = sharedPreferences.getLong("member_expire_time", 0);
+        
+        if (btnBecomeMember != null) {
+            if (isMember && expireTime > System.currentTimeMillis()) {
+                // 用户已是会员且在有效期内
+                btnBecomeMember.setText("已开通会员");
+                btnBecomeMember.setEnabled(false);
+                // 可以添加更多UI更新，比如显示会员有效期等
+            } else {
+                // 用户不是会员或会员已过期
+                btnBecomeMember.setText("成为会员");
+                btnBecomeMember.setEnabled(true);
+            }
+        }
+    }
+    
+    /**
      * 显示会员申请功能
      */
     private void showMemberApplication() {
         android.util.Log.d("ProfileFragment", "打开会员申请功能");
         
-        // 目前只显示一个Toast提示，实际应用中可以跳转到会员申请相关的Activity
-        Toast.makeText(getActivity(), "会员申请功能即将上线", Toast.LENGTH_SHORT).show();
+        try {
+            // 跳转到会员注册Activity
+            Intent intent = new Intent(getActivity(), MemberRegistrationActivity.class);
+            
+            // 检查Activity是否可用
+            if (getActivity() != null && !getActivity().isFinishing()) {
+                // 使用getActivity().startActivityForResult确保结果能正确返回
+                getActivity().startActivityForResult(intent, 1001);
+                android.util.Log.d("ProfileFragment", "MemberRegistrationActivity started successfully");
+            } else {
+                android.util.Log.w("ProfileFragment", "Activity not available for starting MemberRegistrationActivity");
+                Toast.makeText(getContext(), "无法启动会员注册页面，请重试", Toast.LENGTH_SHORT).show();
+            }
+        } catch (Exception e) {
+            android.util.Log.e("ProfileFragment", "启动MemberRegistrationActivity失败: " + e.getMessage(), e);
+            Toast.makeText(getContext(), "启动会员注册页面时发生错误", Toast.LENGTH_SHORT).show();
+        }
     }
+    
+
     
     @Override
     public void onResume() {
         super.onResume();
         // 刷新登录状态UI
         updateLoginStatus();
+        
+        // 检查并更新会员状态显示
+        checkAndUpdateMemberStatus();
     }
     
     /**

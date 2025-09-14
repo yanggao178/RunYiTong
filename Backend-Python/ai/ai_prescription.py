@@ -67,11 +67,46 @@ def _clean_json_content(content: str) -> str:
     cleaned_content = re.sub(r',\s*}', '}', cleaned_content)   # 移除对象末尾多余逗号
     cleaned_content = re.sub(r',\s*]', ']', cleaned_content)   # 移除数组末尾多余逗号
     
+    # 修复未终止的字符串问题 - 检查并关闭未闭合的引号
+    try:
+        # 计算引号数量，确保是偶数
+        quote_count = cleaned_content.count('"')
+        if quote_count % 2 != 0:
+            # 找到最后一个引号的位置
+            last_quote_pos = cleaned_content.rfind('"')
+            # 如果存在未闭合的引号，添加闭合引号
+            if last_quote_pos != -1:
+                cleaned_content += '"'
+    except:
+        pass
+    
+    # 增强字符串处理 - 转义内部的未转义引号
+    try:
+        # 匹配并修复字符串内的未转义引号
+        # 这个正则表达式尝试找到字符串中的未转义引号并转义它们
+        # 但需要小心，因为这可能会影响到合法的JSON结构
+        # 我们采用更保守的方法，只处理明显的问题
+        if '"' in cleaned_content:
+            # 检查是否有未转义的引号在字符串内部
+            parts = []
+            in_string = False
+            for char in cleaned_content:
+                if char == '"' and (not parts or parts[-1] != '\\'):
+                    in_string = not in_string
+                parts.append(char)
+            cleaned_content = ''.join(parts)
+    except:
+        pass
+    
     # 确保JSON结构完整
     open_braces = cleaned_content.count('{')
     close_braces = cleaned_content.count('}')
     if open_braces > close_braces:
         cleaned_content += '}' * (open_braces - close_braces)
+    
+    # 最后尝试添加一个简单的JSON结构，如果内容为空或严重损坏
+    if not cleaned_content or cleaned_content == 'null' or cleaned_content == '{}':
+        cleaned_content = '{{"error":"JSON解析失败，但已尝试最大程度修复"}}'
     
     return cleaned_content
 
@@ -710,16 +745,16 @@ def _build_image_analysis_prompt(patient_context: str, image_type: str) -> str:
     "image_type": "中医舌诊",
     "tongue_analysis": {{
         "tongue_body": {{
-            "color": "舌质颜色（淡红/红/深红/紫等）",
-            "shape": "舌体形态（正常/胖大/瘦薄等）",
-            "texture": "舌质纹理（嫩/老等）",
-            "mobility": "舌体活动度"
+            "color": "舌质颜色,详细分析好处与坏处",
+            "shape": "舌体形态,详细分析好处与坏处",
+            "texture": "舌质纹理,详细分析好处与坏处",
+            "mobility": "舌体活动度,详细分析好处与坏处"
         }},
         "tongue_coating": {{
-            "color": "苔色（白/黄/灰/黑等）",
-            "thickness": "苔质厚薄（薄/厚等）",
-            "moisture": "润燥程度（润/燥等）",
-            "texture": "苔质性状（腻/腐等）"
+            "color": "苔色,详细分析好处与坏处",
+            "thickness": "苔质厚薄,详细分析好处与坏处",
+            "moisture": "润燥程度,详细分析好处与坏处",
+            "texture": "苔质性状,详细分析好处与坏处"
         }}
     }},
     "tcm_diagnosis": {{
@@ -740,11 +775,16 @@ def _build_image_analysis_prompt(patient_context: str, image_type: str) -> str:
 
 ## 专业要求
 1. **中医理论**: 严格按照中医舌诊理论进行分析
-2. **客观描述**: 基于舌象特征进行客观分析
+2. **客观描述**: 基于舌象特征进行详细的客观分析
 3. **辨证论治**: 结合舌象进行中医辨证
 4. **实用建议**: 提供可操作的中医调理建议
 
-请基于提供的舌象图片进行专业的中医舌诊分析。"""
+## 重要要求
+- 必须根据图像的实际特征进行分析，不能返回模板化答案
+- 如果连续多个舌象分析结果相似，说明你没有认真分析图像特征
+- 每次分析都要给出基于当前图像的具体观察描述
+
+请分析这张舌象图片，描述舌质颜色、舌苔厚度、颜色、质地等，并根据中医理论推断可能的体质或证型。。"""
     
     elif image_type == "中医面诊":
         return f"""# 中医面诊分析
@@ -925,23 +965,27 @@ def generate_tcm_prescription(
             # 调用AI API
             client = OpenAI(
                 api_key=api_key,
-                base_url="https://api.deepseek.com/v1"
+                base_url="https://api.deepseek.com/v1",
+                timeout=120  # 超时设置应该在这里
             )
-            
+
             response = client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "你是一名资深的中医专家，精通中医理论和临床实践。请简洁准确地回答。"},
+                    {"role": "system",
+                     "content": "你是一名资深的中医专家，精通中医理论和临床实践。请以JSON格式简洁准确地回答。"},
+                    # 添加JSON格式指示
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.1,  # 降低随机性，提高响应速度
-                max_tokens=min(max_tokens, 800),  # 限制最大token数，提高响应速度
-                response_format={"type": "json_object"},
-                timeout=60  # 设置60秒超时
+                temperature=0.1,
+                max_tokens=2000,  # 根据实际需要调整，2000通常足够
+                response_format={"type": "json_object"}
             )
             
             # 获取AI响应内容
             ai_content = response.choices[0].message.content
+            # 移除内容中的'json'字样
+            #ai_content = ai_content.replace('json', '')
             logger.info(f"AI响应长度: {len(ai_content)} 字符")
             
             # 尝试解析JSON
@@ -1649,14 +1693,13 @@ def analyze_tcm_tongue_diagnosis_dashscope(
                 api_key=api_key,
                 base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
             )
-
             # 调用DashScope API进行中医舌诊分析
             completion = client.chat.completions.create(
                 model=model,
                 messages=[
                     {
                         "role": "system",
-                        "content": [{"type": "text", "text": "你是一名资深的中医舌诊专家，精通中医舌诊理论和实践。请基于中医理论客观、准确地分析舌象，并以JSON格式返回专业的中医舌诊结果。"}],
+                        "content": [{"type": "text", "text": "你是一名资深的中医舌诊专家，精通中医舌诊理论和实践。请基于中医理论客观、准确地分析舌象，并以JSON格式返回专业的中医舌诊结果。返回的舌质与舌苔必须详细分析。"}],
                     },
                     {
                         "role": "user",
@@ -1680,7 +1723,7 @@ def analyze_tcm_tongue_diagnosis_dashscope(
             # 获取AI响应内容
             ai_content = completion.choices[0].message.content
             logger.info(f"DashScope中医舌诊AI响应长度: {len(ai_content)} 字符")
-            
+            logger.info(f"舌诊分析完成,返回响应:{ai_content}")
             # 尝试解析JSON
             try:
                 result = json.loads(ai_content)

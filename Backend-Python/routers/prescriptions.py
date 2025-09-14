@@ -13,6 +13,7 @@ import io
 import logging
 import time
 import asyncio
+import tempfile
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -315,16 +316,22 @@ async def analyze_tcm_tongue_diagnosis(image: UploadFile = File(...)):
         
         try:
             # 保存临时图像文件
-            extension = os.path.splitext(image.filename)[1]
-            temp_image_path = f"temp_tongue_{uuid.uuid4().hex}{extension}"
-            with open(temp_image_path, "wb") as temp_file:
-                temp_file.write(content)
+            # extension = os.path.splitext(image.filename)[1]
+            # temp_image_path = f"temp_tongue_{uuid.uuid4().hex}{extension}"
+            # with open(temp_image_path, "wb") as temp_file:
+            #     temp_file.write(content)
+                # 创建临时文件
+            with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(image.filename)[1]) as tmp_file:
+                # 将上传的文件内容写入临时文件
+                content = await image.read()
+                tmp_file.write(content)
+                temp_file_path = tmp_file.name
             
             try:
-                logger.info("开始AI中医舌诊分析...")
+                logger.info(f"开始AI中医舌诊分析...{temp_file_path}")
                 # 调用专门的中医舌诊分析函数
                 ai_result = analyze_tcm_tongue_diagnosis_dashscope(
-                    image_path=temp_image_path,
+                    image_path=temp_file_path,
                     image_type="舌诊"
                 )
                 
@@ -348,8 +355,8 @@ async def analyze_tcm_tongue_diagnosis(image: UploadFile = File(...)):
                     return generate_mock_tcm_tongue_analysis()
             finally:
                 # 清理临时文件
-                if os.path.exists(temp_image_path):
-                    os.remove(temp_image_path)
+                if os.path.exists(temp_file_path):
+                    os.remove(temp_file_path)
             
         except Exception as ai_error:
             logger.error(f"AI中医舌诊分析失败: {ai_error}")

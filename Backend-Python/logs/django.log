@@ -4641,3 +4641,723 @@ D:\sourcecode\AIMedical\RunYiTong\Backend-Python\models.py changed, reloading.
 D:\sourcecode\AIMedical\RunYiTong\Backend-Python\models.py changed, reloading.
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 175, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\classytags\core.py", line 142, in render
+    return str(self.render_tag(context, **kwargs))
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\sekizai\templatetags\sekizai_tags.py", line 87, in render_tag
+    rendered_contents = nodelist.render(context)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\classytags\core.py", line 142, in render
+    return str(self.render_tag(context, **kwargs))
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\templatetags\cms_tags.py", line 471, in render_tag
+    return toolbar.render_with_structure(context, nodelist)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 548, in render_with_structure
+    self.populate()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 487, in populate
+    self._call_toolbar('populate')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 508, in _call_toolbar
+    getattr(toolbar, func_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\cms_toolbars.py", line 251, in populate
+    self.add_admin_menu()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\cms_toolbars.py", line 276, in add_admin_menu
+    self._admin_menu.add_sideframe_item(_('User settings'), url=admin_reverse('cms_usersettings_change'))
+                                                                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\utils\urlutils.py", line 106, in admin_reverse
+    return reverse(
+        f"{admin_namespace}:{viewname}",
+    ...<3 lines>...
+        current_app=current_app
+    )
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\urls\resolvers.py", line 828, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'cms_usersettings_change' not found. 'cms_usersettings_change' is not a valid view function or pattern name.
+Not Found: /favicon.ico/
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\urls.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 175, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\classytags\core.py", line 142, in render
+    return str(self.render_tag(context, **kwargs))
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\sekizai\templatetags\sekizai_tags.py", line 87, in render_tag
+    rendered_contents = nodelist.render(context)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\classytags\core.py", line 142, in render
+    return str(self.render_tag(context, **kwargs))
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\templatetags\cms_tags.py", line 471, in render_tag
+    return toolbar.render_with_structure(context, nodelist)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 548, in render_with_structure
+    self.populate()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 487, in populate
+    self._call_toolbar('populate')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 508, in _call_toolbar
+    getattr(toolbar, func_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\cms_toolbars.py", line 251, in populate
+    self.add_admin_menu()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\cms_toolbars.py", line 276, in add_admin_menu
+    self._admin_menu.add_sideframe_item(_('User settings'), url=admin_reverse('cms_usersettings_change'))
+                                                                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\utils\urlutils.py", line 106, in admin_reverse
+    return reverse(
+        f"{admin_namespace}:{viewname}",
+    ...<3 lines>...
+        current_app=current_app
+    )
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\urls\resolvers.py", line 828, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'cms_usersettings_change' not found. 'cms_usersettings_change' is not a valid view function or pattern name.
+Not Found: /favicon.ico/
+Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 61, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 175, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 167, in _render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\classytags\core.py", line 142, in render
+    return str(self.render_tag(context, **kwargs))
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\sekizai\templatetags\sekizai_tags.py", line 87, in render_tag
+    rendered_contents = nodelist.render(context)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 1005, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 966, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\classytags\core.py", line 142, in render
+    return str(self.render_tag(context, **kwargs))
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\templatetags\cms_tags.py", line 471, in render_tag
+    return toolbar.render_with_structure(context, nodelist)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 548, in render_with_structure
+    self.populate()
+    ~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 487, in populate
+    self._call_toolbar('populate')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\toolbar\toolbar.py", line 508, in _call_toolbar
+    getattr(toolbar, func_name)()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\cms_toolbars.py", line 251, in populate
+    self.add_admin_menu()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\cms_toolbars.py", line 276, in add_admin_menu
+    self._admin_menu.add_sideframe_item(_('User settings'), url=admin_reverse('cms_usersettings_change'))
+                                                                ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Local\Programs\Python\Python313\Lib\site-packages\cms\utils\urlutils.py", line 106, in admin_reverse
+    return reverse(
+        f"{admin_namespace}:{viewname}",
+    ...<3 lines>...
+        current_app=current_app
+    )
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\urls\resolvers.py", line 828, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'cms_usersettings_change' not found. 'cms_usersettings_change' is not a valid view function or pattern name.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\cms_project\settings.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\admin.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\medical_cms\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\utils\deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\middleware\common.py", line 48, in process_request
+    host = request.get_host()
+  File "C:\Users\lenovo\AppData\Roaming\Python\Python313\site-packages\django\http\request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '192.168.0.7:8000'. You may need to add '192.168.0.7' to ALLOWED_HOSTS.
+D:\sourcecode\AIMedical\RunYiTong\Backend-Python\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Not Found: /favicon.ico/

@@ -9,12 +9,12 @@ class BaseResponse(BaseModel):
     message: str = "操作成功"
     data: Optional[Any] = None
 
-# 商品相关模式
+# 商品相关模式 - 严格按照ai_medical.db products表结构定义
 class ProductBase(BaseModel):
     name: str
     price: float
     description: Optional[str] = None
-    featured_image_url: Optional[str] = None
+    featured_image_file: Optional[str] = None  # 与数据库字段名保持一致
     category_id: Optional[int] = None
     stock_quantity: int = 0
     manufacturer: Optional[str] = None
@@ -33,13 +33,14 @@ class ProductBase(BaseModel):
     gallery_images: Optional[str] = None
     tags: Optional[str] = None
     status: Optional[str] = None
-    is_featured: Optional[bool] = False
-    is_prescription_required: Optional[bool] = False
+    is_featured: bool = False  # 虽然数据库存储为Integer，但API响应返回布尔值
+    is_prescription_required: bool = False  # 虽然数据库存储为Integer，但API响应返回布尔值
     expiry_date: Optional[datetime] = None
     usage_instructions: Optional[str] = None
     side_effects: Optional[str] = None
     contraindications: Optional[str] = None
     views_count: Optional[int] = 0
+    category_name: Optional[str] = None  # 数据库中包含此字段
 
 class ProductCreate(ProductBase):
     pass
@@ -48,7 +49,7 @@ class ProductUpdate(BaseModel):
     name: Optional[str] = None
     price: Optional[float] = None
     description: Optional[str] = None
-    featured_image_url: Optional[str] = None
+    featured_image_file: Optional[str] = None  # 与数据库字段名保持一致
     category_id: Optional[int] = None
     stock_quantity: Optional[int] = None
     manufacturer: Optional[str] = None
@@ -67,13 +68,14 @@ class ProductUpdate(BaseModel):
     gallery_images: Optional[str] = None
     tags: Optional[str] = None
     status: Optional[str] = None
-    is_featured: Optional[bool] = None
-    is_prescription_required: Optional[bool] = None
+    is_featured: Optional[bool] = None  # 虽然数据库存储为Integer，但API使用布尔值
+    is_prescription_required: Optional[bool] = None  # 虽然数据库存储为Integer，但API使用布尔值
     expiry_date: Optional[datetime] = None
     usage_instructions: Optional[str] = None
     side_effects: Optional[str] = None
     contraindications: Optional[str] = None
     views_count: Optional[int] = None
+    category_name: Optional[str] = None  # 数据库中包含此字段
 
 class Product(ProductBase):
     id: int

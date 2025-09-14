@@ -153,7 +153,7 @@ class ProductImageInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     list_display = [
         'name', 'category', 'department', 'price', 'stock_quantity', 
-        'status', 'is_featured', 'sales_count', 'created_at'
+        'status', 'is_featured', 'sales_count', 'pharmacy_name', 'created_at'
     ]
     list_filter = [
         'status', 'is_featured', 'is_prescription_required', 'category', 
@@ -175,10 +175,10 @@ class ProductAdmin(admin.ModelAdmin):
             'fields': ('price', 'original_price', 'stock_quantity', 'min_stock_level', 'sku', 'barcode')
         }),
         (_('商品属性'), {
-            'fields': ('weight', 'dimensions', 'manufacturer', 'expiry_date', 'tags')
+            'fields': ('weight', 'dimensions', 'manufacturer', 'pharmacy_name', 'expiry_date', 'tags')
         }),
         (_('图片'), {
-            'fields': ('featured_image',)
+            'fields': ('featured_image_file',)
         }),
         (_('医疗信息'), {
             'fields': ('is_prescription_required', 'usage_instructions', 'side_effects', 'contraindications'),

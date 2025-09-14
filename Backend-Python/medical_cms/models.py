@@ -8,6 +8,7 @@ from django.utils import timezone
 import sqlite3
 import os
 import datetime
+from django.core.files.storage import default_storage
 
 # 自定义UserManager
 class CustomUserManager(BaseUserManager):
@@ -578,8 +579,8 @@ class Product(models.Model):
     barcode = models.CharField(_('条形码'), max_length=100, blank=True)
     weight = models.DecimalField(_('重量(克)'), max_digits=8, decimal_places=2, blank=True, null=True)
     dimensions = models.CharField(_('尺寸(长x宽x高cm)'), max_length=100, blank=True)
-    featured_image = models.ImageField(
-        verbose_name=_('主图片'),
+    featured_image_file = models.ImageField(
+        verbose_name=_('主图片文件'),
         upload_to='product_images/',
         blank=True,
         null=True
@@ -589,6 +590,7 @@ class Product(models.Model):
     is_featured = models.BooleanField(_('是否推荐'), default=False)
     is_prescription_required = models.BooleanField(_('是否需要处方'), default=False)
     manufacturer = models.CharField(_('生产厂家'), max_length=200, blank=True)
+    pharmacy_name = models.CharField(_('药店名称'), max_length=200, blank=True)
     expiry_date = models.DateField(_('有效期'), blank=True, null=True)
     usage_instructions = models.TextField(_('使用说明'), blank=True)
     side_effects = models.TextField(_('副作用'), blank=True)
@@ -670,17 +672,16 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
             return
         
         # 准备数据
-        now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
         # 映射Django分类ID到AI数据库分类ID
         category_id = instance.category.id if instance.category else None
         department_id = instance.department.id if instance.department else None
         
-        # 构建图片URL
-        featured_image_url = ''
-        if instance.featured_image:
-            featured_image_url = f'/media/{instance.featured_image.file.name}'
-            featured_image_url = featured_image_url[:500]  # 截断到500字符
+        # 直接使用featured_image_file字段
+        featured_image_file = instance.featured_image_file or ''
+        if len(featured_image_file) > 500:
+            featured_image_file = featured_image_file[:500]  # 截断到500字符
         
         # 处理gallery_images (转换为JSON格式)
         gallery_images_json = '[]'
@@ -705,13 +706,14 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
             'barcode': (instance.barcode or '')[:100],
             'weight': float(instance.weight) if instance.weight else None,
             'dimensions': (instance.dimensions or '')[:100],
-            'featured_image_url': featured_image_url,
+            'featured_image_file': featured_image_file,
             'gallery_images': gallery_images_json,
             'tags': (instance.tags or '')[:200],
             'status': instance.status or 'draft',
             'is_featured': 1 if instance.is_featured else 0,
             'is_prescription_required': 1 if instance.is_prescription_required else 0,
             'manufacturer': (instance.manufacturer or '')[:200],
+            'pharmacy_name': (instance.pharmacy_name or '')[:200],
             'expiry_date': instance.expiry_date.strftime('%Y-%m-%d') if instance.expiry_date else None,
             'usage_instructions': instance.usage_instructions or '',
             'side_effects': instance.side_effects or '',

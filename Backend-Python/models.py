@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 from database import Base
 from datetime import datetime
 
-# 商品模型 - 与ai_medical.db products表结构保持一致
+# 商品模型 - 严格按照ai_medical.db products表结构定义
 class Product(Base):
     __tablename__ = "products"
     
@@ -23,12 +23,12 @@ class Product(Base):
     barcode = Column(String(100))
     weight = Column(Float)
     dimensions = Column(String(100))
-    featured_image_url = Column(String(500))
+    featured_image_file = Column(String(500))  # 与数据库字段名保持一致
     gallery_images = Column(Text)
     tags = Column(String(200))
     status = Column(String(20))
-    is_featured = Column(Boolean, default=False)
-    is_prescription_required = Column(Boolean, default=False)
+    is_featured = Column(Boolean, default=False)  # 数据库中使用的是Integer类型
+    is_prescription_required = Column(Boolean, default=False)  # 数据库中使用的是Integer类型
     manufacturer = Column(String(200))
     pharmacy_name = Column(String(200))
     expiry_date = Column(DateTime)
@@ -39,6 +39,7 @@ class Product(Base):
     sales_count = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    category_name = Column(String(100))  # 数据库中包含此字段
 
 # 图书模型
 class Book(Base):
