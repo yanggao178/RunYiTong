@@ -555,6 +555,9 @@ class Product(models.Model):
         ('out_of_stock', _('缺货')),
     ]
     
+    # 明确定义主键字段
+    id = models.BigAutoField(primary_key=True)
+    
     name = models.CharField(_('商品名称'), max_length=200)
     slug = models.SlugField(_('URL别名'), unique=True, blank=True)
     description = models.TextField(_('商品描述'))
@@ -651,6 +654,38 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
     - 支持所有Django CMS Product模型字段同步到新的表结构
     - 当ai_medical.db中已存在相同名称的商品时，不进行同步
     """
+    # 添加调试信息
+    print(f"DEBUG: Product save signal received. Instance ID: {instance.id}, Created: {created}")
+    
+    # 确保实例有ID，如果没有则使用另一种方式获取
+    if instance.id is None:
+        print("DEBUG: Instance ID is None, trying alternative methods...")
+        
+        # 方法1: 尝试通过name查找（仅在created为True时）
+        if created:
+            try:
+                # 查找具有相同名称的商品
+                existing_products = Product.objects.filter(name=instance.name)
+                if existing_products.count() == 1:
+                    instance = existing_products.first()
+                    print(f"DEBUG: Found product by name, ID: {instance.id}")
+                elif existing_products.count() > 1:
+                    # 如果有多个同名商品，选择最新的
+                    instance = existing_products.order_by('-created_at').first()
+                    print(f"DEBUG: Found multiple products by name, using latest, ID: {instance.id}")
+            except Exception as e:
+                print(f"DEBUG: Error finding product by name: {e}")
+        
+        # 如果仍然没有ID，直接返回
+        if instance.id is None:
+            print(f"⚠️ 无法同步商品 '{instance.name}'：ID仍未生成")
+            return
+    
+    # 确保即使刷新后仍然有ID
+    if instance.id is None:
+        print(f"⚠️ 无法同步商品 '{instance.name}'：ID仍未生成")
+        return
+    
     try:
         # 获取ai_medical.db路径
         db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'ai_medical.db')
@@ -662,14 +697,9 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
-        # 检查ai_medical.db中是否已存在相同名称的商品
-        cursor.execute("SELECT COUNT(*) FROM products WHERE name = ?", (instance.name[:200],))
+        # 检查ai_medical.db中是否已存在相同ID的商品
+        cursor.execute("SELECT COUNT(*) FROM products WHERE id = ?", (instance.id,))
         exists_count = cursor.fetchone()[0]
-        
-        if exists_count > 0:
-            print(f"⚠️ 跳过同步商品 '{instance.name}'（ID: {instance.id}）：ai_medical.db中已存在相同名称的商品")
-            conn.close()
-            return
         
         # 准备数据
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -678,20 +708,22 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
         category_id = instance.category.id if instance.category else None
         department_id = instance.department.id if instance.department else None
         
-        # 直接使用featured_image_file字段
-        featured_image_file = instance.featured_image_file or ''
+        # 正确处理ImageFieldFile对象
+        featured_image_file = str(instance.featured_image_file) if instance.featured_image_file else ''
         if len(featured_image_file) > 500:
             featured_image_file = featured_image_file[:500]  # 截断到500字符
         
         # 处理gallery_images (转换为JSON格式)
         gallery_images_json = '[]'
-        if instance.gallery_images.exists():
+        # 检查实例是否有主键，只有有主键的实例才能访问关联对象
+        if instance.pk and hasattr(instance, 'gallery_images') and instance.gallery_images.exists():
             import json
-            gallery_urls = [f'/media/{img.file.name}' for img in instance.gallery_images.all()]
+            gallery_urls = [f'/media/{img.image.name}' for img in instance.gallery_images.all()]
             gallery_images_json = json.dumps(gallery_urls)
         
         # 准备所有字段数据
         product_data = {
+            'id': instance.id,
             'name': (instance.name or '')[:200],
             'slug': (instance.slug or '')[:50],
             'description': instance.description or '',
@@ -724,7 +756,21 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
             'updated_at': now
         }
         
-        if created:
+        if exists_count > 0:
+            # 更新商品：根据ID更新ai_medical.db中的记录
+            set_clause = ', '.join([f'{key} = ?' for key in product_data.keys() if key != 'created_at'])
+            update_values = [value for key, value in product_data.items() if key != 'created_at']
+            
+            cursor.execute(f"""
+                UPDATE products SET {set_clause}
+                WHERE id = ?
+            """, update_values + [instance.id])
+            
+            if cursor.rowcount > 0:
+                print(f"✓ 商品已更新到ai_medical.db: {product_data['name']}")
+            else:
+                print(f"⚠️ 更新商品到ai_medical.db失败: {product_data['name']}")
+        else:
             # 新建商品：插入到ai_medical.db
             columns = ', '.join(product_data.keys())
             placeholders = ', '.join(['?' for _ in product_data])
@@ -735,38 +781,6 @@ def sync_product_to_ai_db(sender, instance, created, **kwargs):
                 VALUES ({placeholders})
             """, values)
             print(f"✓ 新商品已同步到ai_medical.db: {product_data['name']}")
-        else:
-            # 更新商品：根据ID或名称更新ai_medical.db中的记录
-            set_clause = ', '.join([f'{key} = ?' for key in product_data.keys() if key != 'created_at'])
-            update_values = [value for key, value in product_data.items() if key != 'created_at']
-            
-            # 首先尝试根据slug更新（如果有slug）
-            if instance.slug:
-                cursor.execute(f"""
-                    UPDATE products SET {set_clause}
-                    WHERE slug = ?
-                """, update_values + [instance.slug])
-            
-            # 如果没有更新到记录，尝试根据名称更新
-            if cursor.rowcount == 0:
-                cursor.execute(f"""
-                    UPDATE products SET {set_clause}
-                    WHERE name = ?
-                """, update_values + [product_data['name']])
-            
-            if cursor.rowcount > 0:
-                print(f"✓ 商品已更新到ai_medical.db: {product_data['name']}")
-            else:
-                # 如果更新失败，插入新记录
-                columns = ', '.join(product_data.keys())
-                placeholders = ', '.join(['?' for _ in product_data])
-                values = list(product_data.values())
-                
-                cursor.execute(f"""
-                    INSERT INTO products ({columns})
-                    VALUES ({placeholders})
-                """, values)
-                print(f"✓ 新商品已插入到ai_medical.db: {product_data['name']}")
         
         conn.commit()
         conn.close()
@@ -1140,3 +1154,14 @@ def delete_book_from_ai_db(sender, instance, **kwargs):
         
     except Exception as e:
         print(f"⚠️ 从ai_medical.db删除书籍失败: {e}")
+
+
+
+
+
+
+
+
+
+
+

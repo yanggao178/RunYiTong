@@ -143,10 +143,16 @@ class ProductCategoryAdmin(admin.ModelAdmin):
 # 商品图片内联模型
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
-    extra = 1
+    extra = 0  # 设置为0，避免显示空的图片表单
     fields = ('image', 'order')
     verbose_name = _('商品图库图片')
     verbose_name_plural = _('商品图库图片')
+    
+    def get_extra(self, request, obj=None, **kwargs):
+        # 只有当编辑现有对象时，才显示额外的空表单
+        if obj is not None:
+            return 1
+        return 0
 
 
 @admin.register(Product)
@@ -155,6 +161,91 @@ class ProductAdmin(admin.ModelAdmin):
         'name', 'category', 'department', 'price', 'stock_quantity', 
         'status', 'is_featured', 'sales_count', 'pharmacy_name', 'created_at'
     ]
+    
+    def response_action(self, request, queryset):
+        """覆盖默认的response_action方法，处理选中的主键值，过滤掉无效的'None'字符串和非数字值"""
+        # 直接获取请求中的选中项，使用固定的复选框名称
+        selected = request.POST.getlist('_selected_action')
+        
+        # 过滤掉'None'字符串、空字符串和非数字值
+        valid_selected = []
+        for pk in selected:
+            if pk and pk != 'None':
+                try:
+                    # 尝试将值转换为整数，验证它是一个有效的数字ID
+                    int(pk)
+                    valid_selected.append(pk)
+                except ValueError:
+                    # 如果转换失败，跳过这个值
+                    continue
+        
+        # 如果没有有效的选中项，直接返回默认处理
+        if not valid_selected:
+            return super().response_action(request, queryset)
+        
+        # 修改请求中的选中项列表
+        request.POST = request.POST.copy()
+        request.POST.setlist('_selected_action', valid_selected)
+        
+        # 调用父类方法继续处理
+        return super().response_action(request, queryset)
+        
+    def changelist_view(self, request, extra_context=None):
+        """覆盖changelist_view方法，添加额外的请求数据验证"""
+        # 同时处理GET和POST请求中的参数验证
+        # 处理GET请求参数
+        if 'pk__in' in request.GET:
+            # 获取pk__in参数的值
+            pks = request.GET.get('pk__in', '').split(',')
+            # 过滤掉无效的值
+            valid_pks = []
+            for pk in pks:
+                pk = pk.strip()
+                if pk and pk != 'None':
+                    try:
+                        int(pk)
+                        valid_pks.append(pk)
+                    except ValueError:
+                        continue
+            # 如果有有效的ID值，重建pk__in参数
+            if valid_pks:
+                # 创建一个新的GET参数字典
+                get_params = request.GET.copy()
+                get_params['pk__in'] = ','.join(valid_pks)
+                request.GET = get_params
+            else:
+                # 如果没有有效的ID值，删除pk__in参数
+                get_params = request.GET.copy()
+                if 'pk__in' in get_params:
+                    del get_params['pk__in']
+                request.GET = get_params
+        
+        # 处理POST请求参数
+        if request.method == 'POST' and '_selected_action' in request.POST:
+            # 获取选中的ID列表
+            selected = request.POST.getlist('_selected_action')
+            # 过滤掉无效的值
+            valid_selected = []
+            for pk in selected:
+                if pk and pk != 'None':
+                    try:
+                        int(pk)
+                        valid_selected.append(pk)
+                    except ValueError:
+                        continue
+            # 如果有有效的ID值，更新POST参数
+            if valid_selected:
+                post_params = request.POST.copy()
+                post_params.setlist('_selected_action', valid_selected)
+                request.POST = post_params
+            else:
+                # 如果没有有效的ID值，删除该参数
+                post_params = request.POST.copy()
+                if '_selected_action' in post_params:
+                    del post_params['_selected_action']
+                request.POST = post_params
+        
+        return super().changelist_view(request, extra_context)
     list_filter = [
         'status', 'is_featured', 'is_prescription_required', 'category', 
         'department', 'created_at', 'expiry_date'
@@ -206,6 +297,25 @@ class ProductAdmin(admin.ModelAdmin):
             import uuid
             obj.sku = 'PRD-' + str(uuid.uuid4())[:8].upper()
         super().save_model(request, obj, form, change)
+        
+    def save_formset(self, request, form, formset, change):
+        # 对于内联表单，确保它们都关联到正确的父对象
+        for inline_form in formset.forms:
+            if hasattr(inline_form, 'instance') and inline_form.instance.pk is None:
+                inline_form.instance.product = form.instance
+        
+        # 保存表单集，让Django的标准保存机制处理所有保存逻辑
+        formset.save()
+        
+        # 处理可能的重复记录问题
+        try:
+            # 刷新实例以确保数据一致性
+            form.instance.refresh_from_db()
+        except form.instance.__class__.MultipleObjectsReturned:
+            # 如果出现重复记录，记录警告并继续
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning(f"发现重复的商品记录: {form.instance.name}")
     
     # 自定义列表显示方法
     def get_stock_status(self, obj):
