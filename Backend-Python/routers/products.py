@@ -5,12 +5,18 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from database import get_db
 from models import Product as ProductModel
 from schemas import Product, ProductCreate, ProductUpdate, PaginatedResponse, BaseResponse
+from fastapi import Request
+import json
+
+# 媒体文件URL前缀，用于生成完整的图片URL
+MEDIA_URL = '/media/'
 
 router = APIRouter()
 
 # 获取商品列表（支持分页和搜索）
 @router.get("/")
 async def get_products(
+    request: Request,
     skip: int = Query(0, ge=0, description="跳过数量"),
     limit: int = Query(10, ge=1, le=100, description="限制数量"),
     search: Optional[str] = Query(None, description="搜索关键词"),
@@ -45,7 +51,8 @@ async def get_products(
             "original_price": float(product.original_price) if product.original_price else 0.0,
             "description": product.description or "",
             "short_description": product.short_description or "",
-            "featured_image_file": product.featured_image_file or "",
+            # 生成完整的图片URL路径
+            "featured_image_file": f"{str(request.base_url).rstrip('/')}{MEDIA_URL}{product.featured_image_file}" if product.featured_image_file else "",
             "category_id": product.category_id,
             "category_name": product.category_name or "",
             "department_id": product.department_id,
@@ -55,7 +62,8 @@ async def get_products(
             "barcode": product.barcode or "",
             "weight": float(product.weight) if product.weight else 0.0,
             "dimensions": product.dimensions or "",
-            "gallery_images": product.gallery_images or "",
+            # 处理gallery_images，确保返回格式正确并添加完整URL前缀
+            "gallery_images": [f"{str(request.base_url).rstrip('/')}{image_url}" for image_url in json.loads(product.gallery_images)] if product.gallery_images else [],
             "tags": product.tags or "",
             "status": product.status or "",
             "is_featured": product.is_featured if product.is_featured is not None else False,
@@ -90,6 +98,7 @@ async def get_products(
 # 根据药店名称获取商品列表（必须在{product_id}路由之前定义）
 @router.get("/pharmacy")
 async def get_products_by_pharmacy(
+    request: Request,
     pharmacy_name: str = Query(..., description="药店名称"),
     db: Session = Depends(get_db)
 ):
@@ -113,7 +122,8 @@ async def get_products_by_pharmacy(
                 "original_price": float(product.original_price) if product.original_price else 0.0,
                 "description": product.description or "",
                 "short_description": product.short_description or "",
-                "featured_image_file": product.featured_image_file or "",
+                # 生成完整的图片URL路径
+                "featured_image_file": f"{str(request.base_url).rstrip('/')}{MEDIA_URL}{product.featured_image_file}" if product.featured_image_file else "",
                 "category_id": product.category_id,
                 "category": product.category or "",
                 "category_name": product.category_name or "",
@@ -124,7 +134,8 @@ async def get_products_by_pharmacy(
                 "barcode": product.barcode or "",
                 "weight": float(product.weight) if product.weight else 0.0,
                 "dimensions": product.dimensions or "",
-                "gallery_images": product.gallery_images or "",
+                # 处理gallery_images，确保返回格式正确并添加完整URL前缀
+                "gallery_images": [f"{str(request.base_url).rstrip('/')}{image_url}" for image_url in json.loads(product.gallery_images)] if product.gallery_images else [],
                 "tags": product.tags or "",
                 "status": product.status or "",
                 "is_featured": product.is_featured if product.is_featured is not None else False,
@@ -163,7 +174,7 @@ async def get_products_by_pharmacy(
 
 # 获取单个商品详情
 @router.get("/{product_id}")
-async def get_product(product_id: int, db: Session = Depends(get_db)):
+async def get_product(product_id: int, request: Request, db: Session = Depends(get_db)):
     """获取商品详情"""
     product = db.query(ProductModel).filter(ProductModel.id == product_id).first()
     if not product:
@@ -178,7 +189,8 @@ async def get_product(product_id: int, db: Session = Depends(get_db)):
         "original_price": float(product.original_price) if product.original_price else 0.0,
         "description": product.description or "",
         "short_description": product.short_description or "",
-        "featured_image_file": product.featured_image_file or "",
+        # 生成完整的图片URL路径
+        "featured_image_file": f"{str(request.base_url).rstrip('/')}{MEDIA_URL}{product.featured_image_file}" if product.featured_image_file else "",
         "category_id": product.category_id,
         "category": product.category or "",
         "category_name": product.category_name or "",
@@ -189,7 +201,8 @@ async def get_product(product_id: int, db: Session = Depends(get_db)):
         "barcode": product.barcode or "",
         "weight": float(product.weight) if product.weight else 0.0,
         "dimensions": product.dimensions or "",
-        "gallery_images": product.gallery_images or "",
+        # 处理gallery_images，确保返回格式正确并添加完整URL前缀
+        "gallery_images": [f"{str(request.base_url).rstrip('/')}{image_url}" for image_url in json.loads(product.gallery_images)] if product.gallery_images else [],
         "tags": product.tags or "",
         "status": product.status or "",
         "is_featured": product.is_featured if product.is_featured is not None else False,

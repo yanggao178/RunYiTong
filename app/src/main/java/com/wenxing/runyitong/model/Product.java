@@ -3,6 +3,7 @@ package com.wenxing.runyitong.model;
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class Product implements Serializable {
     @SerializedName("id")
@@ -60,7 +61,7 @@ public class Product implements Serializable {
     private String dimensions; // 尺寸
     
     @SerializedName("gallery_images")
-    private String galleryImages; // 图库图片
+    private List<String> galleryImages; // 图库图片
     
     @SerializedName("tags")
     private String tags; // 标签
@@ -268,11 +269,11 @@ public class Product implements Serializable {
         this.dimensions = dimensions;
     }
 
-    public String getGalleryImages() {
+    public List<String> getGalleryImages() {
         return galleryImages;
     }
 
-    public void setGalleryImages(String galleryImages) {
+    public void setGalleryImages(List<String> galleryImages) {
         this.galleryImages = galleryImages;
     }
 

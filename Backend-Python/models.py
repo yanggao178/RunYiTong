@@ -24,7 +24,7 @@ class Product(Base):
     weight = Column(Float)
     dimensions = Column(String(100))
     featured_image_file = Column(String(500))  # 与数据库字段名保持一致
-    gallery_images = Column(Text)
+    gallery_images = Column(Text)  # 存储JSON格式的图片URL列表，对应schemas.py中ProductBase的Optional[List[str]]类型
     tags = Column(String(200))
     status = Column(String(20))
     is_featured = Column(Boolean, default=False)  # 数据库中使用的是Integer类型

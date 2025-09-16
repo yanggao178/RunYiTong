@@ -646,35 +646,62 @@ class Product(models.Model):
 
 # 信号处理器：同步商品数据到ai_medical.db
 @receiver(post_save, sender=Product)
-def sync_product_to_ai_db(sender, instance, created, **kwargs):
-    """当Product模型保存时，同步数据到ai_medical.db
+@receiver(post_save, sender=ProductImage)
+@receiver(post_delete, sender=ProductImage)
+def sync_product_to_ai_db(sender, instance, created=False, **kwargs):
+    """当Product或ProductImage模型保存/删除时，同步数据到ai_medical.db
     
     新表结构字段映射说明:
     - Django Product -> ai_medical.db products 完整字段映射
     - 支持所有Django CMS Product模型字段同步到新的表结构
-    - 当ai_medical.db中已存在相同名称的商品时，不进行同步
+    - 处理ProductImage变更时，会刷新并同步相关联的Product
+    """
+    
+    # 如果是ProductImage实例，则获取对应的Product实例
+    if isinstance(instance, ProductImage):
+        product = instance.product
+        # 为了避免无限循环，检查是否已经在同步过程中
+        if hasattr(product, '_syncing_to_ai_db') and product._syncing_to_ai_db:
+            return
+        product._syncing_to_ai_db = True
+        try:
+            # 重新获取product实例以确保拥有最新数据
+            product.refresh_from_db()
+            # 执行同步操作，但传入product作为实例
+            perform_product_sync(product)
+        finally:
+            product._syncing_to_ai_db = False
+        return
+    
+    # 如果是Product实例，直接执行同步操作
+    if isinstance(instance, Product):
+        perform_product_sync(instance)
+
+
+def perform_product_sync(instance):
+    """执行商品数据同步到ai_medical.db的核心逻辑
+    
+    处理字段映射、图库图片JSON转换、数据插入/更新等操作
     """
     # 添加调试信息
-    print(f"DEBUG: Product save signal received. Instance ID: {instance.id}, Created: {created}")
+    print(f"DEBUG: Product sync triggered. Instance ID: {instance.id}")
     
     # 确保实例有ID，如果没有则使用另一种方式获取
     if instance.id is None:
         print("DEBUG: Instance ID is None, trying alternative methods...")
         
-        # 方法1: 尝试通过name查找（仅在created为True时）
-        if created:
-            try:
-                # 查找具有相同名称的商品
-                existing_products = Product.objects.filter(name=instance.name)
-                if existing_products.count() == 1:
-                    instance = existing_products.first()
-                    print(f"DEBUG: Found product by name, ID: {instance.id}")
-                elif existing_products.count() > 1:
-                    # 如果有多个同名商品，选择最新的
-                    instance = existing_products.order_by('-created_at').first()
-                    print(f"DEBUG: Found multiple products by name, using latest, ID: {instance.id}")
-            except Exception as e:
-                print(f"DEBUG: Error finding product by name: {e}")
+        try:
+            # 查找具有相同名称的商品
+            existing_products = Product.objects.filter(name=instance.name)
+            if existing_products.count() == 1:
+                instance = existing_products.first()
+                print(f"DEBUG: Found product by name, ID: {instance.id}")
+            elif existing_products.count() > 1:
+                # 如果有多个同名商品，选择最新的
+                instance = existing_products.order_by('-created_at').first()
+                print(f"DEBUG: Found multiple products by name, using latest, ID: {instance.id}")
+        except Exception as e:
+            print(f"DEBUG: Error finding product by name: {e}")
         
         # 如果仍然没有ID，直接返回
         if instance.id is None:

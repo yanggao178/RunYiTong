@@ -4,12 +4,16 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import com.wenxing.runyitong.activity.PharmacyProductsActivity;
 
@@ -86,9 +90,26 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             holder.pharmacyName.setText(pharmacyText);
         }
 
-        // 暂时使用占位图
+        // 安全加载商品图片
         if (holder.productImage != null) {
-            holder.productImage.setImageResource(R.drawable.ic_launcher_background);
+            String imageUrl = product.getFeaturedImageFile();
+            if (imageUrl != null && !imageUrl.isEmpty()) {
+                try {
+                    // 使用Glide加载图片
+                    Glide.with(context)
+                            .load(imageUrl)
+                            .apply(new RequestOptions()
+                                    .placeholder(R.drawable.ic_launcher_background) // 占位图
+                                    .error(R.drawable.ic_launcher_background) // 加载错误时显示的图
+                                    .centerCrop()) // 图片缩放类型
+                            .into(holder.productImage);
+                } catch (Exception e) {
+                    Log.e("ProductAdapter", "加载商品图片失败: " + e.getMessage());
+                    holder.productImage.setImageResource(R.drawable.ic_launcher_background);
+                }
+            } else {
+                holder.productImage.setImageResource(R.drawable.ic_launcher_background);
+            }
         }
 
         // 添加点击事件

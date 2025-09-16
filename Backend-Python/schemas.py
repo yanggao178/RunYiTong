@@ -30,7 +30,7 @@ class ProductBase(BaseModel):
     barcode: Optional[str] = None
     weight: Optional[float] = None
     dimensions: Optional[str] = None
-    gallery_images: Optional[str] = None
+    gallery_images: Optional[List[str]] = None
     tags: Optional[str] = None
     status: Optional[str] = None
     is_featured: bool = False  # 虽然数据库存储为Integer，但API响应返回布尔值
@@ -65,7 +65,7 @@ class ProductUpdate(BaseModel):
     barcode: Optional[str] = None
     weight: Optional[float] = None
     dimensions: Optional[str] = None
-    gallery_images: Optional[str] = None
+    gallery_images: Optional[List[str]] = None
     tags: Optional[str] = None
     status: Optional[str] = None
     is_featured: Optional[bool] = None  # 虽然数据库存储为Integer，但API使用布尔值

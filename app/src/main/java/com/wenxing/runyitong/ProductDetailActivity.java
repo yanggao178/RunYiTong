@@ -6,13 +6,23 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.target.Target;
+import android.graphics.drawable.Drawable;
 import com.wenxing.runyitong.api.ApiClient;
 import com.wenxing.runyitong.api.ApiResponse;
 import com.wenxing.runyitong.model.PaymentOrderRequest;
@@ -22,6 +32,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.Nullable;
 
 import com.alipay.sdk.app.PayTask;
 import com.wenxing.runyitong.R;
@@ -33,6 +44,8 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
 import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProductDetailActivity extends AppCompatActivity {
 
@@ -49,6 +62,7 @@ public class ProductDetailActivity extends AppCompatActivity {
     private TextView productManufacturer;
     private TextView productPurchaseCount;
     private TextView productDetail;
+    private LinearLayout galleryContainer;
     private Product currentProduct;
     
     @SuppressLint("HandlerLeak")
@@ -127,6 +141,23 @@ public class ProductDetailActivity extends AppCompatActivity {
         productManufacturer = findViewById(R.id.product_manufacturer);
         productPurchaseCount = findViewById(R.id.product_purchase_count);
         productDetail = findViewById(R.id.product_detail);
+        
+        // 初始化galleryContainer
+        galleryContainer = new LinearLayout(this);
+        galleryContainer.setOrientation(LinearLayout.VERTICAL);
+        
+        // 获取productDetail的父容器并将galleryContainer添加到其下方
+        ViewGroup parentLayout = (ViewGroup) productDetail.getParent();
+        if (parentLayout != null) {
+            int index = parentLayout.indexOfChild(productDetail);
+            // 创建布局参数，确保galleryContainer的宽度与productDetail一致
+            ViewGroup.LayoutParams params = new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, // 宽度与父容器一致
+                    ViewGroup.LayoutParams.WRAP_CONTENT   // 高度自适应
+            );
+            galleryContainer.setLayoutParams(params);
+            parentLayout.addView(galleryContainer, index + 1);
+        }
 
         // 分享按钮点击事件
         findViewById(R.id.btn_share).setOnClickListener(v -> {
@@ -152,8 +183,137 @@ public class ProductDetailActivity extends AppCompatActivity {
             productPurchaseCount.setText(currentProduct.getPurchaseCount() + "+ 人已购");
             productDetail.setText(currentProduct.getDescription() + "\n\n这是商品的详细描述信息，包含了商品的使用方法、注意事项等。");
 
-            // 这里可以使用图片加载库加载网络图片，例如Glide或Picasso
-            // Glide.with(this).load(currentProduct.getFeaturedImageFile()).into(productImage);
+            // 使用Glide加载商品图片
+            try {
+                if (currentProduct.getFeaturedImageFile() != null && !currentProduct.getFeaturedImageFile().isEmpty()) {
+                    String imageUrl = currentProduct.getFeaturedImageFile();
+                    // 确保URL格式正确，如果缺少协议头则添加
+                    if (!imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
+                        imageUrl = "http://" + imageUrl; // 假设使用HTTP协议，实际应根据后端配置调整
+                    }
+                    
+                    Log.d("ProductDetailActivity", "Loading image URL: " + imageUrl);
+                    
+                    // 配置Glide选项，包括占位图和错误图
+                    RequestOptions options = new RequestOptions()
+                            .placeholder(R.drawable.ic_launcher_background) // 加载中的占位图
+                            .error(R.drawable.ic_launcher_background); // 加载失败的占位图
+                    
+                    // 使用Glide加载图片
+                    Glide.with(this)
+                            .load(imageUrl)
+                            .apply(options)
+                            .into(productImage);
+                } else {
+                    // 如果没有图片URL，则显示占位图
+                    productImage.setImageResource(R.drawable.ic_launcher_background);
+                }
+            } catch (Exception e) {
+                Log.e("ProductDetailActivity", "Error loading product image: " + e.getMessage());
+                // 显示错误占位图
+                productImage.setImageResource(R.drawable.ic_launcher_background);
+            }
+        }
+        
+        // 加载gallery_images图片
+        loadGalleryImages();
+    }
+    
+    /**
+     * 加载并显示gallery_images中的图片
+     */
+    private void loadGalleryImages() {
+        if (currentProduct != null && currentProduct.getGalleryImages() != null && !currentProduct.getGalleryImages().isEmpty()) {
+            // 获取所有图片URL并处理协议头
+            List<String> imageUrls = new ArrayList<>();
+            for (String imageUrl : currentProduct.getGalleryImages()) {
+                // 确保URL格式正确，如果缺少协议头则添加
+                if (imageUrl != null && !imageUrl.isEmpty() && 
+                    !imageUrl.startsWith("http://") && !imageUrl.startsWith("https://")) {
+                    imageUrl = "http://" + imageUrl; // 假设使用HTTP协议，实际应根据后端配置调整
+                }
+                imageUrls.add(imageUrl);
+            }
+            
+            // 如果有图片URL，则创建并显示图片
+            if (!imageUrls.isEmpty() && galleryContainer != null) {
+                // 创建垂直布局来显示图片
+                LinearLayout verticalLayout = new LinearLayout(this);
+                verticalLayout.setOrientation(LinearLayout.VERTICAL);
+                verticalLayout.setPadding(0, 16, 0, 0);
+                
+                // 获取屏幕宽度并计算图文详情的实际宽度
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                int screenWidth = displayMetrics.widthPixels;
+                
+                // 图文详情的宽度计算：屏幕宽度 - 左右边距(16dp*2) - 内边距(20dp*2)
+                // 16dp = 16 * (density) pixels
+                float density = displayMetrics.density;
+                int marginAndPadding = (int) ((16 + 20) * 2 * density); // 左右边距和内边距总和
+                int detailWidth = screenWidth - marginAndPadding;
+                
+                // 设置阈值使图片显示宽度大约等于图文详情宽度
+                final int imageWidth = detailWidth;
+                
+                // 为每张图片创建ImageView
+                for (String imageUrl : imageUrls) {
+                    if (imageUrl != null && !imageUrl.isEmpty()) {
+                        ImageView galleryImageView = new ImageView(this);
+                        
+                        // 设置图片缩放类型为FIT_CENTER，保证图片完整显示
+                        galleryImageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        
+                        // 设置ImageView的布局参数，使用计算出的宽度
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                                imageWidth, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        params.setMargins(0, 4, 0, 4);
+                        galleryImageView.setLayoutParams(params);
+                        
+                        // 配置Glide选项，确保图片按比例显示
+                        RequestOptions options = new RequestOptions()
+                                .placeholder(R.drawable.ic_launcher_background) // 加载中的占位图
+                                .error(R.drawable.ic_launcher_background) // 加载失败的占位图
+                                .fitCenter(); // 确保图片完整显示
+                        
+                        // 使用Glide加载图片并获取实际高度
+                        Glide.with(this)
+                                .load(imageUrl)
+                                .apply(options)
+                                .listener(new RequestListener<Drawable>() {
+                                    @Override
+                                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                        return false;
+                                    }
+                                    
+                                    @Override
+                                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                        // 获取图片的实际宽高
+                                        int originalWidth = resource.getIntrinsicWidth();
+                                        int originalHeight = resource.getIntrinsicHeight();
+                                        
+                                        if (originalWidth > 0) {
+                                            // 根据原始宽高比计算调整后的高度
+                                            int adjustedHeight = (int) ((float) originalHeight / originalWidth * imageWidth);
+                                            
+                                            // 更新ImageView的布局参数，设置实际高度
+                                            LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) galleryImageView.getLayoutParams();
+                                            layoutParams.height = adjustedHeight;
+                                            galleryImageView.setLayoutParams(layoutParams);
+                                        }
+                                        return false;
+                                    }
+                                })
+                                .into(galleryImageView);
+                        
+                        // 将ImageView添加到垂直布局中
+                        verticalLayout.addView(galleryImageView);
+                    }
+                }
+                
+                // 将垂直布局添加到galleryContainer中
+                galleryContainer.addView(verticalLayout);
+            }
         }
     }
 
