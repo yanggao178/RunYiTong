@@ -1,10 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
     android:background="@color/background_light">
+
+    <!-- 顶部固定操作按钮 -->
+    <LinearLayout
+        android:id="@+id/top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent"
+        android:elevation="8dp">
+        
+        <!-- 回退按钮 - 左上角 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/icon_button_ripple"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="返回"
+            android:scaleType="centerInside"
+            android:padding="12dp" />
+        
+        <!-- 空白占位，确保分享和购买按钮右对齐 -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+        
+        <!-- 分享按钮 - 右上角 -->
+        <ImageButton
+            android:id="@+id/btn_share"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/icon_button_ripple"
+            android:src="@drawable/ic_share"
+            android:contentDescription="分享"
+            android:scaleType="centerInside"
+            android:padding="12dp" />
+        
+        <!-- 购买按钮 - 右上角 -->
+        <ImageButton
+            android:id="@+id/btn_buy"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/icon_button_ripple"
+            android:src="@drawable/ic_shopping_cart"
+            android:contentDescription="购买"
+            android:scaleType="centerInside"
+            android:padding="12dp" />
+    </LinearLayout>
+
+    <!-- 主内容区滚动视图 -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/top_bar"
+        android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -312,48 +370,63 @@
 
         </androidx.cardview.widget.CardView>
 
-        <!-- 底部操作按钮 -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="20dp"
-            android:background="@drawable/gradient_background"
-            android:elevation="12dp"
-            android:layout_alignParentBottom="true">
 
-            <Button
-                android:id="@+id/btn_share"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="分享"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/gradient_button"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:drawableStart="@drawable/ic_share"
-                android:drawablePadding="8dp"
-                android:gravity="center"
-                android:elevation="4dp" />
-
-            <Button
-                android:id="@+id/btn_buy"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1"
-                android:text="立即购买"
-                android:layout_marginStart="12dp"
-                android:background="@drawable/gradient_button"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:drawableStart="@drawable/ic_shopping_cart"
-                android:drawablePadding="8dp"
-                android:gravity="center"
-                android:elevation="4dp" />
-
-        </LinearLayout>
     </LinearLayout>
-</ScrollView>
+    </ScrollView>
+    
+    <!-- 顶部固定操作按钮 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true"
+        android:background="@android:color/transparent"
+        android:elevation="4dp"
+        android:clipToPadding="false"
+        android:clipChildren="false">
+        
+        <!-- 回退按钮 - 左上角 -->
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/icon_button_ripple"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="返回"
+            android:scaleType="centerInside"
+            android:padding="12dp"
+            android:elevation="4dp" />
+        
+        <!-- 空白占位，确保分享和购买按钮右对齐 -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+        
+        <!-- 分享按钮 - 右上角 -->
+        <ImageButton
+            android:id="@+id/btn_share"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/icon_button_ripple"
+            android:src="@drawable/ic_share"
+            android:contentDescription="分享"
+            android:scaleType="centerInside"
+            android:padding="12dp"
+            android:elevation="4dp" />
+        
+        <!-- 购买按钮 - 右上角 -->
+        <ImageButton
+            android:id="@+id/btn_buy"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/icon_button_ripple"
+            android:src="@drawable/ic_shopping_cart"
+            android:contentDescription="购买"
+            android:scaleType="centerInside"
+            android:padding="12dp"
+            android:elevation="4dp" />
+    </LinearLayout>
+</RelativeLayout>

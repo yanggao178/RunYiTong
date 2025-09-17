@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -64,6 +65,11 @@ public class ProductDetailActivity extends AppCompatActivity {
     private TextView productDetail;
     private LinearLayout galleryContainer;
     private Product currentProduct;
+    
+    // 将Button类型改为ImageButton类型
+    private android.widget.ImageButton btnBack;
+    private android.widget.ImageButton btnShare;
+    private android.widget.ImageButton btnBuy;
     
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler() {
@@ -142,6 +148,25 @@ public class ProductDetailActivity extends AppCompatActivity {
         productPurchaseCount = findViewById(R.id.product_purchase_count);
         productDetail = findViewById(R.id.product_detail);
         
+        // 初始化顶部按钮
+        btnBack = findViewById(R.id.btn_back);
+        btnShare = findViewById(R.id.btn_share);
+        btnBuy = findViewById(R.id.btn_buy);
+        
+        Log.d("ProductDetailActivity", "Buttons initialized: back=" + (btnBack != null) + 
+              ", share=" + (btnShare != null) + ", buy=" + (btnBuy != null));
+        
+        // 检查按钮是否正确找到
+        if (btnBack == null) {
+            Log.e("ProductDetailActivity", "回退按钮未找到");
+        }
+        if (btnShare == null) {
+            Log.e("ProductDetailActivity", "分享按钮未找到");
+        }
+        if (btnBuy == null) {
+            Log.e("ProductDetailActivity", "购买按钮未找到");
+        }
+        
         // 初始化galleryContainer
         galleryContainer = new LinearLayout(this);
         galleryContainer.setOrientation(LinearLayout.VERTICAL);
@@ -159,15 +184,29 @@ public class ProductDetailActivity extends AppCompatActivity {
             parentLayout.addView(galleryContainer, index + 1);
         }
 
+        // 回退按钮点击事件
+        if (btnBack != null) {
+            btnBack.setOnClickListener(v -> {
+                Log.d("ProductDetailActivity", "回退按钮被点击");
+                onBackPressed();
+            });
+        }
+
         // 分享按钮点击事件
-        findViewById(R.id.btn_share).setOnClickListener(v -> {
-            shareProduct();
-        });
+        if (btnShare != null) {
+            btnShare.setOnClickListener(v -> {
+                Log.d("ProductDetailActivity", "分享按钮被点击");
+                shareProduct();
+            });
+        }
 
         // 购买按钮点击事件
-        findViewById(R.id.btn_buy).setOnClickListener(v -> {
-            purchaseProduct();
-        });
+        if (btnBuy != null) {
+            btnBuy.setOnClickListener(v -> {
+                Log.d("ProductDetailActivity", "购买按钮被点击");
+                purchaseProduct();
+            });
+        }
     }
 
     private void initData() {
